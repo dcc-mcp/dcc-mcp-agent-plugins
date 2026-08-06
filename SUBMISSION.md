@@ -43,6 +43,26 @@ Copilot, Cursor, Windsurf, OpenCode, Cline, Roo Code, Kiro, Amp, and other
 Agent Skills-compatible hosts. Add a vendor-native manifest only when it adds a
 real capability beyond Skill discovery.
 
+## Smithery Skills
+
+Smithery supports GitHub-backed Skills under a namespace and slug. The
+repository keeps the three source paths in `.github/smithery-skills.json` and
+validates them in CI. The default command is read-only; publish only after
+reviewing the target paths:
+
+```bash
+python scripts/smithery_sync.py
+SMITHERY_API_KEY=... python scripts/smithery_sync.py --publish
+```
+
+## PulseMCP
+
+PulseMCP currently catalogs MCP Servers and exposes a read-only registry API;
+it is not a direct `SKILL.md` upload target. Submit a DCC-MCP Server through
+[`pulsemcp.com/submit`](https://www.pulsemcp.com/submit) only when the owning
+Core/adapter release provides a public MCP endpoint or supported server
+package. Do not represent an Agent Skill ZIP as an MCP Server.
+
 ## ClawHub
 
 Pull requests dry-run the official ClawHub CLI. A `v<version>` tag publishes
