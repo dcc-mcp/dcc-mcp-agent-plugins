@@ -41,6 +41,14 @@ The Skill handles DCC discovery, typed tool selection, and approval boundaries.
 Install `dcc-mcp-creator` or `dcc-mcp-skills-creator` only when developing an
 adapter or authoring a reusable DCC-MCP Skill.
 
+### Portable Agent Plugin
+
+GitHub Release archives include a root `plugin.json` conforming to the
+[Agent Plugins 1.0.0 specification](https://agent-plugins.org/) and the same
+canonical `skills/` directory. Compatible clients can load the archive as a
+skills-only portable plugin; installation and distribution remain
+client-defined by the standard.
+
 ### Native plugin marketplaces (optional)
 
 Use a native marketplace when the host provides one. It installs the same

@@ -14,7 +14,9 @@ ROOT = Path(__file__).resolve().parent.parent
 PLUGIN = ROOT / "plugins" / "dcc-mcp"
 CLAWHUB_MANIFEST = ROOT / ".github" / "clawhub-skills.json"
 SMITHERY_MANIFEST = ROOT / ".github" / "smithery-skills.json"
+AGENT_PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 PLUGIN_MANIFESTS = (
+    PLUGIN / "plugin.json",
     PLUGIN / ".codex-plugin" / "plugin.json",
     PLUGIN / ".claude-plugin" / "plugin.json",
     PLUGIN / ".codebuddy-plugin" / "plugin.json",
@@ -26,6 +28,10 @@ MARKETPLACE_MANIFESTS = (
 
 
 def main() -> int:
+    agent_plugin = json.loads(PLUGIN_MANIFESTS[0].read_text(encoding="utf-8"))
+    if agent_plugin.get("$schema") != AGENT_PLUGIN_SCHEMA:
+        raise ValueError("invalid Agent Plugins schema")
+
     plugin_versions = {json.loads(path.read_text(encoding="utf-8"))["version"] for path in PLUGIN_MANIFESTS}
     if len(plugin_versions) != 1:
         raise ValueError(f"plugin manifest versions differ: {sorted(plugin_versions)}")
