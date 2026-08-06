@@ -1,0 +1,20 @@
+{
+  "namespace": "loonghao",
+  "skills": [
+    {
+      "slug": "dcc-mcp",
+      "path": "plugins/dcc-mcp/skills/dcc-mcp",
+      "git_url": "https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/main/plugins/dcc-mcp/skills/dcc-mcp"
+    },
+    {
+      "slug": "dcc-mcp-skills-creator",
+      "path": "plugins/dcc-mcp/skills/dcc-mcp-skills-creator",
+      "git_url": "https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/main/plugins/dcc-mcp/skills/dcc-mcp-skills-creator"
+    },
+    {
+      "slug": "dcc-mcp-creator",
+      "path": "plugins/dcc-mcp/skills/dcc-mcp-creator",
+      "git_url": "https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/main/plugins/dcc-mcp/skills/dcc-mcp-creator"
+    }
+  ]
+}

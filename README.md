@@ -81,6 +81,33 @@ This path also covers Cline, Roo Code, Kiro CLI, Amp, OpenHands, Continue,
 Replit, and other hosts supported by the installer without duplicating Skill
 content in this repository.
 
+### Smithery Skills
+
+The three canonical Skills are mapped to Smithery's GitHub-backed Skills
+Registry. Search and install them with the Smithery CLI:
+
+```bash
+npm install -g smithery@latest
+smithery skill search "dcc-mcp"
+smithery skill add loonghao/dcc-mcp --agent claude-code
+```
+
+Maintainers can validate the mapping locally, then publish only with an
+explicit flag and `SMITHERY_API_KEY`:
+
+```bash
+python scripts/smithery_sync.py
+SMITHERY_API_KEY=... python scripts/smithery_sync.py --publish
+```
+
+### PulseMCP
+
+PulseMCP is an MCP Server directory, not a raw Agent Skills registry. This
+repository therefore does not publish Skill ZIPs there. Submit a hosted or
+local DCC-MCP Server from the owning adapter/core release through
+[`pulsemcp.com/submit`](https://www.pulsemcp.com/submit); keep Agent Skills on
+Smithery, ClawHub, or an Agent Skills-compatible host.
+
 ## Skill suite
 
 | Skill | Purpose |

@@ -7,11 +7,13 @@ from pathlib import Path
 import sys
 
 import dcc_mcp_core
+from smithery_sync import validate_manifest as validate_smithery_manifest
 
 
 ROOT = Path(__file__).resolve().parent.parent
 PLUGIN = ROOT / "plugins" / "dcc-mcp"
 CLAWHUB_MANIFEST = ROOT / ".github" / "clawhub-skills.json"
+SMITHERY_MANIFEST = ROOT / ".github" / "smithery-skills.json"
 PLUGIN_MANIFESTS = (
     PLUGIN / ".codex-plugin" / "plugin.json",
     PLUGIN / ".claude-plugin" / "plugin.json",
@@ -47,6 +49,8 @@ def main() -> int:
             raise ValueError(f"Skill metadata differs from ClawHub manifest: {entry['slug']}")
         if not (skill_dir / "agents" / "openai.yaml").is_file():
             raise ValueError(f"missing Codex interface metadata: {entry['slug']}")
+
+    validate_smithery_manifest(SMITHERY_MANIFEST, ROOT)
 
     print(f"Validated {len(entries)} Skills and {len(PLUGIN_MANIFESTS) + len(MARKETPLACE_MANIFESTS)} manifests at {version}")
     return 0
