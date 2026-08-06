@@ -1,5 +1,10 @@
 # DCC-MCP Agent Plugins
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./plugins/dcc-mcp/assets/logo-dark.png">
+  <img alt="DCC-MCP Agent Plugins" src="./plugins/dcc-mcp/assets/logo.png">
+</picture>
+
 The official distribution repository for DCC-MCP Agent Skills across Codex,
 Claude Code, CodeBuddy, WorkBuddy, OpenClaw, ClawHub, Gemini CLI, GitHub
 Copilot, Cursor, Windsurf, OpenCode, Cline, Roo Code, Kiro, Amp, and other

@@ -36,7 +36,7 @@
       "Find the safest tool for my Maya task before running it."
     ],
     "brandColor": "#087CD8",
-    "composerIcon": "./assets/icon.svg",
+    "composerIcon": "./assets/icon.png",
     "logo": "./assets/logo.png",
     "logoDark": "./assets/logo-dark.png"
   }
