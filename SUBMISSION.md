@@ -36,8 +36,8 @@ Validate the CodeBuddy plugin and marketplace locally before publishing the repo
 
 ## Universal Agent Skills hosts
 
-Run `npx --yes skills add . --list` in CI and
-`npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins --list` against the public
+Run `npx --yes skills@1.5.22 add . --list` in CI and
+`npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --list` against the public
 repository. This is the shared distribution path for Gemini CLI, GitHub
 Copilot, Cursor, Windsurf, OpenCode, Cline, Roo Code, Kiro, Amp, and other
 Agent Skills-compatible hosts. Add a vendor-native manifest only when it adds a

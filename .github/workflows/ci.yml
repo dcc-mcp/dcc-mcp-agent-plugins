@@ -28,7 +28,7 @@ jobs:
       - name: Validate universal Agent Skills discovery
         env:
           DISABLE_TELEMETRY: "1"
-        run: npx --yes skills add . --list
+        run: npx --yes skills@1.5.22 add . --list
       - run: python scripts/package_openclaw_skill.py .github/clawhub-skills.json dist/skills --manifest
       - name: Package agent plugin
         run: |

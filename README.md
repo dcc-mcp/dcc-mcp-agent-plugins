@@ -59,17 +59,17 @@ supported agents:
 
 ```bash
 # List the three Skills without installing
-npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins --list
+npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --list
 
 # Interactive install for the detected agent
-npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins
+npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins
 
 # Examples for explicit targets
-npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a gemini-cli -y
-npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a github-copilot -y
-npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a cursor -y
-npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a windsurf -y
-npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a opencode -y
+npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a gemini-cli -y
+npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a github-copilot -y
+npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a cursor -y
+npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a windsurf -y
+npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a opencode -y
 ```
 
 This path also covers Cline, Roo Code, Kiro CLI, Amp, OpenHands, Continue,
@@ -94,7 +94,7 @@ consumer migration described in
 ```powershell
 python -m pip install "dcc-mcp-core==0.19.91"
 python scripts/validate_repository.py
-npx --yes skills add . --list
+npx --yes skills@1.5.22 add . --list
 ./scripts/build-packages.ps1
 
 codex plugin marketplace add .
