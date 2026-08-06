@@ -1,0 +1,20 @@
+{
+  "name": "dcc-mcp",
+  "version": "0.19.91",
+  "description": "Control Maya, Blender, Houdini, Unreal, Photoshop, and other DCC applications through DCC-MCP.",
+  "author": {
+    "name": "DCC-MCP",
+    "url": "https://github.com/dcc-mcp"
+  },
+  "homepage": "https://dcc-mcp.github.io/",
+  "repository": "https://github.com/dcc-mcp/dcc-mcp-agent-plugins",
+  "license": "MIT",
+  "keywords": [
+    "dcc",
+    "mcp",
+    "maya",
+    "blender",
+    "houdini",
+    "unreal"
+  ]
+}

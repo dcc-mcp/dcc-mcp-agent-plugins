@@ -1,0 +1,20 @@
+{
+  "name": "dcc-mcp",
+  "owner": {
+    "name": "DCC-MCP",
+    "url": "https://github.com/dcc-mcp"
+  },
+  "description": "DCC-MCP plugins for AI agent hosts.",
+  "plugins": [
+    {
+      "name": "dcc-mcp",
+      "source": "./plugins/dcc-mcp",
+      "description": "Control creative applications through structured DCC-MCP tools.",
+      "version": "0.19.91",
+      "author": {
+        "name": "DCC-MCP"
+      },
+      "category": "productivity"
+    }
+  ]
+}

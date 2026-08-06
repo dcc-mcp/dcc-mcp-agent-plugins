@@ -1,0 +1,5 @@
+/dist/
+.clawhub/
+__pycache__/
+*.pyc
+*.tmp
