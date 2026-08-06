@@ -15,33 +15,64 @@ manifests are thin adapters; they do not fork instructions or runtime behavior.
 
 ## Install
 
-### Codex
+### Most agents (recommended)
+
+Install the default `dcc-mcp` Skill with one command. The installer detects
+supported agents in the current workspace and lets you choose the target:
+
+```bash
+npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp
+```
+
+This covers Gemini CLI, GitHub Copilot, Cursor, Windsurf, OpenCode, Cline, Roo
+Code, Kiro CLI, Amp, OpenHands, Continue, Replit, and other Agent
+Skills-compatible hosts. Start a new agent session if the host discovers Skills
+only at startup. Use `--global` for a user-level installation or
+`--agent <id> --yes` for a non-interactive explicit target; see the installer's
+[supported-agent list](https://github.com/vercel-labs/skills#supported-agents).
+
+After installation, prompts only need to describe the work:
+
+```text
+Use the dcc-mcp Skill to <describe the DCC task>.
+```
+
+The Skill handles DCC discovery, typed tool selection, and approval boundaries.
+Install `dcc-mcp-creator` or `dcc-mcp-skills-creator` only when developing an
+adapter or authoring a reusable DCC-MCP Skill.
+
+### Native plugin marketplaces (optional)
+
+Use a native marketplace when the host provides one. It installs the same
+canonical Skills.
+
+#### Codex
 
 ```powershell
 codex plugin marketplace add dcc-mcp/dcc-mcp-agent-plugins
 codex plugin add dcc-mcp@dcc-mcp
 ```
 
-### Claude Code
+#### Claude Code
 
 ```text
 /plugin marketplace add dcc-mcp/dcc-mcp-agent-plugins
 /plugin install dcc-mcp@dcc-mcp
 ```
 
-### CodeBuddy
+#### CodeBuddy
 
 ```powershell
 codebuddy plugin marketplace add dcc-mcp/dcc-mcp-agent-plugins
 codebuddy plugin install dcc-mcp@dcc-mcp
 ```
 
-### WorkBuddy
+#### WorkBuddy
 
 Add this repository URL from **Plugins > +**, or upload a standalone Skill ZIP
 from the GitHub Release to **Skills > Add skill > Upload skill**.
 
-### OpenClaw and ClawHub
+#### OpenClaw and ClawHub
 
 ```bash
 openclaw skills install @loonghao/dcc-mcp
@@ -56,30 +87,6 @@ npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp
 npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp-skills-creator
 npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp-creator
 ```
-
-### Other Agent Skills hosts
-
-Use the open Agent Skills installer to select any or all Skills and target
-supported agents:
-
-```bash
-# List the three Skills without installing
-npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --list
-
-# Interactive install for the detected agent
-npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins
-
-# Examples for explicit targets
-npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a gemini-cli -y
-npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a github-copilot -y
-npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a cursor -y
-npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a windsurf -y
-npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a opencode -y
-```
-
-This path also covers Cline, Roo Code, Kiro CLI, Amp, OpenHands, Continue,
-Replit, and other hosts supported by the installer without duplicating Skill
-content in this repository.
 
 ### Smithery Skills
 
