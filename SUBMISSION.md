@@ -33,3 +33,18 @@ Run `claude plugin validate ./plugins/dcc-mcp --strict`, then submit the reposit
 ## CodeBuddy and WorkBuddy
 
 Validate the CodeBuddy plugin and marketplace locally before publishing the repository. WorkBuddy supports local Skill upload today; use `scripts/build-packages.ps1` to produce the upload archive from the same canonical Skill.
+
+## Universal Agent Skills hosts
+
+Run `npx --yes skills add . --list` in CI and
+`npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins --list` against the public
+repository. This is the shared distribution path for Gemini CLI, GitHub
+Copilot, Cursor, Windsurf, OpenCode, Cline, Roo Code, Kiro, Amp, and other
+Agent Skills-compatible hosts. Add a vendor-native manifest only when it adds a
+real capability beyond Skill discovery.
+
+## ClawHub
+
+Pull requests dry-run the official ClawHub CLI. A `v<version>` tag publishes
+the three entries in `.github/clawhub-skills.json` after GitHub Release
+creation. Configure `CLAWHUB_TOKEN` before pushing a release tag.

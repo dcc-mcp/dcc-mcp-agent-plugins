@@ -1,7 +1,9 @@
 # DCC-MCP Agent Plugins
 
 The official distribution repository for DCC-MCP Agent Skills across Codex,
-Claude Code, CodeBuddy, WorkBuddy, OpenClaw, and ClawHub.
+Claude Code, CodeBuddy, WorkBuddy, OpenClaw, ClawHub, Gemini CLI, GitHub
+Copilot, Cursor, Windsurf, OpenCode, Cline, Roo Code, Kiro, Amp, and other
+Agent Skills-compatible hosts.
 
 One canonical Skill suite lives under `plugins/dcc-mcp/skills/`. Vendor
 manifests are thin adapters; they do not fork instructions or runtime behavior.
@@ -50,6 +52,30 @@ npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp-skills-creator
 npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp-creator
 ```
 
+### Other Agent Skills hosts
+
+Use the open Agent Skills installer to select any or all Skills and target
+supported agents:
+
+```bash
+# List the three Skills without installing
+npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins --list
+
+# Interactive install for the detected agent
+npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins
+
+# Examples for explicit targets
+npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a gemini-cli -y
+npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a github-copilot -y
+npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a cursor -y
+npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a windsurf -y
+npx --yes skills add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp -a opencode -y
+```
+
+This path also covers Cline, Roo Code, Kiro CLI, Amp, OpenHands, Continue,
+Replit, and other hosts supported by the installer without duplicating Skill
+content in this repository.
+
 ## Skill suite
 
 | Skill | Purpose |
@@ -68,6 +94,7 @@ consumer migration described in
 ```powershell
 python -m pip install "dcc-mcp-core==0.19.91"
 python scripts/validate_repository.py
+npx --yes skills add . --list
 ./scripts/build-packages.ps1
 
 codex plugin marketplace add .
