@@ -11,6 +11,11 @@ Use this table when choosing adapter runtime wiring for a new DCC.
 | Houdini | `hou` | Event-loop callback or headless hython dispatcher | Node graph writes are main-thread-sensitive. |
 | Maya | `maya.cmds` / OpenMaya | UI dispatcher in GUI; standalone serialized dispatcher in mayapy | Do not special-case Maya patterns into core without parameterizing host identity. |
 | Photoshop / Adobe | UXP/CEP/ExtendScript | External bridge or UI Control contract | Use structured bridge calls; do not depend on a Python-in-host runtime. |
+
+Core main-thread routing carries typed Rust results through the in-process
+executor. Adapters should submit through `DccDispatcher` / the core executor
+seam and must not add a JSON encode/decode envelope between same-process
+queues. JSON remains a transport boundary only (HTTP, MCP, IPC, or host RPC).
 | Custom studio tool | Python, socket, HTTP, or CLI | Start with the least-powerful bridge that can satisfy typed tools | Document auth, scope, and shutdown behavior up front. |
 
 ## Host API Rules
@@ -18,6 +23,9 @@ Use this table when choosing adapter runtime wiring for a new DCC.
 - Import host modules inside callables or skill script entry points, never at
   package import time.
 - Mark scene-touching tools `affinity: main`.
+- Implement REST `ToolInvoker` ports asynchronously. Core awaits host dispatch
+  directly and carries the execution context in the routed request; adapters
+  must not create a helper OS thread or a second Tokio runtime per call.
 - Use `affinity: any` only for pure file, validation, serialization, or metadata
   operations.
 - If a tool can exceed two seconds, declare `execution: async` and a realistic
@@ -40,7 +48,11 @@ Use this table when choosing adapter runtime wiring for a new DCC.
   cannot safely interrupt a DCC-native API call or an uncooperative hot loop
   already executing on the host thread; use typed, bounded operations and
   return control to the pump between chunks.
-- Every bridge path must normalize arguments and return structured envelopes.
+- Every bridge path must normalize arguments and return the canonical domain
+  result envelope: `error` is a string code and structured details belong under
+  namespaced `_meta` entries. `HostExecutionBridge` and in-process dispatchers
+  must not return a JSON-RPC-style error object in the domain `error` field.
+  Keep outer host-RPC `{result}` / `{error}` transport envelopes separate.
 
 ## Dispatcher Smoke Tests
 

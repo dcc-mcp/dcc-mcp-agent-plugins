@@ -10,7 +10,7 @@
       "name": "dcc-mcp",
       "source": "./plugins/dcc-mcp",
       "description": "Control creative applications through structured DCC-MCP tools.",
-      "version": "0.19.92",
+      "version": "0.19.93",
       "author": {
         "name": "DCC-MCP"
       }

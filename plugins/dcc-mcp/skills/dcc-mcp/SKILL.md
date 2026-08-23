@@ -3,16 +3,14 @@ name: dcc-mcp
 description: >-
   Default DCC control skill — connect to and operate live Maya, Blender,
   Houdini, Photoshop, 3ds Max, Nuke, Unreal, Godot, RenderDoc, Substance 3D,
-  and other DCC apps
-  through structured DCC-MCP tools. Use this skill first whenever the user asks
-  to operate or control something in a DCC app, even when they do not mention
-  DCC-MCP. Interface-specific intent such as clicking a menu, dismissing a
-  dialog, or controlling a window routes to DCC UI Control after structured
-  tools are checked. Also use this skill first for DCC-MCP Skill marketplace,
-  catalog, recommendation, install, or update requests: query the marketplace
-  through dcc-mcp-cli before recommending a package. OpenClaw and other shell
-  agents use dcc-mcp-cli; MCP-native IDEs use the gateway MCP surface. Not for
-  tasks unrelated to DCC software.
+  and other DCC apps through structured DCC-MCP tools. Use this skill first for
+  DCC operation and explicit CUA, DCC CUA, dcc-cua, our dcc-cua, or 我们的
+  dcc-cua requests. These select project-owned DCC UI Control even when the
+  target is a browser or other non-DCC app; never substitute Codex/OpenAI
+  generic Computer Use, @oai/sky, or Browser/Chrome plugins. Also use this
+  skill first for DCC-MCP marketplace, catalog, install, or update requests:
+  query the marketplace through dcc-mcp-cli. OpenClaw/shell agents use
+  dcc-mcp-cli; MCP-native IDEs use the gateway MCP surface.
 license: MIT-0
 allowed-tools: Bash Read
 metadata:
@@ -20,9 +18,9 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: Cross-platform Windows/macOS/Linux. Prefers dcc-mcp-cli on PATH; its consent-gated bootstrap accepts only the official release manifest and verifies SHA-256 before replacement. Local profile needs no gateway env. Use --require-gateway plus --agent-session-id when gateway stats are required evidence. DCC_MCP_BASE_URL is optional for remote/legacy gateway REST fallback.
-    version: "0.19.92"
-    search-hint: "dcc control operate UI control menu dialog window button click keyboard Maya Blender Houdini Photoshop 3ds Max Nuke Unreal Godot RenderDoc Substance connect create edit render automate cli gateway stats marketplace skill catalog recommend install update 商城 技能 操作 控制 界面 菜单 弹窗 窗口 按钮 点击 键盘"
-    tags: "dcc, dcc-ui-control, ui-control, maya, blender, houdini, photoshop, nuke, unreal, godot, renderdoc, cli, gateway, marketplace, skill-catalog, clawhub, openclaw"
+    version: "0.19.93"
+    search-hint: "dcc control operate UI control ui-control cua CUA dcc-cua dcc cua our dcc-cua 我们的 dcc-cua project CUA computer use ui automation menu dialog window button click keyboard Maya Blender Houdini Photoshop 3ds Max Nuke Unreal Godot RenderDoc Substance connect create edit render automate cli gateway stats marketplace skill catalog recommend install update 商城 技能 操作 控制 界面 菜单 弹窗 窗口 按钮 点击 键盘"
+    tags: "dcc, dcc-ui-control, ui-control, cua, dcc-cua, computer-use, maya, blender, houdini, photoshop, nuke, unreal, godot, renderdoc, cli, gateway, marketplace, skill-catalog, clawhub, openclaw"
   openclaw:
     emoji: "🖥️"
     homepage: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/blob/main/plugins/dcc-mcp/skills/dcc-mcp/SKILL.md
@@ -50,6 +48,15 @@ The compatibility default remains JSON for scripts. Agents should pass
 only when another program must parse it. The bundled Python fallback is
 gateway-REST only and sends `Accept: application/json` because it must parse
 the response internally.
+
+## Explicit DCC-CUA Routing Boundary
+
+Treat `dcc-cua`, `DCC CUA`, `our dcc-cua`, and `我们的 dcc-cua` as stable automation-control triggers and a hard routing boundary for every app UI task, including browsers and non-DCC apps.
+Use only `dcc-mcp-cli ui-control`, `components status/ensure dcc-cua`, and `dcc-cua profiles` / `profile --id <id>`. Never load or call Codex/OpenAI
+generic Computer Use, the `computer-use` Skill, `@oai/sky`, or Browser/Chrome
+plugins. Stay in the exact-bound `dcc-cua` `browser_dom` surface for browsers.
+If this route fails, repair or report it; never silently fall back. Use generic
+Computer Use only when the user explicitly asks for it or retracts DCC-CUA.
 
 ## CLI Invocation Contract
 
@@ -86,12 +93,13 @@ Use the user's capability words first. If there are no results, retry once with
 a shorter capability query or without the DCC filter; never invent a package
 name or substitute a web recommendation for the CLI result.
 
-Installing or updating changes local state. Inspect unfamiliar packages and
-obtain user consent before `marketplace install` or `update`. When the exact ID
-is already known, install it directly with `--reload`; then use `load-skill`
-only when needed. The Python REST fallback
-does not implement marketplace commands, so a missing CLI follows the
-consent-gated official CLI installation path below.
+Catalog entries may be a Skill, legacy multi-Skill bundle, or Agent Plugin. When present, read
+`entry.package.format` and `entry.package.skills`; install, update, and uninstall the package once, not each component.
+
+Installing or updating changes local state. Inspect unfamiliar packages and obtain user consent before
+`marketplace install` or `update`. For a known exact ID, install directly with `--reload`, then use
+`load-skill` only when needed. The Python REST fallback does not implement marketplace commands, so
+a missing CLI follows the consent-gated official CLI installation path below.
 Each CLI invocation performs a short read-only marketplace update check; report updates and ask confirmation before `marketplace update`.
 `uninstall --reload` removes and refreshes; omit `--dcc` only for a package installed on one DCC.
 
@@ -109,7 +117,6 @@ requested object is a menu, dialog, window, button, text field, pointer, or
 keyboard interaction, select the **DCC UI Control** fallback after inventory
 and structured-tool discovery. Do not confuse this product capability with a
 host agent's generic Computer Use feature.
-
 | User intent | Target inventory filter | Typical capability search |
 |-------------|-------------------------|---------------------------|
 | Model, rig, animate, shade, or render in Maya | `maya` | the requested modeling, rigging, animation, material, or render operation |
@@ -192,6 +199,13 @@ when structured DCC capabilities cannot reach the required semantic UI:
 2. `ui_control__find` and one semantic `ui_control__act` when possible.
 3. `ui_control__snapshot` after every action before choosing the next action.
 4. `ui_control__stop_computer_use` when the fallback completes, fails, or is abandoned.
+The runtime defaults to `dcc-cua` 0.4.0+; `mock` is test-only, never a production fallback.
+
+The runtime consumes standalone `dcc-cua`; inspect `dcc-cua profiles` and
+`dcc-cua profile --id <id>` before binding the exact PID/window. Keep
+`browser_dom` inside `dcc-cua`, and use `fab/launcher_download` when UE's Fab
+surface is unavailable. Cloudflare, authentication, purchase, and security
+confirmations remain trusted human boundaries even with full agent access.
 
 The UI Control `session_id` identifies its scoped UI session, not stats
 attribution. Use `--agent-session-id <task-id>` for `_meta.agent_context.session_id`.
@@ -209,22 +223,19 @@ the user or environment must resolve them first. Never widen scope, reuse stale
 coordinates, or resume without an explicit request. Load the runtime Skill for
 the complete target-binding, system-operation, capture, and artifact contract.
 
-Internal studios can fork this skill once and reuse the same CLI+REST workflow across
-agents without maintaining per-host MCP server lists.
-
 ## Gateway Profiles And Local-First Inventory
 
 `dcc-mcp-cli` has a built-in `local` profile. In local mode, agent-control
 commands first ensure the machine-wide loopback gateway is healthy, then
-`list` reads the core default FileRegistry directly, and `search`, `describe`,
-`load-skill`, `call`, `wait-ready`, and guarded `stop-instance` talk to the
-selected local DCC instance's advertised MCP/readyz/safe-stop endpoints. Remote
-machines are selected through named gateway profiles:
-
+`list` reads FileRegistry; `search`, `describe`, `call`, and guarded
+`stop-instance` use the selected instance endpoints. `load-skill` uses the
+ensured gateway to update its capability index; `--no-auto-gateway` retains
+direct loading. `wait-ready` uses discovery MCP when readyz cannot report
+`skill_catalog`. Remote machines use named gateway profiles:
 Treat `list` as inventory plus diagnostics, not proof that a row is callable.
 It intentionally keeps live `booting` / `dispatch_status=unavailable` sidecar
-rows visible. Local `search`, `describe`, `load-skill`, `call`, and
-`reload-skills` route only to rows ready for local CLI control. Per-DCC sidecar
+rows visible. Local control routes only to ready rows; gateway-owned
+`load-skill` targets the same row and refreshes its capabilities. Per-DCC sidecar
 rows become local MCP routes once they report `dispatch_status=ready`; before
 that, they remain visible for diagnostics. Use `wait-ready` or `doctor` when a
 listed instance is still booting.
@@ -281,7 +292,6 @@ npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp
 The published package is [`@loonghao/dcc-mcp`](https://clawhub.ai/loonghao/skills/dcc-mcp). Install it with the command for the current agent host, start a new agent turn, and invoke `$dcc-mcp` explicitly if automatic routing is uncertain. A checkout may load this directory directly.
 
 Then follow the CLI/MCP preflight above.
-
 `dcc-mcp` supersedes `dcc-cli-gateway`; do not load both names in one agent.
 
 ## Critical Rules
@@ -289,6 +299,7 @@ Then follow the CLI/MCP preflight above.
 | Situation | You MUST |
 |-----------|----------|
 | **Marketplace/Skill store intent** | Search the official catalog before recommendations or when no exact package ID was supplied; an exact known ID may go directly to consent-gated `marketplace install --reload`; live inventory is not required |
+| Official catalog or update metadata fails provenance verification | Stop; do not bypass the detached Sigstore check or substitute a custom source unless the operator explicitly supplies and trusts that source |
 | **Starting any local DCC task** | Run `dcc-mcp-cli list`; it ensures the local gateway, then reads the local FileRegistry |
 | **Startup state is ambiguous** | Run `dcc-mcp-cli doctor`; inspect selected profile, registry dir, local inventory, direct-control readiness counts, daemon status, and server binary diagnostics |
 | **Starting any remote DCC task** | Select or override a profile with `dcc-mcp-cli gateway set <name>` or `dcc-mcp-cli list --gateway <name>` |
@@ -385,7 +396,7 @@ python scripts/dcc_gateway.py call maya.a1b2c3d4.maya_primitives__create_sphere 
   --json '{"radius":2.0}'
 ```
 
-For asynchronous render/cook tools, add `--wait`; the CLI polls `jobs_get_status` at most once per second until terminal state and writes a 5%-step progress bar plus a 30-second stalled-job heartbeat to stderr while keeping the final result on stdout. Use `--wait-timeout-secs` for longer runs.
+For asynchronous render/cook tools, add `--wait`; the CLI polls `jobs_get_status` at most once per second until terminal state and writes a 5%-step progress bar plus a 30-second stalled-job heartbeat to stderr while keeping the final result on stdout. Use `--wait-timeout-secs` for longer runs. The returned `job_id` is the backward-compatible alias of `core_job_id` (`job_id_owner=core`). If the terminal result launches adapter-owned work, `--wait` surfaces `adapter_job_id`; call the typed `adapter_job.poll` descriptor when present, never pass that inner ID to `jobs_get_status`, and do not assume Core cancellation propagates across the ownership boundary.
 The bar uses `progress.current`, `progress.total`, and `progress.message`; do not repeatedly scan output files when typed progress exists.
 Native MCP/REST clients may subscribe to `/v1/jobs/{job_id}/events`; otherwise keep the returned `job_id` and use bounded status polling.
 Do not create a scheduled task by default. After an explicit cross-session monitoring request, schedule only a one-shot status check for that ID and stop it at terminal state.
@@ -452,11 +463,7 @@ Load `dcc-mcp-skills-creator` and request `review_skill_improvement` with bounde
 
 ## Updates and Marketplace Maintenance
 
-Use the gateway release manifest for binary checks. `update apply` stages the
-CLI for its next launch; a running server must be updated in its own
-environment. The Admin Instances panel remains check-only because the gateway
-cannot prove an instance's installation root. See the CLI cheatsheet for
-platform manifests and server-side update details.
+Use the gateway release manifest for binary checks. An available binary must have a valid SHA-256; `update apply` verifies it during download, binds one component to the exact CLI installation, and re-verifies it before replacement and restart. Legacy unsigned staging is quarantined. A running server must be updated in its own environment. The Admin Instances panel is check-only for every binary because the gateway cannot prove an installation root. See the CLI cheatsheet for platform manifests, server updates, and the verified `dcc-cua` sibling contract.
 
 ```bash
 dcc-mcp-cli update check
@@ -469,31 +476,25 @@ For marketplace Skills, search first when the exact package ID is not known:
 dcc-mcp-cli marketplace search --query "maya rigging" --limit 20
 dcc-mcp-cli marketplace inspect <package_name>
 dcc-mcp-cli marketplace install <package_name> --dcc maya --reload
+dcc-mcp-cli marketplace install <profile_package_name> --target game:the-bazaar
 ```
 
 `--query "maya rigging"` remains supported for scripts. Search and inspect are
 read-only; install/update require consent. Inspect is optional when the exact
 package ID is already known, and `--dcc` is optional for single-DCC packages.
-After updates or installs without `--reload`, run `reload-skills`; then use
-`load-skill` only if the adapter did not auto-load it.
+Catalog Git installs require a full commit object ID and ZIP installs require a
+valid SHA-256 before I/O. Direct `marketplace add-repo` installation requires `--commit <40-hex-oid>`; only its read-only `--list` mode may omit it.
+After updates or installs without `--reload`, run `reload-skills`; then use `load-skill` only if the adapter did not auto-load it.
 
 Use `install` for adapter plans, never for marketplace Skills:
 
 ```bash
-dcc-mcp-cli install --dcc-type maya --version 2026
+dcc-mcp-cli install --dcc-type maya
 ```
 Ask before `--execute`, follow the returned `next_steps`, and do not treat
-package installation as live registration. If no standard DCC is found, ask for an absolute path and pass `--dcc-path`. If auto-install is disabled, show
+package installation as live registration. Pip plans must preserve the catalog-pinned artifact; see the CLI cheatsheet. If no standard DCC is found, ask for an absolute path and pass `--dcc-path`. If auto-install is disabled, show
 the returned policy prompt and hand off to the named deployment owner.
 
-## What This Skill Does Not Use
-
-- Native MCP `tools/list`, `tools/call`, or `resources/read` on the agent host
-  (IDE users should use MCP instead of this skill)
-- Raw `curl` workflows except when debugging the gateway itself
-- Direct Maya/Blender/Houdini scripting
-
 The CLI is the **default agent-facing control plane**. The Python fallback uses
-the same gateway REST endpoints only when the CLI is unavailable after a
-verified install attempt fails. The gateway still serves MCP for IDE clients in
-parallel; choosing this skill does not replace or disable the IDE MCP path.
+the same gateway REST endpoints only when the CLI is unavailable after a verified install attempt fails.
+The gateway still serves MCP for IDE clients in parallel; choosing this skill does not replace or disable the IDE MCP path.
