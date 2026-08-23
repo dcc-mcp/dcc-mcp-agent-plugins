@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "dcc-mcp",
-  "version": "0.19.92",
+  "version": "0.19.93",
   "description": "Control Maya, Blender, Houdini, Unreal, Photoshop, and other DCC applications through DCC-MCP.",
   "author": {
     "name": "DCC-MCP",
