@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/dcc-mcp/dcc-mcp-core",
+  "ref": "main",
+  "commit": "017b7ea197718f78cab7274897b5ad28844efff2",
+  "synced_at": "2026-08-23",
+  "source_root": "skills",
+  "skills": [
+    "dcc-mcp",
+    "dcc-mcp-creator",
+    "dcc-mcp-skills-creator"
+  ]
+}

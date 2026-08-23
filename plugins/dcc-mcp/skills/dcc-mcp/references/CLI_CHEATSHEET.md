@@ -31,10 +31,20 @@ Keep an official build current through the release manifest:
 ```bash
 dcc-mcp-cli update check
 dcc-mcp-cli update apply
+dcc-mcp-cli components status dcc-cua
+dcc-mcp-cli components ensure dcc-cua --yes
 ```
 
-`update apply` downloads and stages the latest CLI for the next launch. It does
-not update a running `dcc-mcp-server`; update that server in its own environment.
+`update apply` requires the available entry's 64-hex SHA-256, verifies the
+streamed download, and stages one component bound to the exact CLI installation.
+The next launch re-verifies the bytes before replacement and restarts with the
+original arguments. Legacy unsigned staging is quarantined. It does not update
+a running `dcc-mcp-server`; update that server in its own environment. Gateway
+Admin remains check-only for every binary.
+The official CLI installer also reconciles the independently released
+`dcc-cua` sibling. `components status` is read-only; `components ensure`
+requires explicit `--yes`, a mandatory archive SHA-256, and an exact official
+release-manifest binding.
 
 For repository development only, the same consent-gated verified
 bootstrap/fallback is:
@@ -108,6 +118,13 @@ path resubmits work. A 410 lifecycle response becomes
 `tracking_status=owner_exited`. Read `previous_status`, `retryable`, and
 `recommended_next_action` instead of treating every missing route as 503.
 
+Async responses identify the wrapper as `core_job_id` with
+`job_id_owner=core`; legacy `job_id` is the same Core ID. A terminal Core call
+may expose a second `adapter_job_id`. `call --wait` resolves the Core wrapper
+and surfaces the adapter identity; if `adapter_job.poll` is present, call that
+typed read-only tool with the adapter ID. Never pass an adapter ID to
+`jobs_get_status`, and do not assume Core parent cancellation propagates to it.
+
 If owner death or remote TTL expiry removes the row, wait for an explicitly
 authorized DCC restart, then use the replacement instance and fresh
 `search`/`describe` results. Old instance IDs, slugs, direct URLs, and core jobs
@@ -134,14 +151,16 @@ paths, or full tool payloads.
 
 | Command | Purpose |
 |---------|---------|
-| `dcc-mcp-cli install --dcc-type maya --version 2026` | Build an auditable adapter install plan with machine-readable `next_steps`, without changing local state |
-| `dcc-mcp-cli install --dcc-type maya --version 2026 --python "<mayapy>" --execute` | Execute package install after consent; rolls back on failure and verifies pip/path outputs |
+| `dcc-mcp-cli install --dcc-type maya` | Build an auditable adapter install plan with a catalog-pinned wheel URL, version, SHA-256, and machine-readable `next_steps` |
+| `dcc-mcp-cli install --dcc-type maya --python "<mayapy>" --execute` | Execute the verified wheel after consent; roll back on failure and verify the installed package version |
 | `dcc-mcp-cli install --dcc-type maya --dcc-path "<maya-executable>"` | Supply a non-standard DCC executable/application path when the host is not found automatically |
 | `dcc-mcp-cli marketplace search --query "maya rigging" --limit 20` | Find installable Skill packages with released and current CLI builds |
 | `dcc-mcp-cli marketplace inspect <package_name>` | Inspect the selected skill package metadata before installing |
 | `dcc-mcp-cli marketplace install <package_name> --dcc maya --reload` | Install an exact package ID and ask running Maya adapters to re-scan skill paths |
+| `dcc-mcp-cli marketplace install <package_name> --target game:the-bazaar` | Install a typed CUA Profile for a generic application target; no DCC reload is requested |
 | `dcc-mcp-cli reload-skills --dcc-type maya` | Ask running Maya adapters to re-scan installed skill paths |
 | `dcc-mcp-cli marketplace update <package_name> --dcc maya` | Update an installed skill package from the catalog |
+| `dcc-mcp-cli marketplace add-repo <repo> --commit <40-hex-oid> --dcc maya` | Install a direct repository source only at the reviewed immutable commit; `--list` may omit the commit |
 | `dcc-mcp-cli marketplace uninstall <package_name> --reload` | Remove an installed skill package; infer its DCC when it is installed for one DCC and refresh the adapter |
 
 After adapter package install, follow the plan's `next_steps`: read the
