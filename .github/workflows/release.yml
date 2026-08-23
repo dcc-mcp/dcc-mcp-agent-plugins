@@ -5,7 +5,7 @@ on:
     tags: ["v*"]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: release-${{ github.ref }}
@@ -15,6 +15,8 @@ jobs:
   github-release:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
@@ -22,12 +24,14 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install "dcc-mcp-core==0.20.8"
       - run: python scripts/validate_repository.py
+      - run: python scripts/build_geo_site.py --check
       - name: Package release
         run: |
           version=${GITHUB_REF_NAME#v}
           manifest_version=$(python -c 'import json; print(json.load(open("plugins/dcc-mcp/.codex-plugin/plugin.json"))["version"])')
           test "$version" = "$manifest_version"
           python scripts/package_openclaw_skill.py .github/clawhub-skills.json dist/skills --manifest
+          python scripts/build_npm_package.py
           git archive --format=zip --prefix=dcc-mcp/ --output="dist/dcc-mcp-agent-plugin-${version}.zip" HEAD:plugins/dcc-mcp
       - name: Create GitHub Release
         env:
@@ -57,3 +61,104 @@ jobs:
         env:
           SMITHERY_API_KEY: ${{ secrets.SMITHERY_API_KEY }}
         run: python scripts/smithery_sync.py --publish
+
+  publish-npm:
+    name: Publish the Skill suite to npm
+    needs: github-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write # npm provenance
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22"
+          registry-url: https://registry.npmjs.org
+      - run: python -m pip install "dcc-mcp-core==0.20.8"
+      - run: python scripts/build_npm_package.py
+      - name: Require npm token
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: test -n "$NODE_AUTH_TOKEN" || (echo "Missing NPM_TOKEN repository secret" >&2; exit 1)
+      - name: Publish
+        working-directory: dist/npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
+
+  publish-pages:
+    name: Deploy the catalog and GEO metadata
+    needs: github-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "dcc-mcp-core==0.20.8"
+      - run: python scripts/build_geo_site.py --check
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
+
+  verify-public-install:
+    name: Public install works on skills.sh hosts
+    needs: [github-release, publish-npm]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    # skills.sh has no publish API: it indexes public repositories and ranks
+    # them from anonymous skills-CLI telemetry. This job only proves the
+    # released Skills install from the public repository, with telemetry off.
+    # The installer resolves the default branch, so the assertion is on the
+    # installed Skill version rather than on the tag.
+    env:
+      DISABLE_TELEMETRY: "1"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22"
+      - name: Install the released Skills from the public repository
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          install_root=$(mktemp -d)
+          cd "$install_root"
+          npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins \
+            --skill dcc-mcp dcc-mcp-creator dcc-mcp-skills-creator \
+            --agent claude-code codex cursor --copy --yes
+          for slug in dcc-mcp dcc-mcp-creator dcc-mcp-skills-creator; do
+            skill=".claude/skills/$slug/SKILL.md"
+            test -f "$skill"
+            grep -q "\"$version\"" "$skill" \
+              || (echo "public $slug is not at $version yet" >&2; exit 1)
+          done
+      - name: Verify the published npm package
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          package=$(node -p "require('./.github/distribution.json').npm.package")
+          npm view "$package@$version" version

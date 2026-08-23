@@ -8,6 +8,13 @@ on:
   schedule:
     - cron: "17 6 * * 1"
   workflow_dispatch:
+    inputs:
+      bump:
+        description: Version part to bump when Skill content changed
+        required: false
+        type: choice
+        default: patch
+        options: [patch, minor, major]
 
 permissions:
   contents: read
@@ -16,10 +23,13 @@ concurrency:
   group: core-sync-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  SYNC_BRANCH: automation/core-skill-sync
+
 jobs:
   verify-pin:
     name: Skills match the pinned Core commit
-    if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -43,16 +53,24 @@ jobs:
           sparse-checkout: skills
       - run: python scripts/sync_core_skills.py --source .core --check
 
-  watch-core:
-    name: Core has newer Skill content
+  sync-core:
+    name: Open a pull request when Core publishes newer Skills
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          # A PAT lets the resulting pull request trigger Validate; the default
+          # token cannot start other workflows from its own commits.
+          token: ${{ secrets.AUTOMATION_TOKEN || github.token }}
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
+      - run: python -m pip install "dcc-mcp-core==0.20.8"
       - id: pin
         run: |
           python - <<'PY' >> "$GITHUB_OUTPUT"
@@ -66,10 +84,80 @@ jobs:
           repository: ${{ steps.pin.outputs.repository }}
           ref: ${{ steps.pin.outputs.ref }}
           path: .core
+          fetch-depth: 0
           sparse-checkout: skills
-      - name: Compare against the Core branch
+
+      - name: Re-sync the canonical Skills
+        id: sync
         run: |
-          echo "A failure here means Core published newer Skill content."
-          echo "Re-sync, bump the Skill suite version, and release:"
-          echo "  python scripts/sync_core_skills.py --source <core-checkout>"
-          python scripts/sync_core_skills.py --source .core --check
+          python scripts/sync_core_skills.py --source .core
+          core_commit=$(git -C .core rev-parse HEAD)
+          echo "core-commit=$core_commit" >> "$GITHUB_OUTPUT"
+          echo "core-short=${core_commit:0:12}" >> "$GITHUB_OUTPUT"
+          # A moved Core commit that changed no Skill content is not worth a
+          # pull request; only content drift under plugins/ is.
+          if git diff --quiet -- plugins/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Bump the Skill suite and regenerate distribution metadata
+        if: steps.sync.outputs.changed == 'true'
+        id: bump
+        run: |
+          python scripts/bump_version.py --${{ inputs.bump || 'patch' }}
+          python scripts/build_geo_site.py
+          python scripts/validate_repository.py
+          version=$(python -c 'import json; print(json.load(open("plugins/dcc-mcp/plugin.json"))["version"])')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Push the sync branch
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.AUTOMATION_TOKEN || github.token }}
+          VERSION: ${{ steps.bump.outputs.version }}
+          CORE_COMMIT: ${{ steps.sync.outputs.core-commit }}
+        run: |
+          rm -rf .core
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$SYNC_BRANCH"
+          git add -A
+          git commit -m "chore(skills): re-sync canonical Skills from dcc-mcp-core and release ${VERSION}" \
+            -m "Source: ${{ steps.pin.outputs.repository }}@${CORE_COMMIT}"
+          git push --force origin "$SYNC_BRANCH"
+
+      - name: Open or update the pull request
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.AUTOMATION_TOKEN || github.token }}
+          VERSION: ${{ steps.bump.outputs.version }}
+          CORE_COMMIT: ${{ steps.sync.outputs.core-commit }}
+          CORE_SHORT: ${{ steps.sync.outputs.core-short }}
+          CORE_REPO: ${{ steps.pin.outputs.repository }}
+        run: |
+          title="chore(skills): sync from dcc-mcp-core and release ${VERSION}"
+          cat > "$RUNNER_TEMP/pr-body.md" <<EOF
+          Core published newer Skill content. This pull request was opened by
+          \`.github/workflows/core-sync.yml\`.
+
+          - Source: [\`${CORE_REPO}@${CORE_SHORT}\`](https://github.com/${CORE_REPO}/commit/${CORE_COMMIT})
+          - Skill suite bumped to \`${VERSION}\` (published Skill versions are immutable)
+          - \`docs/DISTRIBUTION.md\` and the GEO catalog regenerated
+
+          Review the Skill diff, then merge and tag \`v${VERSION}\` to publish to
+          ClawHub, Smithery, npm, and GitHub Pages.
+          EOF
+          existing=$(gh pr list --head "$SYNC_BRANCH" --state open --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh pr edit "$existing" --title "$title" --body-file "$RUNNER_TEMP/pr-body.md"
+            echo "Updated pull request #$existing"
+          else
+            gh pr create --base main --head "$SYNC_BRANCH" \
+              --title "$title" --body-file "$RUNNER_TEMP/pr-body.md"
+          fi
+
+      - name: Report an unchanged sync
+        if: steps.sync.outputs.changed != 'true'
+        run: echo "Skills already match ${{ steps.pin.outputs.repository }}@${{ steps.sync.outputs.core-short }}"

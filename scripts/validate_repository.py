@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 
 import dcc_mcp_core
+from distribution import build_catalog, load_manifest
 from smithery_sync import validate_manifest as validate_smithery_manifest
 
 
@@ -29,6 +30,7 @@ MARKETPLACE_MANIFESTS = (
 # naming and for pointing at the same plugin directory as the vendor manifests.
 AGENTS_MARKETPLACE_MANIFEST = ROOT / ".agents" / "plugins" / "marketplace.json"
 PLUGIN_SOURCE_PATH = "./plugins/dcc-mcp"
+CHANNEL_AUTOMATION = {"published", "verified", "manual", "not-applicable"}
 
 
 def main() -> int:
@@ -73,8 +75,25 @@ def main() -> int:
 
     validate_smithery_manifest(SMITHERY_MANIFEST, ROOT)
 
-    manifests = len(PLUGIN_MANIFESTS) + len(MARKETPLACE_MANIFESTS) + 1
-    print(f"Validated {len(entries)} Skills and {manifests} manifests at {version}")
+    # build_catalog re-checks every Skill against the ClawHub manifest, so a
+    # catalog that builds is a catalog every downstream channel can render.
+    catalog = build_catalog(ROOT)
+    if catalog["version"] != version:
+        raise ValueError(f"catalog version differs from plugin: {catalog['version']}")
+    npm_package = load_manifest()["npm"]["package"]
+    if not npm_package.startswith("@") or "/" not in npm_package:
+        raise ValueError(f"npm package must be a scoped name: {npm_package}")
+    for channel in catalog["channels"]:
+        if channel["automation"] not in CHANNEL_AUTOMATION:
+            raise ValueError(f"unknown channel automation: {channel['name']}")
+        if not channel["url"].startswith("https://"):
+            raise ValueError(f"channel URL must be https: {channel['name']}")
+
+    manifests = len(PLUGIN_MANIFESTS) + len(MARKETPLACE_MANIFESTS) + 2
+    print(
+        f"Validated {len(entries)} Skills, {manifests} manifests, "
+        f"and {len(catalog['channels'])} distribution channels at {version}"
+    )
     return 0
 
 
