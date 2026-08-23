@@ -1,7 +1,11 @@
 # ADR 0001: Agent Skill ownership
 
-- Status: Accepted
+- Status: Superseded by [ADR 0002](0002-skill-sync-direction.md)
 - Date: 2026-08-06
+
+> The migration below was never carried out: Core kept authoring the three
+> Skills and this repository's copies went stale. ADR 0002 records the sync
+> direction that practice follows. Kept as the historical record.
 
 ## Context
 
