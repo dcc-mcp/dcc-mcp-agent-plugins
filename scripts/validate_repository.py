@@ -25,6 +25,10 @@ MARKETPLACE_MANIFESTS = (
     ROOT / ".claude-plugin" / "marketplace.json",
     ROOT / ".codebuddy-plugin" / "marketplace.json",
 )
+# The Agent Plugins marketplace carries no version field, so it is checked for
+# naming and for pointing at the same plugin directory as the vendor manifests.
+AGENTS_MARKETPLACE_MANIFEST = ROOT / ".agents" / "plugins" / "marketplace.json"
+PLUGIN_SOURCE_PATH = "./plugins/dcc-mcp"
 
 
 def main() -> int:
@@ -41,6 +45,17 @@ def main() -> int:
         marketplace = json.loads(path.read_text(encoding="utf-8"))
         if marketplace["plugins"][0]["version"] != version:
             raise ValueError(f"marketplace version differs from plugin: {path}")
+        if marketplace["plugins"][0]["source"] != PLUGIN_SOURCE_PATH:
+            raise ValueError(f"marketplace points at another plugin directory: {path}")
+
+    agents_marketplace = json.loads(AGENTS_MARKETPLACE_MANIFEST.read_text(encoding="utf-8"))
+    agents_plugin = agents_marketplace["plugins"][0]
+    if agents_plugin["name"] != PLUGIN.name:
+        raise ValueError(f"Agent Plugins marketplace names another plugin: {agents_plugin['name']}")
+    if agents_plugin["source"]["path"] != PLUGIN_SOURCE_PATH:
+        raise ValueError(
+            f"Agent Plugins marketplace points at another plugin directory: {AGENTS_MARKETPLACE_MANIFEST}"
+        )
 
     entries = json.loads(CLAWHUB_MANIFEST.read_text(encoding="utf-8"))["skills"]
     if len(entries) != 3:
@@ -58,7 +73,8 @@ def main() -> int:
 
     validate_smithery_manifest(SMITHERY_MANIFEST, ROOT)
 
-    print(f"Validated {len(entries)} Skills and {len(PLUGIN_MANIFESTS) + len(MARKETPLACE_MANIFESTS)} manifests at {version}")
+    manifests = len(PLUGIN_MANIFESTS) + len(MARKETPLACE_MANIFESTS) + 1
+    print(f"Validated {len(entries)} Skills and {manifests} manifests at {version}")
     return 0
 
 
