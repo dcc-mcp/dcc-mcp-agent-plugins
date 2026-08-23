@@ -131,15 +131,30 @@ Smithery, ClawHub, or an Agent Skills-compatible host.
 | `dcc-mcp-skills-creator` | Create and validate DCC-MCP Skills |
 | `dcc-mcp-creator` | Create and modernize DCC-MCP adapters |
 
-The suite was migrated from `dcc-mcp-core` at version `0.19.91`. New Skill
-releases are maintained here; Core keeps a compatibility mirror only during the
-consumer migration described in
-[`docs/adr/0001-skill-ownership.md`](docs/adr/0001-skill-ownership.md).
+Skill content is authored in `dcc-mcp-core`, next to the runtime it documents;
+this repository owns distribution — vendor manifests, archives, GitHub
+Releases, ClawHub, and Smithery. Content is copied by
+`scripts/sync_core_skills.py` from the Core commit pinned in
+[`.github/core-skills-sync.json`](.github/core-skills-sync.json), and CI fails
+when the two sides drift. See
+[`docs/adr/0002-skill-sync-direction.md`](docs/adr/0002-skill-sync-direction.md).
+
+The Skill suite version is this repository's own release line, deliberately
+decoupled from `dcc-mcp-core` release numbers: Skill content can be re-published
+without a Core release, and Core can release without changing Skill content.
+`metadata.dcc-mcp.version` in each `SKILL.md` is therefore the one field the
+sync preserves instead of copying.
+
+```powershell
+# Re-sync after Core changes Skill content, then bump the suite version.
+python scripts/sync_core_skills.py --source ../dcc-mcp-core
+python scripts/sync_core_skills.py --source ../dcc-mcp-core --check
+```
 
 ## Development
 
 ```powershell
-python -m pip install "dcc-mcp-core==0.19.91"
+python -m pip install "dcc-mcp-core==0.20.8"
 python scripts/validate_repository.py
 npx --yes skills@1.5.22 add . --list
 ./scripts/build-packages.ps1
