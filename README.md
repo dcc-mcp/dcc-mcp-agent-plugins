@@ -115,6 +115,16 @@ python scripts/smithery_sync.py
 SMITHERY_API_KEY=... python scripts/smithery_sync.py --publish
 ```
 
+### npm
+
+The same canonical Skills ship as a package for hosts that vendor Skills
+through `node_modules`:
+
+```bash
+npm install @dcc-mcp/skills
+npx --yes skills@1.5.22 experimental_sync
+```
+
 ### PulseMCP
 
 PulseMCP is an MCP Server directory, not a raw Agent Skills registry. This
@@ -122,6 +132,27 @@ repository therefore does not publish Skill ZIPs there. Submit a hosted or
 local DCC-MCP Server from the owning adapter/core release through
 [`pulsemcp.com/submit`](https://www.pulsemcp.com/submit); keep Agent Skills on
 Smithery, ClawHub, or an Agent Skills-compatible host.
+
+## Catalog and discovery
+
+Every release publishes a machine-readable catalog and GEO metadata to GitHub
+Pages, generated from the same manifests CI validates:
+
+| File | Purpose |
+|---|---|
+| [`catalog.json`](https://dcc-mcp.github.io/dcc-mcp-agent-plugins/catalog.json) | Skill metadata, install commands, and distribution channels |
+| [`llms.txt`](https://dcc-mcp.github.io/dcc-mcp-agent-plugins/llms.txt) | Curated entry point for AI crawlers and answer engines |
+| [`llms-full.txt`](https://dcc-mcp.github.io/dcc-mcp-agent-plugins/llms-full.txt) | Every `SKILL.md` concatenated in full |
+| [`sitemap.xml`](https://dcc-mcp.github.io/dcc-mcp-agent-plugins/sitemap.xml) | Per-Skill pages carrying `schema.org/SoftwareApplication` JSON-LD |
+
+`docs/DISTRIBUTION.md` is generated from the same source and lists every
+channel plus ready-to-paste entries for the directories that need a human
+submission. CI fails when it drifts:
+
+```powershell
+python scripts/build_geo_site.py          # regenerate site/ and docs/DISTRIBUTION.md
+python scripts/build_geo_site.py --check  # fail when the committed doc is stale
+```
 
 ## Skill suite
 
@@ -148,8 +179,22 @@ sync preserves instead of copying.
 ```powershell
 # Re-sync after Core changes Skill content, then bump the suite version.
 python scripts/sync_core_skills.py --source ../dcc-mcp-core
+python scripts/bump_version.py --patch
+python scripts/build_geo_site.py
 python scripts/sync_core_skills.py --source ../dcc-mcp-core --check
 ```
+
+`core-sync.yml` runs that sequence itself every Monday and on demand. When Core
+has published newer Skill content it re-syncs, bumps the suite version,
+regenerates the distribution metadata, and opens or updates a pull request on
+`automation/core-skill-sync`. A Core commit that changed no Skill content opens
+nothing. Merging the pull request and tagging `v<version>` is the only manual
+step.
+
+Set an `AUTOMATION_TOKEN` secret (a PAT with `contents` and `pull-requests`
+write access) so the generated pull request also triggers Validate; the default
+`GITHUB_TOKEN` cannot start workflows from its own commits. Without it the
+pull request is still opened, just without CI runs.
 
 ## Development
 
@@ -166,9 +211,22 @@ claude plugin validate . --strict
 codebuddy plugin validate ./plugins/dcc-mcp
 ```
 
-Tagging `v<version>` creates a GitHub Release, uploads the plugin and standalone
-Skill archives, then publishes the three immutable Skill versions to ClawHub.
-The repository secret `CLAWHUB_TOKEN` is required for live ClawHub publication.
+Tagging `v<version>` creates a GitHub Release with the plugin and standalone
+Skill archives, then fans out to every automated channel: ClawHub, Smithery,
+npm, and the GitHub Pages catalog. A final matrix job installs the released
+Skills from the public repository on Linux, macOS, and Windows and asserts the
+released version, so a broken public install fails the release.
+
+| Secret | Channel |
+|---|---|
+| `CLAWHUB_TOKEN` | ClawHub |
+| `SMITHERY_API_KEY` | Smithery |
+| `NPM_TOKEN` | npm (`@dcc-mcp/skills`, published with provenance) |
+
+GitHub Pages must be set to **Build and deployment > Source: GitHub Actions**.
+skills.sh has no publish API — it indexes public repositories and ranks them
+from anonymous `skills` CLI telemetry — so CI verifies public installability
+and never generates install telemetry.
 
 OpenAI and Claude public directories require human review; CI builds and
 validates their submission artifacts but does not bypass those review portals.

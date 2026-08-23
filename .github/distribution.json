@@ -1,0 +1,113 @@
+{
+  "site": {
+    "base_url": "https://dcc-mcp.github.io/dcc-mcp-agent-plugins",
+    "title": "DCC-MCP Agent Skills",
+    "tagline": "Control Maya, Blender, Houdini, Unreal, Photoshop, and other DCC applications from any Agent Skills host.",
+    "publisher": "DCC-MCP",
+    "publisher_url": "https://github.com/dcc-mcp",
+    "repository": "https://github.com/dcc-mcp/dcc-mcp-agent-plugins",
+    "license": "MIT",
+    "ai_crawlers": [
+      "GPTBot",
+      "OAI-SearchBot",
+      "ChatGPT-User",
+      "ClaudeBot",
+      "Claude-User",
+      "Claude-SearchBot",
+      "anthropic-ai",
+      "PerplexityBot",
+      "Perplexity-User",
+      "Google-Extended",
+      "Applebot-Extended",
+      "Bytespider",
+      "CCBot",
+      "cohere-ai",
+      "Meta-ExternalAgent",
+      "Amazonbot",
+      "DuckAssistBot",
+      "MistralAI-User",
+      "YouBot"
+    ]
+  },
+  "npm": {
+    "package": "@dcc-mcp/skills",
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "skills_cli": {
+    "package": "skills@1.5.22",
+    "repository": "dcc-mcp/dcc-mcp-agent-plugins"
+  },
+  "channels": [
+    {
+      "name": "skills.sh",
+      "url": "https://www.skills.sh/",
+      "kind": "directory",
+      "automation": "verified",
+      "notes": "No publish API. The directory indexes public repositories and ranks them from anonymous skills-CLI install telemetry. Release installs all three Skills from the public repository on Linux, macOS, and Windows and asserts the released version; it never generates telemetry."
+    },
+    {
+      "name": "ClawHub",
+      "url": "https://clawhub.ai/",
+      "kind": "registry",
+      "automation": "published",
+      "notes": "Published by scripts/clawhub_sync.py after the GitHub Release. Requires CLAWHUB_TOKEN."
+    },
+    {
+      "name": "Smithery",
+      "url": "https://smithery.ai/",
+      "kind": "registry",
+      "automation": "published",
+      "notes": "GitHub-backed Skills registry. Published by scripts/smithery_sync.py. Requires SMITHERY_API_KEY."
+    },
+    {
+      "name": "npm",
+      "url": "https://www.npmjs.com/package/@dcc-mcp/skills",
+      "kind": "registry",
+      "automation": "published",
+      "notes": "Publishes the canonical Skill suite as a package so hosts can vendor it through node_modules. Requires NPM_TOKEN."
+    },
+    {
+      "name": "GitHub Releases",
+      "url": "https://github.com/dcc-mcp/dcc-mcp-agent-plugins/releases",
+      "kind": "artifact",
+      "automation": "published",
+      "notes": "Portable Agent Plugin archive plus per-Skill ZIPs."
+    },
+    {
+      "name": "Claude community marketplace",
+      "url": "https://www.claude.com/",
+      "kind": "directory",
+      "automation": "manual",
+      "notes": "Submit the repository through the Claude plugin submission form after `claude plugin validate ./plugins/dcc-mcp --strict` passes."
+    },
+    {
+      "name": "OpenAI plugin directory",
+      "url": "https://platform.openai.com/",
+      "kind": "directory",
+      "automation": "manual",
+      "notes": "Skills-only submission. See SUBMISSION.md for the identity, policy URL, and review-case checklist."
+    },
+    {
+      "name": "LobeHub Skills Marketplace",
+      "url": "https://lobehub.com/skills",
+      "kind": "directory",
+      "automation": "manual",
+      "notes": "Indexes public Agent Skills repositories. Submit the repository URL; the catalog page and llms.txt provide the machine-readable metadata."
+    },
+    {
+      "name": "Awesome lists",
+      "url": "https://github.com/topics/agent-skills",
+      "kind": "directory",
+      "automation": "manual",
+      "notes": "One-line entries for awesome-claude-code, awesome-agent-skills, and awesome-mcp style lists are generated into the catalog so submissions never drift from the released version."
+    },
+    {
+      "name": "PulseMCP",
+      "url": "https://www.pulsemcp.com/submit",
+      "kind": "directory",
+      "automation": "not-applicable",
+      "notes": "Catalogs MCP Servers, not Agent Skills. Submit only when the owning Core/adapter release ships a public MCP endpoint. Do not represent an Agent Skill ZIP as an MCP Server."
+    }
+  ]
+}

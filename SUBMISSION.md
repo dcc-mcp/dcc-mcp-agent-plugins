@@ -1,5 +1,11 @@
 # Publication checklist
 
+Channel status, automation, and ready-to-paste directory entries are generated
+into [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) from
+[`.github/distribution.json`](.github/distribution.json) and the released Skill
+suite. Regenerate it with `python scripts/build_geo_site.py` before submitting
+anywhere by hand; CI fails when it is stale.
+
 ## OpenAI Plugin Directory
 
 Submit as **Skills only** in the OpenAI Platform plugin submission portal.
@@ -54,6 +60,42 @@ reviewing the target paths:
 python scripts/smithery_sync.py
 SMITHERY_API_KEY=... python scripts/smithery_sync.py --publish
 ```
+
+## npm
+
+`v<version>` publishes the canonical Skill suite as `@dcc-mcp/skills` with npm
+provenance. The package ships instructions only, no runtime code. Configure the
+`NPM_TOKEN` repository secret with publish rights on the `@dcc-mcp` scope, and
+create the scope on npmjs.com before the first release.
+
+```bash
+python scripts/build_npm_package.py
+npm pack ./dist/npm --dry-run
+```
+
+## skills.sh
+
+skills.sh has no publish API or submission form. It indexes public repositories
+and ranks them from anonymous telemetry emitted by the `skills` CLI, so the only
+honest action is keeping the public repository installable. `release.yml`
+installs all three Skills from the public repository on Linux, macOS, and
+Windows with telemetry disabled and asserts the released version. Do not
+generate install telemetry to influence ranking.
+
+## GEO surface
+
+Each release deploys `site/` to GitHub Pages: per-Skill pages with
+`schema.org/SoftwareApplication` JSON-LD, `catalog.json`, `llms.txt`,
+`llms-full.txt`, `sitemap.xml`, and a `robots.txt` that explicitly allows the
+AI crawlers listed in `.github/distribution.json`. Enable **Settings > Pages >
+Source: GitHub Actions** once; the deployment is automated after that.
+
+## LobeHub and awesome lists
+
+LobeHub's Skills marketplace and the awesome-list ecosystem index public
+repositories. Submit the repository URL and paste the generated entry for the
+Skill from `docs/DISTRIBUTION.md` so the description, version, and install
+command match the release exactly.
 
 ## PulseMCP
 
