@@ -10,7 +10,7 @@ allowed-tools: Bash Read Write Edit
 metadata:
   dcc-mcp:
     dcc: python
-    version: "0.19.93"
+    version: "0.19.94"
     layer: infrastructure
     compatibility: "Python 3.7+, dcc-mcp-core 0.17+"
     search-hint: "create dcc mcp skill, validate skill, scaffold skill, SKILL.md, tools.yaml, scripts, groups, prompts, skill taxonomy, long-running main-thread tools"
@@ -109,6 +109,11 @@ replace a running server binary.
 ```bash
 dcc-mcp-cli lint /path/to/my-skill
 ```
+
+The CLI loads the sibling `tools.yaml` table and invokes every declaration
+through Core's real router with deterministic mock handlers. CI fails if a
+sync declaration produces a job envelope or an async declaration produces a
+direct result. Adapter/DCC code is never imported or executed by this probe.
 
 ### Get a SKILL.md template
 
@@ -234,6 +239,10 @@ For one indivisible DCC-native call, keep `job_strategy: monolithic`. Prefer
 `execution: async` so the initial transport returns a core job id, then poll
 the instance-routable `jobs_get_status`. A transport timeout is not completion
 or cancellation: rediscover the instance and query the job before retrying.
+Do not publish a potentially long tool as `execution: sync` with no timeout
+metadata. A positive `timeout_hint_secs` also makes Core return a job envelope;
+use it when duration is known but the tool otherwise retains synchronous
+semantics inside the worker.
 The creator scaffold deliberately emits `monolithic` for async tools; change it
 only with the matching chunked runner or isolated status/cancel implementation.
 
@@ -259,6 +268,11 @@ only with the matching chunked runner or isolated status/cancel implementation.
   serialization; skill scripts must not instantiate another automation stack.
 - Prefer a `control_id` and semantic UI Automation action. Use raw coordinates
   only when the UI does not expose a stable semantic control.
+- For native application menu bars, use the negotiated `invoke_menu` action
+  with an explicit `menu_path` when a semantic menu click or Alt mnemonic
+  cannot prove that a popup opened. Never guess pixels or report native
+  delivery as completion; take a fresh snapshot and honor
+  `verification_required` before another mutation.
 - For custom-drawn canvases, viewport manipulators, or face controls, use one
   `drag` path from the latest snapshot. `keys` may hold Ctrl, Shift, or Alt for
   pointer-modified drags; snapshot again immediately before deriving another
@@ -335,7 +349,9 @@ skill without the task owner's requested scope.
 For a failed task, first use the `dcc-mcp` recovery flow: retain the
 `request_id`, run `doctor` for runtime/readiness faults, query
 `stats --status failure --session-id <session-id>`, and record structured
-feedback through the CLI-discovered `dcc_feedback__report` tool. The public-safe
+feedback through the gateway-owned `dcc-mcp-cli feedback` command. A live
+adapter's `dcc_feedback__report` is only a shared Core forwarder to that same
+gateway contract. The public-safe
 `/v1/debug/issue-reports/<request_id>` payload is suitable for a reviewed issue;
 never publish `?mode=raw` automatically.
 
