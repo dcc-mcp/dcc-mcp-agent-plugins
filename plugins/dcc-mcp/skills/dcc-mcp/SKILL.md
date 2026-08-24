@@ -18,7 +18,7 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: Cross-platform Windows/macOS/Linux. Prefers dcc-mcp-cli on PATH; its consent-gated bootstrap accepts only the official release manifest and verifies SHA-256 before replacement. Local profile needs no gateway env. Use --require-gateway plus --agent-session-id when gateway stats are required evidence. DCC_MCP_BASE_URL is optional for remote/legacy gateway REST fallback.
-    version: "0.19.93"
+    version: "0.19.94"
     search-hint: "dcc control operate UI control ui-control cua CUA dcc-cua dcc cua our dcc-cua 我们的 dcc-cua project CUA computer use ui automation menu dialog window button click keyboard Maya Blender Houdini Photoshop 3ds Max Nuke Unreal Godot RenderDoc Substance connect create edit render automate cli gateway stats marketplace skill catalog recommend install update 商城 技能 操作 控制 界面 菜单 弹窗 窗口 按钮 点击 键盘"
     tags: "dcc, dcc-ui-control, ui-control, cua, dcc-cua, computer-use, maya, blender, houdini, photoshop, nuke, unreal, godot, renderdoc, cli, gateway, marketplace, skill-catalog, clawhub, openclaw"
   openclaw:
@@ -196,10 +196,10 @@ Load the **DCC UI Control** runtime with `dcc-mcp-cli load-skill ui-control` onl
 when structured DCC capabilities cannot reach the required semantic UI:
 
 1. `ui_control__snapshot` with an exact `process_id`, `window_handle`, or `window_title`.
-2. `ui_control__find` and one semantic `ui_control__act` when possible.
+2. `ui_control__find` and one semantic `ui_control__act` when possible. For native menus, use `invoke_menu` with an explicit `menu_path` when semantic delivery cannot prove a Qt popup opened; require `native_menu_path`, honor `verification_required`, and re-observe.
 3. `ui_control__snapshot` after every action before choosing the next action.
 4. `ui_control__stop_computer_use` when the fallback completes, fails, or is abandoned.
-The runtime defaults to `dcc-cua` 0.4.0+; `mock` is test-only, never a production fallback.
+The runtime defaults to `dcc-cua` 0.4.0+; `mock` is test-only, never a production fallback. After loading, local `search --query "ui control snapshot"` returns the loaded `ui_control__*` slugs as callable tool hits.
 
 The runtime consumes standalone `dcc-cua`; inspect `dcc-cua profiles` and
 `dcc-cua profile --id <id>` before binding the exact PID/window. Keep
@@ -439,13 +439,13 @@ Do not guess a root cause or blindly replay a mutation. Preserve `request_id`, `
 ```bash
 dcc-mcp-cli doctor
 dcc-mcp-cli stats --range 24h --status failure --session-id task-42
-dcc-mcp-cli search --query "report feedback" --dcc-type maya
-dcc-mcp-cli describe <returned-feedback-tool-slug>
-dcc-mcp-cli call <returned-feedback-tool-slug> --json \
-  '{"tool_name":"maya_geometry__create_sphere","intent":"Create a sphere","attempt":"radius=2.0","blocker":"Radius was ignored","severity":"blocked"}'
+dcc-mcp-cli feedback --tool-name maya_geometry__create_sphere --intent "Create a sphere" \
+  --blocker "Radius was ignored" --severity blocked \
+  --dcc-type maya --instance-id <live-or-dead-instance-id> \
+  --request-id <request-id>
 ```
 
-Use `doctor` for profile, registry, daemon, binary, and readiness failures. For a tool failure, refresh `describe`, compare the schema/annotations with the attempt, inspect failure-only stats, and call `dcc_feedback__report`. Its severity is `blocked`, `workaround_found`, or `suggestion`; it records feedback but does not create an external issue.
+Use `doctor` for profile, registry, daemon, binary, and readiness failures. For a tool failure, refresh `describe`, compare the schema/annotations with the attempt, inspect failure-only stats, and call the gateway-owned `feedback` command. Its severity is `blocked`, `workaround_found`, or `suggestion`; it remains available after the target instance exits, records a bounded entry in `resources://gateway/events`, and does not create an external issue. Instance-level `dcc_feedback__report` is only a live-adapter compatibility entry point and Core forwards it to the same gateway contract; it has no local-success fallback. Review persisted reports newest first with `feedback list`, or request the largest bounded structured window with `feedback export`; both accept `--range`, `--dcc`, `--severity`, `--limit`, and `--json`. Treat `skipped_invalid` and `deduplicated` as source-set evidence, and treat any read or capacity error as an incomplete export.
 
 For a gateway-routed failure, use the CLI-returned `request_id` to read `/v1/debug/agent-traces/<request_id>` and public-safe `/v1/debug/issue-reports/<request_id>`. The latter supplies a bounded summary and suggested GitHub title/body. Never publish `?mode=raw` without human review; create an external issue only with user authorization.
 

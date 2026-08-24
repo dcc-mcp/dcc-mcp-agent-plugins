@@ -14,7 +14,7 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: "dcc-mcp-core 0.17+, Python 3.7+"
-    version: "0.19.93"
+    version: "0.19.94"
     search-hint: >-
       create DCC MCP adapter, Nuke MCP, DccServerBase, HostExecutionBridge,
       dispatcher, readiness, resources, gateway, Blender, 3ds Max, Unreal,
@@ -126,6 +126,10 @@ the server from its exact target environment. Gateway Admin is check-only.
    It also owns `feedback_store`, `script_execution_context`, and
    `checkpoint_store`; inject them into core helpers instead of creating
    adapter-level feedback buffers, persistent exec namespaces, or default stores.
+   Core persists gateway-accepted feedback under
+   `<registry_dir>/feedback/<dcc>-<pid>.jsonl` with bounded rotation and
+   session-end syncing. Treat `feedback_persistence_failed` as a real degraded
+   result; never add an adapter-local success fallback.
    - For native visual UI fallback, reuse the bundled `ui-control` skill with
      standalone `dcc-cua` 0.4.0 or newer; do not add adapter-local capture,
      accessibility, or raw-input wrappers. Keep stateful UI calls in one
@@ -140,15 +144,23 @@ the server from its exact target environment. Gateway Admin is check-only.
      `snapshot` → one `act` → `snapshot` loop only when an operation is
      unsupported, no suitable tool exists, or semantic UI Automation cannot
      reach the required control. Re-observe after every action.
+   - For native application menu bars, route an explicit `menu_path` through
+     `ui_control__act(action="invoke_menu")` when semantic click or Alt-mnemonic
+     delivery cannot prove that a Qt popup opened. Require the negotiated
+     `native_menu_path` Host capability, honor `verification_required`, and
+     re-observe the exact window before another mutation.
    - Raw pointer and keyboard input are enabled by default only inside the
      adapter/operator-bound DCC scope. Operators may set
      `DCC_MCP_CUA_ALLOW_RAW_INPUT=false` to disable that runtime ceiling; the
-     adapter must not override this choice. Before raw input can start, the
-     adapter/operator must set `DCC_MCP_UI_CONTROL_PROCESS_ID` or
-     `DCC_MCP_UI_CONTROL_WINDOW_HANDLE` to
-      the adapter's own DCC target; request scope may only narrow that trusted
-      PID/HWND. Require a visible unlocked desktop and matching Windows
-      integrity level, preserve the click-through border/banner/pointer feedback, and preserve
+     adapter must not override this choice. Populate `DccServerOptions` with
+     the adapter's DCC PID and, when available, its current window title or
+     handle; Core injects that trusted scope into in-process `ui-control` calls.
+     Dedicated servers may instead use `DCC_MCP_UI_CONTROL_PROCESS_ID` or
+     `DCC_MCP_UI_CONTROL_WINDOW_HANDLE` operator overrides. Request scope may
+     only narrow that trusted PID/HWND, including a title constraint for one
+     window inside a multi-window process. Require a visible unlocked desktop
+     and matching Windows integrity level, preserve the click-through
+     border/banner/pointer feedback, and preserve
       `user_interrupted` without automatic retry, `session_id` changes, or fallback. Once Esc stops an
       session, only `ui_control__snapshot(resume_computer_use=true)` may request a
       resume, and the isolated host must still obtain trusted user confirmation
@@ -186,6 +198,7 @@ the server from its exact target environment. Gateway Admin is check-only.
    - The sidecar MCP listener is dispatch-only. A py37-lite factory can expose local skill metadata, but it cannot advertise or activate declarative skills through the gateway. Require a native py37 wheel for that path, or provide a separate discovery MCP URL; never report lite `load_skill` success without an executable catalog.
    - Wrap the outer adapter import/start block with `capture_bootstrap_errors(...)`; it is stdlib-only, records pre-MCP failures, and re-raises for the DCC's native error UI. `DccServerBase` already captures Python error logs and uncaught exceptions into the shared log plus `output://` / `events://`. Forward host-native console callbacks with `server.report_host_error(...)`; do not replace global stdout/stderr or add an adapter-local error store.
    - For DCC-Link IPC upgrades, deploy readers that accept current version 1 and legacy version 0 before switching writers to the default versioned frame. Use `DccLinkFrame(..., version=0)` only during that compatibility window, preserve an incoming frame's version in its reply, and treat `unsupported DCC-Link protocol version` as an explicit peer-upgrade failure rather than retrying body decoding.
+   - Preserve one caller-generated request id across every execution hop. JSON-RPC responses must echo `id`; commandPort-style sidecar responses must echo top-level `request_id`; gateway REST responses must echo `X-Request-ID`. Never replace an explicit response id with the current request id, because that can disguise a stale response. Treat a missing or mismatched echo as `transport desync`, fail closed, and regression-test a slow call followed by fast calls on the same connection.
    - Registry producers must write `ServiceEntry.schema_version` using `SERVICE_ENTRY_SCHEMA_VERSION`; rows with no field are legacy version 0. Consumers may read legacy/current rows but must reject a higher schema version without quarantining, deleting, or rewriting `services.json`. Treat that error as an explicit peer-upgrade requirement, not as corrupt JSON.
 10. Pass `instance_id` to sidecar launch helpers only when it is a real UUID for the DCC service. During early startup, omit it or pass `None`; `build_sidecar_command()` rejects cosmetic values such as `"unknown"` with `success=false` and `reason="invalid_instance_id"` so adapters do not spawn a child that can only fail with a CLI argument error.
     After `DccServerBase.start()`, use `server.instance_id` when adapter UI or
@@ -240,6 +253,11 @@ return bake_frames()
 - Declare `execution: async`, `affinity: main`, and
   `job_strategy: chunked`. The bridge rejects a declared chunked tool that
   returns a monolithic value.
+- Any operation that can exceed the caller's synchronous timeout must return a
+  job envelope. Declare `execution: async` and provide a realistic positive
+  `timeout_hint_secs`; Core routes the execution declaration through
+  `JobManager`. A timeout hint only sizes client/runtime budgets and never
+  promotes an `execution: sync` tool to an async job.
 - Yield one bounded host-API callable per step. A returned string becomes the
   progress message.
 - `submit_chunked_runner()` advances at most one step per host pump tick, so
@@ -307,8 +325,19 @@ Report adapter-owned dispatch, host-thread, readiness, packaging, or install
 bugs in the adapter repository. Escalate shared CLI, gateway, protocol, or core
 contract failures to `dcc-mcp-core`. Tool schema/script/workflow defects belong
 to the owning Skill and `dcc-mcp-skills-creator`. Record runtime feedback with
-the CLI-discovered `dcc_feedback__report` tool; open an external issue only
-with user authorization.
+the gateway-owned `dcc-mcp-cli feedback` command so the report remains possible
+after an adapter or DCC process exits; include the last known instance,
+request, and job ids. Instance-level `dcc_feedback__report` is a live-adapter
+compatibility entry point, but Core must register it as the shared thin gateway
+forwarder; never add an adapter-specific feedback action or local-success
+fallback. Open an external issue only with user authorization.
+
+Core persists accepted adapter reports under the shared registry and exposes
+them through `dcc-mcp-cli feedback list|export` / `GET /admin/api/feedback`.
+Adapters must use `DccServerBase`'s instance-owned `FeedbackStore`; do not add a
+second adapter-local log, aggregation endpoint, or delete-then-copy rotation.
+The gateway query is bounded, deduplicates by feedback id, and fails explicitly
+when filesystem reads or scan limits prevent a complete result.
 
 ## Example: New Nuke Adapter
 
