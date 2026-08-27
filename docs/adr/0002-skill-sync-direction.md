@@ -70,9 +70,13 @@ The copy is a command, and CI enforces it:
   every push and pull request, so any edit outside the explicit distribution
   ownership set fails CI.
 - `scripts/sync_product_discovery.py --check` rejects drift across all generated
-  manifests and interfaces. `--check-cli` additionally verifies the installed
-  released CLI's exact identity/owner/install-availability set without silently
-  rewriting human-reviewed aliases.
+  manifests and interfaces. Required CI and release jobs add
+  `--check-core-catalog` to compare all 35 identities, owners, repositories, and
+  install availability against the catalog at the immutable Core commit recorded
+  in `PRODUCTS.json`; this prevents a coordinated source/product rename from
+  remaining merely self-consistent. `--check-cli` additionally verifies the
+  installed released CLI's exact result without silently rewriting human-reviewed
+  aliases.
 - The same workflow compares against Core's default branch weekly, so newer
   upstream content surfaces as a scheduled failure instead of silent staleness.
 

@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import re
 import unicodedata
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PRODUCT_CATALOG = (
@@ -19,6 +18,7 @@ PRODUCT_CATALOG = (
     / "PRODUCTS.json"
 )
 PRODUCT_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
+CORE_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 GENERIC_HIJACK_TERMS = {
     "ae",
     "ai",
@@ -50,10 +50,27 @@ def load_product_catalog(path: Path = PRODUCT_CATALOG) -> dict:
     return data
 
 
+def _alias_terms(product: dict, field: str) -> list[str]:
+    values = product.get(field)
+    if not isinstance(values, list):
+        raise ValueError(f"{field} must be an array: {product.get('id')}")
+    if any(not isinstance(value, str) or not normalize_term(value) for value in values):
+        raise ValueError(f"{field} must contain only non-empty strings: {product.get('id')}")
+    return values
+
+
+def _adapter_identity(value: str) -> str:
+    return value.casefold()
+
+
+def _repository_identity(value: str) -> str:
+    return value.rstrip("/").casefold()
+
+
 def product_terms(product: dict, *, include_contextual: bool = True) -> list[str]:
-    values = [product["id"], product["display_name"], *product.get("aliases", [])]
+    values = [product["id"], product["display_name"], *_alias_terms(product, "aliases")]
     if include_contextual:
-        values.extend(product.get("contextual_aliases", []))
+        values.extend(_alias_terms(product, "contextual_aliases"))
     seen: set[str] = set()
     terms: list[str] = []
     for value in values:
@@ -101,9 +118,9 @@ def resolve_product_intent(query: str, catalog: dict | None = None) -> dict:
     normalized_query = normalize_term(query)
     matches: list[str] = []
     for product in data["products"]:
-        contextual_terms = product.get("contextual_aliases", [])
+        contextual_terms = _alias_terms(product, "contextual_aliases")
         contextual_normalized = {normalize_term(term) for term in contextual_terms}
-        strong_terms = [product["display_name"], *product.get("aliases", [])]
+        strong_terms = [product["display_name"], *_alias_terms(product, "aliases")]
         if normalize_term(product["id"]) not in contextual_normalized:
             strong_terms.insert(0, product["id"])
         strong_match = any(
@@ -131,6 +148,13 @@ def validate_product_catalog(data: dict) -> None:
     if not isinstance(sources, dict):
         raise ValueError("product catalog is missing sources")
     released_cli = sources.get("released_cli", {})
+    core_catalog = sources.get("core_catalog", {})
+    if core_catalog.get("repository") != "https://github.com/dcc-mcp/dcc-mcp-core":
+        raise ValueError("core catalog must use the official dcc-mcp-core repository")
+    if CORE_COMMIT_RE.fullmatch(str(core_catalog.get("commit", ""))) is None:
+        raise ValueError("core catalog must be pinned to a full immutable commit")
+    if core_catalog.get("path") != "dcc-mcp-catalog.yml":
+        raise ValueError("core catalog path must be dcc-mcp-catalog.yml")
     products = data.get("products")
     if not isinstance(products, list) or not products:
         raise ValueError("product catalog must contain products")
@@ -154,16 +178,22 @@ def validate_product_catalog(data: dict) -> None:
 
         adapter = product.get("adapter")
         repository = product.get("repository")
-        if not isinstance(adapter, str) or adapter in adapters:
+        if not isinstance(adapter, str) or not adapter:
             raise ValueError(f"duplicate or invalid adapter: {adapter!r}")
-        if not isinstance(repository, str) or repository in repositories:
+        if not isinstance(repository, str) or not repository:
             raise ValueError(f"duplicate or invalid repository: {repository!r}")
-        if not repository.casefold().startswith("https://github.com/dcc-mcp/"):
+        adapter_identity = _adapter_identity(adapter)
+        repository_identity = _repository_identity(repository)
+        if adapter_identity in adapters:
+            raise ValueError(f"duplicate or invalid adapter: {adapter!r}")
+        if repository_identity in repositories:
+            raise ValueError(f"duplicate or invalid repository: {repository!r}")
+        if not repository_identity.startswith("https://github.com/dcc-mcp/"):
             raise ValueError(f"product repository is not organization-owned: {repository}")
-        if repository.rstrip("/").split("/")[-1].casefold() != adapter.casefold():
+        if repository_identity.split("/")[-1] != adapter_identity:
             raise ValueError(f"adapter and repository identity differ: {adapter}, {repository}")
-        adapters.add(adapter)
-        repositories.add(repository)
+        adapters.add(adapter_identity)
+        repositories.add(repository_identity)
 
         if not product.get("display_name") or not product.get("family"):
             raise ValueError(f"product identity is incomplete: {product_id}")
@@ -173,7 +203,8 @@ def validate_product_catalog(data: dict) -> None:
         if not examples.get("en") or not examples.get("zh"):
             raise ValueError(f"bilingual intent examples are required: {product_id}")
 
-        contextual = {normalize_term(term) for term in product.get("contextual_aliases", [])}
+        contextual_aliases = _alias_terms(product, "contextual_aliases")
+        contextual = {normalize_term(term) for term in contextual_aliases}
         for term in product_terms(product):
             normalized = normalize_term(term)
             if normalized in GENERIC_HIJACK_TERMS:
@@ -277,6 +308,55 @@ def validate_released_cli_snapshot(catalog: dict, cli_version: str, payload: dic
             raise ValueError(f"released CLI repository differs: {row['dcc_type']}")
         if adapter.get("catalog_install_available") is not product["catalog_install_available"]:
             raise ValueError(f"released CLI install availability differs: {row['dcc_type']}")
+
+
+def validate_core_catalog_snapshot(catalog: dict, payload: dict) -> None:
+    """Check products against the adapter entries in an immutable Core catalog."""
+    if not isinstance(payload, dict):
+        raise ValueError("immutable Core catalog must be an object")
+    entries = payload.get("entries")
+    if not isinstance(entries, list):
+        raise ValueError("immutable Core catalog has no entries array")
+
+    authoritative: dict[str, dict] = {}
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise ValueError("immutable Core catalog entry must be an object")
+        tags = entry.get("tags", [])
+        url = entry.get("url", "")
+        if "adapter" not in tags or not isinstance(url, str):
+            continue
+        repository_identity = _repository_identity(url)
+        if not repository_identity.startswith("https://github.com/dcc-mcp/"):
+            continue
+        name = entry.get("name")
+        if not isinstance(name, str) or not name:
+            raise ValueError("immutable Core adapter entry has no name")
+        identity = _adapter_identity(name)
+        if identity in authoritative:
+            raise ValueError(f"immutable Core catalog repeats adapter: {name}")
+        authoritative[identity] = entry
+
+    products = {
+        _adapter_identity(product["adapter"]): product for product in catalog["products"]
+    }
+    if set(authoritative) != set(products):
+        raise ValueError("immutable Core adapter identities differ from PRODUCTS.json")
+
+    for identity, product in products.items():
+        entry = authoritative[identity]
+        repository = entry.get("url")
+        if _repository_identity(repository) != _repository_identity(product["repository"]):
+            raise ValueError(f"immutable Core repository differs: {product['id']}")
+        dcc_types = entry.get("dcc")
+        if not isinstance(dcc_types, list) or any(
+            not isinstance(value, str) or not value for value in dcc_types
+        ):
+            raise ValueError(f"immutable Core dcc identity is invalid: {product['id']}")
+        if product["id"].casefold() not in {value.casefold() for value in dcc_types}:
+            raise ValueError(f"immutable Core product identity differs: {product['id']}")
+        if bool(entry.get("install")) is not product["catalog_install_available"]:
+            raise ValueError(f"immutable Core install availability differs: {product['id']}")
 
 
 def plugin_description(catalog: dict) -> str:

@@ -98,14 +98,11 @@ Authoritative snapshot: `dcc-mcp-cli 0.20.21 dcc-types --output json`.
 
 ## Application UI routing contract
 
-Typed DCC-MCP tools come first. **DCC-CUA** and `ui-control` are searchable terms for
-the same project-owned application UI route across DCC, browser, and non-DCC apps.
-An explicit DCC-CUA request is a hard provider boundary: do not substitute generic
-Codex/OpenAI Computer Use, `computer-use`, `@oai/sky`, Browser, or Chrome providers.
-Before UI observation or input, attest `provider=dcc-cua`, runtime, exact PID, and exact
-HWND. Use a fresh observation and the latest snapshot or semantic reference for each
-state-dependent action, verify by post-action readback, stop on interruption or permission
-failure, and hand CAPTCHA, authentication, or security challenges to the human.
+Prefer typed DCC-MCP tools. DCC-CUA and ui-control identify the same project-owned canonical/default dcc-cua route across DCC application UI, browser UI, non-DCC application UI; they are not competing automation systems.
+Before UI observation or input, attest provider=dcc-cua, runtime=<version>, pid=<exact-pid>, hwnd=<exact-hwnd>.
+For every state-dependent action: fresh observation before every state-dependent action; latest snapshot or semantic reference only; post-action state readback; stop on interruption or permission failure.
+Explicit DCC-CUA requests are a hard provider boundary; never substitute or fall back to Codex/OpenAI Computer Use, computer-use Skill, @oai/sky, Browser plugin, Chrome plugin.
+Human-only handoff: CAPTCHA, authentication challenge, security challenge; never solve or bypass these challenges.
 
 This catalog and CI are discovery/package evidence only. They do not claim licensed
 real-host validation for any product.

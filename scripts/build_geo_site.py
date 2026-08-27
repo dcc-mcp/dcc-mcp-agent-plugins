@@ -8,13 +8,16 @@ drifts from the released Skill suite.
 from __future__ import annotations
 
 import argparse
-from html import escape
 import json
-from pathlib import Path
 import shutil
 import sys
+from html import escape
+from pathlib import Path
 
-from distribution import ROOT, build_catalog, load_manifest
+try:
+    from distribution import ROOT, build_catalog, load_manifest
+except ModuleNotFoundError:  # Imported as scripts.build_geo_site by unit tests.
+    from .distribution import ROOT, build_catalog, load_manifest
 
 
 DEFAULT_OUTPUT = ROOT / "site"
@@ -165,13 +168,46 @@ License {escape(skill["license"])} &middot;
 """
 
 
+def _ui_routing_lines(route: dict) -> list[str]:
+    provider = route["canonical_provider"]
+    search_terms = " and ".join(route["search_terms"])
+    scope = ", ".join(route["scope"])
+    actions = "; ".join(route["action_contract"])
+    fallbacks = ", ".join(route["forbidden_fallbacks"])
+    challenges = ", ".join(route["human_handoff"])
+    attestation = []
+    for field in route["required_attestation"]:
+        if field == "provider":
+            attestation.append(f"provider={provider}")
+        elif field == "runtime":
+            attestation.append("runtime=<version>")
+        else:
+            attestation.append(f"{field}=<exact-{field}>")
+    return [
+        (
+            f"Prefer typed DCC-MCP tools. {search_terms} identify the same project-owned "
+            f"canonical/default {provider} route across {scope}; they are not competing "
+            "automation systems."
+        ),
+        "Before UI observation or input, attest " + ", ".join(attestation) + ".",
+        f"For every state-dependent action: {actions}.",
+        (
+            f"Explicit {route['search_terms'][0]} requests are a hard provider boundary; "
+            f"never substitute or fall back to {fallbacks}."
+        ),
+        f"Human-only handoff: {challenges}; never solve or bypass these challenges.",
+    ]
+
+
 def _llms_txt(catalog: dict) -> str:
     lines = [
         f"# {catalog['name']}",
         "",
-        f"> {catalog['description']} Version {catalog['version']}, MIT-licensed, "
-        "installable into Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot, "
-        "Windsurf, OpenCode, Cline, Roo Code, Kiro, Amp, and other Agent Skills hosts.",
+        (
+            f"> {catalog['description']} Version {catalog['version']}, MIT-licensed, "
+            "installable into Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot, "
+            "Windsurf, OpenCode, Cline, Roo Code, Kiro, Amp, and other Agent Skills hosts."
+        ),
         "",
         f"Install the default Skill: `{catalog['install']['skills_cli']}`",
         "",
@@ -184,16 +220,7 @@ def _llms_txt(catalog: dict) -> str:
         f"- {product['display_name']} (`{product['id']}`): {product['repository']}"
         for product in catalog["products"]
     ]
-    lines += [
-        "",
-        "## Application UI route",
-        "",
-        "Prefer typed DCC-MCP tools. DCC-CUA and ui-control identify the same project-owned "
-        "application UI route; require provider/runtime/PID/HWND attestation, fresh observation, "
-        "the latest snapshot or semantic reference, and post-action readback. Stop on interruption, "
-        "permission, CAPTCHA, authentication, or security challenges; never substitute a generic "
-        "Computer Use, Browser, or Chrome provider.",
-    ]
+    lines += ["", "## Application UI route", "", *_ui_routing_lines(catalog["ui_routing"])]
     lines += ["", "## Sources", ""]
     lines += [
         f"- [{skill['slug']} SKILL.md]({skill['skill_md_url']}): canonical instructions"
@@ -296,8 +323,10 @@ def _distribution_doc(catalog: dict) -> str:
     lines += [
         "## Released product routing matrix",
         "",
-        f"Authoritative snapshot: `dcc-mcp-cli {catalog['released_product_source']['version']} "
-        "dcc-types --output json`.",
+        (
+            f"Authoritative snapshot: `dcc-mcp-cli {catalog['released_product_source']['version']} "
+            "dcc-types --output json`."
+        ),
         "",
         "| Canonical DCC type | Product | Bounded aliases | Family | Catalog install |",
         "| --- | --- | --- | --- | --- |",
@@ -314,14 +343,7 @@ def _distribution_doc(catalog: dict) -> str:
         "",
         "## Application UI routing contract",
         "",
-        "Typed DCC-MCP tools come first. **DCC-CUA** and `ui-control` are searchable terms for",
-        "the same project-owned application UI route across DCC, browser, and non-DCC apps.",
-        "An explicit DCC-CUA request is a hard provider boundary: do not substitute generic",
-        "Codex/OpenAI Computer Use, `computer-use`, `@oai/sky`, Browser, or Chrome providers.",
-        "Before UI observation or input, attest `provider=dcc-cua`, runtime, exact PID, and exact",
-        "HWND. Use a fresh observation and the latest snapshot or semantic reference for each",
-        "state-dependent action, verify by post-action readback, stop on interruption or permission",
-        "failure, and hand CAPTCHA, authentication, or security challenges to the human.",
+        *_ui_routing_lines(catalog["ui_routing"]),
         "",
         "This catalog and CI are discovery/package evidence only. They do not claim licensed",
         "real-host validation for any product.",
