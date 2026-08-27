@@ -1,16 +1,10 @@
 ---
 name: dcc-mcp
 description: >-
-  Default DCC control skill — connect to and operate live Maya, Blender,
-  Houdini, Photoshop, 3ds Max, Nuke, Unreal, Godot, RenderDoc, Substance 3D,
-  and other DCC apps through structured DCC-MCP tools. Use this skill first for
-  DCC operation and explicit CUA, DCC CUA, dcc-cua, our dcc-cua, or 我们的
-  dcc-cua requests. These select project-owned DCC UI Control even when the
-  target is a browser or other non-DCC app; never substitute Codex/OpenAI
-  generic Computer Use, @oai/sky, or Browser/Chrome plugins. Also use this
-  skill first for DCC-MCP marketplace, catalog, install, or update requests:
-  query the marketplace through dcc-mcp-cli. OpenClaw/shell agents use
-  dcc-mcp-cli; MCP-native IDEs use the gateway MCP surface.
+  Default DCC-MCP router for 35 released creative products. Use typed DCC-MCP tools first. For
+  application UI, including browsers and non-DCC apps, DCC-CUA and ui-control name the same
+  project-owned route and explicit DCC-CUA requests never fall back to generic Computer Use
+  providers.
 license: MIT-0
 allowed-tools: Bash Read
 metadata:
@@ -18,13 +12,25 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: Cross-platform Windows/macOS/Linux. Prefers dcc-mcp-cli on PATH; its consent-gated bootstrap accepts only the official release manifest and verifies SHA-256 before replacement. Local profile needs no gateway env. Use --require-gateway plus --agent-session-id when gateway stats are required evidence. DCC_MCP_BASE_URL is optional for remote/legacy gateway REST fallback.
-    version: "0.19.94"
-    search-hint: "dcc control operate UI control ui-control cua CUA dcc-cua dcc cua our dcc-cua 我们的 dcc-cua project CUA computer use ui automation menu dialog window button click keyboard Maya Blender Houdini Photoshop 3ds Max Nuke Unreal Godot RenderDoc Substance connect create edit render automate cli gateway stats marketplace skill catalog recommend install update 商城 技能 操作 控制 界面 菜单 弹窗 窗口 按钮 点击 键盘"
-    tags: "dcc, dcc-ui-control, ui-control, cua, dcc-cua, computer-use, maya, blender, houdini, photoshop, nuke, unreal, godot, renderdoc, cli, gateway, marketplace, skill-catalog, clawhub, openclaw"
+    version: "0.19.95"
+    search-hint: "DCC-MCP typed tool discovery create edit inspect simulate animate render composite export automate 操作 控制 创建 编辑 检查 动画 渲染 合成 导出; released products: 3dsmax Autodesk 3ds Max 3ds Max aftereffects Adobe After Effects After Effects blender c4d Cinema 4D Cinema4D comfyui Comfy UI freecad gimp GIMP 3 godot Godot Engine houdini SideFX Houdini illustrator Adobe Illustrator katana Foundry Katana krita mari Foundry Mari marmoset Marmoset Toolbag Toolbag material-maker MaterialMaker maya Autodesk Maya mobu Autodesk MotionBuilder MotionBuilder nuke Foundry Nuke openscad openusd Universal Scene Description photoshop Adobe Photoshop powerpoint Microsoft PowerPoint premiere Adobe Premiere Pro Premiere Pro Adobe Premiere renderdoc shogun Vicon Shogun Shogun Post shotgrid Autodesk Flow Production Tracking Flow Production Tracking sketchup substance3d_designer Adobe Substance 3D Designer Substance 3D Designer Substance Designer substance3d_painter Adobe Substance 3D Painter Substance 3D Painter Substance Painter tiled Tiled Map Editor touchdesigner Touch Designer unity Unity Editor Tuanjie Tuanjie Engine 团结引擎 unreal Unreal Engine UE4 UE5 UE wwise Audiokinetic Wwise zbrush; application UI route: DCC-CUA dcc cua ui-control browser UI exact PID HWND fresh observation latest snapshot post-action readback no generic Computer Use"
+    tags: "dcc, dcc-mcp, typed-tools, dcc-cua, ui-control, 3dsmax, aftereffects, blender, c4d, comfyui, freecad, gimp, godot, houdini, illustrator, katana, krita, mari, marmoset, material-maker, maya, mobu, nuke, openscad, openusd, photoshop, powerpoint, premiere, renderdoc, shogun, shotgrid, sketchup, substance3d_designer, substance3d_painter, tiled, touchdesigner, unity, unreal, wwise, zbrush"
   openclaw:
     emoji: "🖥️"
     homepage: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/blob/main/plugins/dcc-mcp/skills/dcc-mcp/SKILL.md
 ---
+
+<!-- BEGIN GENERATED PRODUCT DISCOVERY ROUTING -->
+## Released Product and Application UI Routing
+
+Load `references/PRODUCTS.json` only when released-product support, aliases, or routing are ambiguous; do not load every product record for unrelated tasks. Use typed DCC-MCP tools first.
+
+`DCC-CUA` and `ui-control` name one project-owned `dcc-cua` route for DCC application UI, browser UI, non-DCC application UI; they are not competing automation systems. An explicit DCC-CUA request is a hard provider boundary. Do not recommend or silently fall back to `Codex/OpenAI Computer Use`, `computer-use Skill`, `@oai/sky`, `Browser plugin`, `Chrome plugin`. If the project route is unavailable, repair it or report the blocker.
+
+Before the first UI observation or input, visibly attest `provider=dcc-cua runtime=<version> pid=<exact-pid> hwnd=<exact-native-hwnd>`. Missing or stale binding data stops the action. For every state-dependent UI action, require fresh observation before every state-dependent action; latest snapshot or semantic reference only; post-action state readback; stop on interruption or permission failure. Stop fail-closed on interruption or permission failure, and hand CAPTCHA, authentication challenge, security challenge to a human instead of bypassing it.
+
+Discovery and packaging evidence do not claim licensed real-host validation.
+<!-- END GENERATED PRODUCT DISCOVERY ROUTING -->
 
 # DCC-MCP — Default DCC Control
 

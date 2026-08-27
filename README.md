@@ -12,6 +12,12 @@ Agent Skills-compatible hosts.
 
 One canonical Skill suite lives under `plugins/dcc-mcp/skills/`. Vendor
 manifests are thin adapters; they do not fork instructions or runtime behavior.
+Released-product discovery is generated from
+[`plugins/dcc-mcp/skills/dcc-mcp/references/PRODUCTS.json`](plugins/dcc-mcp/skills/dcc-mcp/references/PRODUCTS.json),
+a provenance-bearing snapshot of the official `dcc-mcp-cli dcc-types` catalog
+reconciled with the owning adapter repositories. It carries one canonical
+identity and bounded aliases per product instead of repeating hand-maintained
+product lists across manifests.
 
 ## Install
 
@@ -145,6 +151,12 @@ Pages, generated from the same manifests CI validates:
 | [`llms-full.txt`](https://dcc-mcp.github.io/dcc-mcp-agent-plugins/llms-full.txt) | Every `SKILL.md` concatenated in full |
 | [`sitemap.xml`](https://dcc-mcp.github.io/dcc-mcp-agent-plugins/sitemap.xml) | Per-Skill pages carrying `schema.org/SoftwareApplication` JSON-LD |
 
+`catalog.json` also projects the complete released-product matrix and the
+application UI route. Typed DCC-MCP tools remain first. `DCC-CUA` and
+`ui-control` are searchable names for the same project-owned application UI
+provider across DCC, browser, and non-DCC apps; explicit DCC-CUA requests never
+fall back to generic Computer Use, Browser, or Chrome providers.
+
 `docs/DISTRIBUTION.md` is generated from the same source and lists every
 channel plus ready-to-paste entries for the directories that need a human
 submission. CI fails when it drifts:
@@ -162,13 +174,21 @@ python scripts/build_geo_site.py --check  # fail when the committed doc is stale
 | `dcc-mcp-skills-creator` | Create and validate DCC-MCP Skills |
 | `dcc-mcp-creator` | Create and modernize DCC-MCP adapters |
 
-Skill content is authored in `dcc-mcp-core`, next to the runtime it documents;
-this repository owns distribution — vendor manifests, archives, GitHub
-Releases, ClawHub, and Smithery. Content is copied by
+Skill instructions are authored in `dcc-mcp-core`, next to the runtime they
+document; this repository owns distribution — product discovery metadata,
+vendor manifests, archives, GitHub Releases, ClawHub, and Smithery. Content is copied by
 `scripts/sync_core_skills.py` from the Core commit pinned in
 [`.github/core-skills-sync.json`](.github/core-skills-sync.json), and CI fails
 when the two sides drift. See
 [`docs/adr/0002-skill-sync-direction.md`](docs/adr/0002-skill-sync-direction.md).
+
+The sync preserves only bounded distribution-owned data: each Skill version,
+plus the default Skill's generated description, search hint, tags, OpenAI
+interface, marked product/UI routing block, and `PRODUCTS.json`. Core continues
+to own the remainder of the instructional body and every other file.
+Conditional DCC-CUA routing is deliberately not declared as a hard `depends`
+edge, so typed-tool tasks keep progressive loading and do not load the UI
+provider unless UI behavior is actually required.
 
 The Skill suite version is this repository's own release line, deliberately
 decoupled from `dcc-mcp-core` release numbers: Skill content can be re-published
@@ -179,9 +199,11 @@ sync preserves instead of copying.
 ```powershell
 # Re-sync after Core changes Skill content, then bump the suite version.
 python scripts/sync_core_skills.py --source ../dcc-mcp-core
+python scripts/sync_product_discovery.py
 python scripts/bump_version.py --patch
 python scripts/build_geo_site.py
 python scripts/sync_core_skills.py --source ../dcc-mcp-core --check
+python scripts/sync_product_discovery.py --check --check-cli
 ```
 
 `core-sync.yml` runs that sequence itself every Monday and on demand. When Core
@@ -200,6 +222,8 @@ pull request is still opened, just without CI runs.
 
 ```powershell
 python -m pip install "dcc-mcp-core==0.20.8"
+python -m unittest discover -s tests -v
+python scripts/sync_product_discovery.py --check
 python scripts/validate_repository.py
 npx --yes skills@1.5.22 add . --list
 ./scripts/build-packages.ps1
@@ -237,6 +261,10 @@ See [`SUBMISSION.md`](SUBMISSION.md).
 The plugin ships no public MCP server. It connects to the user's local DCC-MCP
 gateway through `dcc-mcp-cli`; a public multi-tenant MCP endpoint is a separate
 security and deployment product.
+
+Product catalog, package, and CI evidence proves discoverability and artifact
+parity only. It does not claim licensed real-host validation for any listed
+application.
 
 ## License
 

@@ -8,7 +8,9 @@ import sys
 
 import dcc_mcp_core
 from distribution import build_catalog, load_manifest
+from product_discovery import load_product_catalog
 from smithery_sync import validate_manifest as validate_smithery_manifest
+from sync_product_discovery import rendered_outputs
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -34,6 +36,15 @@ CHANNEL_AUTOMATION = {"published", "verified", "manual", "not-applicable"}
 
 
 def main() -> int:
+    product_catalog = load_product_catalog()
+    stale_discovery = [
+        path.relative_to(ROOT).as_posix()
+        for path, expected in rendered_outputs(product_catalog).items()
+        if path.read_text(encoding="utf-8") != expected
+    ]
+    if stale_discovery:
+        raise ValueError(f"generated product discovery metadata is stale: {stale_discovery}")
+
     agent_plugin = json.loads(PLUGIN_MANIFESTS[0].read_text(encoding="utf-8"))
     if agent_plugin.get("$schema") != AGENT_PLUGIN_SCHEMA:
         raise ValueError("invalid Agent Plugins schema")
@@ -80,6 +91,10 @@ def main() -> int:
     catalog = build_catalog(ROOT)
     if catalog["version"] != version:
         raise ValueError(f"catalog version differs from plugin: {catalog['version']}")
+    if catalog["products"] != product_catalog["products"]:
+        raise ValueError("public catalog products differ from PRODUCTS.json")
+    if catalog["ui_routing"] != product_catalog["ui_routing"]:
+        raise ValueError("public catalog UI routing differs from PRODUCTS.json")
     npm_package = load_manifest()["npm"]["package"]
     if not npm_package.startswith("@") or "/" not in npm_package:
         raise ValueError(f"npm package must be a scoped name: {npm_package}")
@@ -92,7 +107,8 @@ def main() -> int:
     manifests = len(PLUGIN_MANIFESTS) + len(MARKETPLACE_MANIFESTS) + 2
     print(
         f"Validated {len(entries)} Skills, {manifests} manifests, "
-        f"and {len(catalog['channels'])} distribution channels at {version}"
+        f"{len(product_catalog['products'])} released products, and "
+        f"{len(catalog['channels'])} distribution channels at {version}"
     )
     return 0
 

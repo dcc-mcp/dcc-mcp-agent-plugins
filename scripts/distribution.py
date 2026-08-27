@@ -7,6 +7,11 @@ from pathlib import Path
 
 import dcc_mcp_core
 
+try:
+    from product_discovery import load_product_catalog
+except ModuleNotFoundError:  # Imported as scripts.distribution by unit tests.
+    from .product_discovery import load_product_catalog
+
 
 ROOT = Path(__file__).resolve().parent.parent
 PLUGIN = ROOT / "plugins" / "dcc-mcp"
@@ -45,6 +50,15 @@ def build_catalog(root: Path = ROOT, manifest_path: Path = DISTRIBUTION_MANIFEST
     npm_package = manifest["npm"]["package"]
     cli_repository = manifest["skills_cli"]["repository"]
     cli_package = manifest["skills_cli"]["package"]
+    product_catalog = load_product_catalog(
+        root
+        / "plugins"
+        / "dcc-mcp"
+        / "skills"
+        / "dcc-mcp"
+        / "references"
+        / "PRODUCTS.json"
+    )
 
     skills = []
     for entry in entries:
@@ -92,5 +106,8 @@ def build_catalog(root: Path = ROOT, manifest_path: Path = DISTRIBUTION_MANIFEST
             "npm": f"npm install {npm_package}",
         },
         "skills": skills,
+        "products": product_catalog["products"],
+        "ui_routing": product_catalog["ui_routing"],
+        "released_product_source": product_catalog["sources"]["released_cli"],
         "channels": manifest["channels"],
     }
