@@ -221,7 +221,7 @@ pull request is still opened, just without CI runs.
 ## Development
 
 ```powershell
-python -m pip install "dcc-mcp-core==0.20.8"
+python scripts/setup_released_core.py
 python -m unittest discover -s tests -v
 python scripts/sync_product_discovery.py --check
 python scripts/validate_repository.py

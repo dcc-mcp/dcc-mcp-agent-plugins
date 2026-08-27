@@ -20,7 +20,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            cli: .released-cli/dcc-mcp-cli
+          - os: macos-latest
+            cli: .released-cli/dcc-mcp-cli
+          - os: windows-latest
+            cli: .released-cli/dcc-mcp-cli.exe
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     steps:
@@ -28,9 +34,9 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
-      - run: python -m pip install "dcc-mcp-core==0.20.8" "PyYAML==6.0.2"
+      - run: python scripts/setup_released_core.py --with-catalog-dependencies --ensure-cli-dir .released-cli
       - run: python -m unittest discover -s tests -v
-      - run: python scripts/sync_product_discovery.py --check --check-core-catalog
+      - run: python scripts/sync_product_discovery.py --check --check-core-catalog --check-cli --cli "${{ matrix.cli }}"
 
   validate:
     runs-on: ubuntu-latest
@@ -43,7 +49,7 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: "22"
-      - run: python -m pip install "dcc-mcp-core==0.20.8"
+      - run: python scripts/setup_released_core.py --with-catalog-dependencies
       - run: python -m unittest discover -s tests -v
       - run: python scripts/validate_repository.py
       - name: Validate universal Agent Skills installation
@@ -60,6 +66,7 @@ jobs:
           for path in \
             .agents .claude .codebuddy .continue .kiro .openhands .roo .windsurf; do
             test -f "$path/skills/dcc-mcp/SKILL.md"
+            grep -q "虚幻引擎" "$path/skills/dcc-mcp/SKILL.md"
           done
       - name: Build the GEO catalog and site
         run: python scripts/build_geo_site.py --check
@@ -71,7 +78,9 @@ jobs:
       - name: Package agent plugin
         run: |
           version=$(python -c 'import json; print(json.load(open("plugins/dcc-mcp/.codex-plugin/plugin.json"))["version"])')
-          git archive --format=zip --prefix=dcc-mcp/ --output="dist/dcc-mcp-agent-plugin-${version}.zip" HEAD:plugins/dcc-mcp
+          archive="dist/dcc-mcp-agent-plugin-${version}.zip"
+          git archive --format=zip --prefix=dcc-mcp/ --output="$archive" HEAD:plugins/dcc-mcp
+          python -c 'import sys, zipfile; archive=zipfile.ZipFile(sys.argv[1]); assert "虚幻引擎" in archive.read("dcc-mcp/skills/dcc-mcp/SKILL.md").decode("utf-8")' "$archive"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: agent-plugin-packages

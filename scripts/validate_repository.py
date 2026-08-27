@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import dcc_mcp_core
 from distribution import build_catalog, load_manifest
-from product_discovery import load_product_catalog
+from product_discovery import (
+    RELEASED_CORE_WORKFLOW_JOBS,
+    load_product_catalog,
+    validate_released_core_workflows,
+)
 from smithery_sync import validate_manifest as validate_smithery_manifest
 from sync_product_discovery import rendered_outputs
-
 
 ROOT = Path(__file__).resolve().parent.parent
 PLUGIN = ROOT / "plugins" / "dcc-mcp"
@@ -37,6 +40,13 @@ CHANNEL_AUTOMATION = {"published", "verified", "manual", "not-applicable"}
 
 def main() -> int:
     product_catalog = load_product_catalog()
+    validate_released_core_workflows(
+        product_catalog,
+        {
+            relative: (ROOT / relative).read_text(encoding="utf-8")
+            for relative in RELEASED_CORE_WORKFLOW_JOBS
+        },
+    )
     stale_discovery = [
         path.relative_to(ROOT).as_posix()
         for path, expected in rendered_outputs(product_catalog).items()

@@ -21,6 +21,7 @@ try:
         ui_route_prompt,
         validate_core_catalog_snapshot,
         validate_released_cli_snapshot,
+        validate_released_source_snapshot,
     )
 except ModuleNotFoundError:  # Imported as scripts.sync_product_discovery by unit tests.
     from .product_discovery import (
@@ -34,6 +35,7 @@ except ModuleNotFoundError:  # Imported as scripts.sync_product_discovery by uni
         ui_route_prompt,
         validate_core_catalog_snapshot,
         validate_released_cli_snapshot,
+        validate_released_source_snapshot,
     )
 
 
@@ -227,6 +229,11 @@ def main(argv: list[str] | None = None) -> int:
         help="compare the catalog with the installed released dcc-mcp-cli",
     )
     parser.add_argument(
+        "--cli",
+        default="dcc-mcp-cli",
+        help="exact dcc-mcp-cli executable to use with --check-cli",
+    )
+    parser.add_argument(
         "--check-core-catalog",
         action="store_true",
         help="compare products with the immutable Core catalog source",
@@ -258,15 +265,41 @@ def main(argv: list[str] | None = None) -> int:
         )
     if args.check_cli:
         try:
+            released_source = catalog["sources"]["released_cli"]
+            release_ref_result = subprocess.run(
+                [
+                    "git",
+                    "ls-remote",
+                    released_source["repository"],
+                    f"refs/tags/{released_source['tag']}",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            release_ref_rows = release_ref_result.stdout.strip().splitlines()
+            if len(release_ref_rows) != 1:
+                raise ValueError("released CLI tag did not resolve uniquely")
+            release_commit, release_ref = release_ref_rows[0].split()
+            if release_ref != f"refs/tags/{released_source['tag']}":
+                raise ValueError("released CLI tag resolved to an unexpected ref")
+            validate_released_source_snapshot(
+                catalog,
+                {
+                    "repository": released_source["repository"],
+                    "tag": released_source["tag"],
+                    "commit": release_commit,
+                },
+            )
             version_result = subprocess.run(
-                ["dcc-mcp-cli", "--version"],
+                [args.cli, "--version"],
                 capture_output=True,
                 text=True,
                 check=True,
             )
             cli_version = version_result.stdout.strip().split()[-1]
             catalog_result = subprocess.run(
-                ["dcc-mcp-cli", "dcc-types", "--output", "json"],
+                [args.cli, "dcc-types", "--output", "json"],
                 capture_output=True,
                 text=True,
                 check=True,

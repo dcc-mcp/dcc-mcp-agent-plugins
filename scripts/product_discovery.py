@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
+import shlex
 import unicodedata
 from pathlib import Path
 
@@ -19,6 +21,220 @@ PRODUCT_CATALOG = (
 )
 PRODUCT_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 CORE_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
+RELEASED_CORE_SETUP_COMMAND = "python scripts/setup_released_core.py"
+RELEASED_CORE_CATALOG_SETUP_COMMAND = (
+    f"{RELEASED_CORE_SETUP_COMMAND} --with-catalog-dependencies"
+)
+RELEASED_CORE_WORKFLOW_COMMANDS = {
+    ".github/workflows/ci.yml": {
+        "product-discovery": (
+            f"{RELEASED_CORE_CATALOG_SETUP_COMMAND} "
+            "--ensure-cli-dir .released-cli"
+        ),
+        "validate": RELEASED_CORE_CATALOG_SETUP_COMMAND,
+    },
+    ".github/workflows/core-sync.yml": {"sync-core": RELEASED_CORE_CATALOG_SETUP_COMMAND},
+    ".github/workflows/clawhub.yml": {"sync-skills": RELEASED_CORE_CATALOG_SETUP_COMMAND},
+    ".github/workflows/release.yml": {
+        "github-release": (
+            f"{RELEASED_CORE_CATALOG_SETUP_COMMAND} "
+            "--ensure-cli-dir .released-cli"
+        ),
+        "publish-npm": RELEASED_CORE_CATALOG_SETUP_COMMAND,
+        "publish-pages": RELEASED_CORE_CATALOG_SETUP_COMMAND,
+    },
+}
+RELEASED_CORE_WORKFLOW_JOBS = {
+    relative: tuple(commands) for relative, commands in RELEASED_CORE_WORKFLOW_COMMANDS.items()
+}
+RELEASED_CORE_WORKFLOW_ENVIRONMENT = {
+    ".github/workflows/ci.yml": None,
+    ".github/workflows/core-sync.yml": {"SYNC_BRANCH": "automation/core-skill-sync"},
+    ".github/workflows/clawhub.yml": {
+        "CLAWHUB_CLI_PACKAGE": "clawhub@0.23.1",
+        "CLAWHUB_CONFIG_PATH": ".clawhub/config.json",
+        "CLAWHUB_DISABLE_TELEMETRY": "1",
+    },
+    ".github/workflows/release.yml": None,
+}
+RELEASED_CORE_WORKFLOW_REQUIRED_TRIGGERS = {
+    ".github/workflows/ci.yml": {
+        "push": {"branches": ["main"]},
+        "pull_request": {"branches": ["main"]},
+        "workflow_dispatch": None,
+    },
+    ".github/workflows/core-sync.yml": {
+        "push": {"branches": ["main"]},
+        "pull_request": {"branches": ["main"]},
+        "schedule": [{"cron": "17 6 * * 1"}],
+        "workflow_dispatch": {
+            "inputs": {
+                "bump": {
+                    "description": "Version part to bump when Skill content changed",
+                    "required": False,
+                    "type": "choice",
+                    "default": "patch",
+                    "options": ["patch", "minor", "major"],
+                }
+            }
+        },
+    },
+    ".github/workflows/clawhub.yml": {
+        "workflow_call": {
+            "inputs": {
+                "checkout-ref": {"required": False, "type": "string", "default": ""},
+                "publish": {"required": False, "type": "boolean", "default": False},
+            },
+            "secrets": {"CLAWHUB_TOKEN": {"required": False}},
+        },
+        "pull_request": {
+            "branches": ["main"],
+            "paths": [
+                "plugins/dcc-mcp/skills/**",
+                "scripts/package_openclaw_skill.py",
+                "scripts/clawhub_sync.py",
+                "scripts/setup_released_core.py",
+                ".github/clawhub-skills.json",
+                ".github/workflows/clawhub.yml",
+            ],
+        },
+        "workflow_dispatch": {
+            "inputs": {
+                "publish": {
+                    "description": "Publish instead of dry-running",
+                    "required": False,
+                    "type": "boolean",
+                    "default": False,
+                }
+            }
+        },
+    },
+    ".github/workflows/release.yml": {"push": {"tags": ["v*"]}},
+}
+# These are SHA-256 digests of parsed YAML job mappings, not raw files. Formatting
+# and comments remain free, while every job, step, action, command, and execution
+# control is enumerated; an added job or changed executable surface fails closed.
+RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
+    ".github/workflows/ci.yml": {
+        "product-discovery": "f548c76c55d0a0901fcc29489d635ba1c0fc0d3c07ecc283ed3d102ceb918d49",
+        "validate": "3d9ffa7bcb000cacb170786d81467beb18d63de758ce093bfc3a165a91381a89",
+    },
+    ".github/workflows/core-sync.yml": {
+        "verify-pin": "4c071dc815592aef174dd1c6d89089cefb75e7a0cc2170354fd101868d3d5170",
+        "sync-core": "c6144286012f7676fd324a09427caf5759ee0eb6b8c5ae4567841de24b9d8477",
+    },
+    ".github/workflows/clawhub.yml": {
+        "sync-skills": "bc3fbd6dd149b5fcb324109bd045f99518f45d6757854c11ad739566035cf3a1",
+    },
+    ".github/workflows/release.yml": {
+        "github-release": "99356779fa49b277609f1a6575c274dff907e1edf914203a23c07ac209cfe006",
+        "publish-clawhub": "c911a32259c3658a50b2f6c47ba2a80240a9e168c4bcfda483cb212640340330",
+        "publish-smithery": "2749e01e660ea0ed74c37d4e4f25c23f6848925055806bf91ca4634e67e75530",
+        "publish-npm": "944cbdfc9bdfdcbf38a745c83f6a3c16ef20fbde965b3a9fd939f4a0070814e6",
+        "publish-pages": "0e2635dfcc1358f8f5f02623a837d7e4434f18b5a023fe6f580c1463ae3644bd",
+        "verify-public-install": "58c37a5068557a0a5d9f94545301d0a8ebff25fad8e1ce2719f1ae1a34c77656",
+    },
+}
+RELEASED_CORE_JOB_EXECUTION_CONTROLS = {
+    ".github/workflows/ci.yml": {
+        "product-discovery": {
+            "strategy": {
+                "fail-fast": False,
+                "matrix": {
+                    "include": [
+                        {"os": "ubuntu-latest", "cli": ".released-cli/dcc-mcp-cli"},
+                        {"os": "macos-latest", "cli": ".released-cli/dcc-mcp-cli"},
+                        {"os": "windows-latest", "cli": ".released-cli/dcc-mcp-cli.exe"},
+                    ]
+                },
+            },
+            "runs-on": "${{ matrix.os }}",
+            "timeout-minutes": 15,
+        },
+        "validate": {"runs-on": "ubuntu-latest", "timeout-minutes": 15},
+    },
+    ".github/workflows/core-sync.yml": {
+        "sync-core": {
+            "if": "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'",
+            "runs-on": "ubuntu-latest",
+            "timeout-minutes": 15,
+        }
+    },
+    ".github/workflows/clawhub.yml": {
+        "sync-skills": {"runs-on": "ubuntu-latest", "timeout-minutes": 20}
+    },
+    ".github/workflows/release.yml": {
+        "github-release": {"runs-on": "ubuntu-latest", "timeout-minutes": 15},
+        "publish-npm": {
+            "needs": "github-release",
+            "runs-on": "ubuntu-latest",
+            "timeout-minutes": 10,
+        },
+        "publish-pages": {
+            "needs": "github-release",
+            "runs-on": "ubuntu-latest",
+            "timeout-minutes": 10,
+            "environment": {
+                "name": "github-pages",
+                "url": "${{ steps.deploy.outputs.page_url }}",
+            },
+        },
+    },
+}
+WORKFLOW_EXECUTION_CONTROL_KEYS = {
+    "concurrency",
+    "container",
+    "continue-on-error",
+    "defaults",
+    "env",
+    "environment",
+    "if",
+    "needs",
+    "runs-on",
+    "services",
+    "strategy",
+    "timeout-minutes",
+    "uses",
+}
+WORKFLOW_PACKAGE_MANAGERS = {
+    "conda",
+    "pip",
+    "pip3",
+    "pipx",
+    "pdm",
+    "poetry",
+    "rye",
+    "uv",
+    "vx",
+}
+WORKFLOW_INDIRECT_COMMANDS = {
+    ".",
+    "alias",
+    "bash",
+    "builtin",
+    "call",
+    "cmd",
+    "command",
+    "env",
+    "eval",
+    "exec",
+    "iex",
+    "invoke-expression",
+    "nohup",
+    "powershell",
+    "pwsh",
+    "set-alias",
+    "sh",
+    "source",
+    "start",
+    "start-process",
+    "sudo",
+    "time",
+    "trap",
+    "xargs",
+}
+WORKFLOW_SHELL_CONTROL_TOKENS = {"!", "do", "elif", "else", "if", "then", "until", "while"}
+WORKFLOW_COMMAND_BOUNDARY_CHARS = frozenset("&|;(){}")
 GENERIC_HIJACK_TERMS = {
     "ae",
     "ai",
@@ -96,7 +312,7 @@ def _contextual_match(normalized_query: str, normalized_term: str) -> bool:
         return True
     escaped = re.escape(normalized_term).replace(r"\ ", r"\s+")
     english_prefix = (
-        r"(?:in|inside|with|using|use|open|launch|operate|control)\s+(?:the\s+)?"
+        r"(?:in|inside|from|using|use|open|launch|operate|control)\s+(?:the\s+)?"
     )
     english_suffix = (
         r"(?:editor|project|scene|app|software|window|workflow|file|document|composition)"
@@ -105,11 +321,14 @@ def _contextual_match(normalized_query: str, normalized_term: str) -> bool:
         return True
     if re.search(rf"(?<![a-z0-9]){escaped}\s+{english_suffix}(?![a-z0-9])", normalized_query):
         return True
-    chinese_prefixes = ("在", "用", "使用", "打开", "启动", "操作", "控制")
-    chinese_suffixes = ("中", "里", "项目", "场景", "编辑器", "软件", "窗口", "建模", "合成")
-    return any(prefix + normalized_term in normalized_query for prefix in chinese_prefixes) or any(
-        normalized_term + suffix in normalized_query for suffix in chinese_suffixes
+    chinese_prefixes = "|".join(re.escape(value) for value in ("在", "用", "使用", "打开", "启动", "操作", "控制"))
+    chinese_suffixes = "|".join(
+        re.escape(value)
+        for value in ("中", "里", "项目", "场景", "编辑器", "软件", "窗口", "建模", "合成")
     )
+    return re.search(rf"(?:{chinese_prefixes})\s*{escaped}", normalized_query) is not None or re.search(
+        rf"{escaped}\s*(?:{chinese_suffixes})", normalized_query
+    ) is not None
 
 
 def resolve_product_intent(query: str, catalog: dict | None = None) -> dict:
@@ -120,9 +339,14 @@ def resolve_product_intent(query: str, catalog: dict | None = None) -> dict:
     for product in data["products"]:
         contextual_terms = _alias_terms(product, "contextual_aliases")
         contextual_normalized = {normalize_term(term) for term in contextual_terms}
-        strong_terms = [product["display_name"], *_alias_terms(product, "aliases")]
-        if normalize_term(product["id"]) not in contextual_normalized:
-            strong_terms.insert(0, product["id"])
+        identity_terms = [
+            product["id"],
+            product["display_name"],
+            *_alias_terms(product, "aliases"),
+        ]
+        strong_terms = [
+            term for term in identity_terms if normalize_term(term) not in contextual_normalized
+        ]
         strong_match = any(
             _contains_phrase(normalized_query, normalize_term(term)) for term in strong_terms
         )
@@ -149,12 +373,20 @@ def validate_product_catalog(data: dict) -> None:
         raise ValueError("product catalog is missing sources")
     released_cli = sources.get("released_cli", {})
     core_catalog = sources.get("core_catalog", {})
+    if released_cli.get("repository") != "https://github.com/dcc-mcp/dcc-mcp-core":
+        raise ValueError("released CLI must use the official dcc-mcp-core repository")
+    if released_cli.get("tag") != f"v{released_cli.get('version')}":
+        raise ValueError("released CLI tag must match its version")
+    if CORE_COMMIT_RE.fullmatch(str(released_cli.get("commit", ""))) is None:
+        raise ValueError("released CLI must be pinned to a full release commit")
     if core_catalog.get("repository") != "https://github.com/dcc-mcp/dcc-mcp-core":
         raise ValueError("core catalog must use the official dcc-mcp-core repository")
     if CORE_COMMIT_RE.fullmatch(str(core_catalog.get("commit", ""))) is None:
         raise ValueError("core catalog must be pinned to a full immutable commit")
     if core_catalog.get("path") != "dcc-mcp-catalog.yml":
         raise ValueError("core catalog path must be dcc-mcp-catalog.yml")
+    if core_catalog.get("commit") != released_cli.get("commit"):
+        raise ValueError("core catalog must be pinned to the released CLI commit")
     products = data.get("products")
     if not isinstance(products, list) or not products:
         raise ValueError("product catalog must contain products")
@@ -308,6 +540,360 @@ def validate_released_cli_snapshot(catalog: dict, cli_version: str, payload: dic
             raise ValueError(f"released CLI repository differs: {row['dcc_type']}")
         if adapter.get("catalog_install_available") is not product["catalog_install_available"]:
             raise ValueError(f"released CLI install availability differs: {row['dcc_type']}")
+
+
+def validate_released_source_snapshot(catalog: dict, snapshot: dict) -> None:
+    """Bind the claimed CLI version and catalog to an observed release ref."""
+    if not isinstance(snapshot, dict):
+        raise ValueError("released source snapshot must be an object")
+    expected = catalog["sources"]["released_cli"]
+    for field in ("repository", "tag", "commit"):
+        if snapshot.get(field) != expected[field]:
+            raise ValueError(f"released CLI {field} differs from the authoritative release")
+
+
+def validate_released_core_runtime(
+    catalog: dict, *, installed_version: str, resolved_commit: str
+) -> None:
+    """Require the installed Core and resolved release ref to match one catalog contract."""
+    released = catalog["sources"]["released_cli"]
+    core_catalog = catalog["sources"]["core_catalog"]
+    if core_catalog["repository"] != released["repository"]:
+        raise ValueError("released Core repository differs from the immutable catalog source")
+    if core_catalog["commit"] != released["commit"]:
+        raise ValueError("released Core commit differs from the immutable catalog source")
+    if installed_version != released["version"]:
+        raise ValueError(
+            f"installed Core version differs: expected {released['version']}, got {installed_version}"
+        )
+    if resolved_commit != released["commit"]:
+        raise ValueError(
+            f"released Core commit differs: expected {released['commit']}, got {resolved_commit}"
+        )
+
+
+def _load_workflow_yaml(workflow: str, relative: str) -> dict:
+    try:
+        import yaml
+    except ImportError as exc:  # pragma: no cover - validators install catalog deps first
+        raise ValueError("PyYAML is required to validate released Core workflows") from exc
+
+    class UniqueKeyLoader(yaml.SafeLoader):
+        pass
+
+    UniqueKeyLoader.yaml_implicit_resolvers = {
+        key: [
+            (tag, expression)
+            for tag, expression in resolvers
+            if tag != "tag:yaml.org,2002:bool"
+        ]
+        for key, resolvers in yaml.SafeLoader.yaml_implicit_resolvers.items()
+    }
+    UniqueKeyLoader.add_implicit_resolver(
+        "tag:yaml.org,2002:bool",
+        re.compile(r"^(?:false|False|FALSE|true|True|TRUE)$"),
+        list("fFtT"),
+    )
+
+    def construct_unique_mapping(loader, node, deep=False):
+        loader.flatten_mapping(node)
+        mapping = {}
+        for key_node, value_node in node.value:
+            key = loader.construct_object(key_node, deep=deep)
+            if key in mapping:
+                raise ValueError(f"workflow contains duplicate YAML key {key!r}: {relative}")
+            mapping[key] = loader.construct_object(value_node, deep=deep)
+        return mapping
+
+    UniqueKeyLoader.add_constructor(
+        yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+        construct_unique_mapping,
+    )
+    try:
+        loaded = yaml.load(workflow, Loader=UniqueKeyLoader)
+    except (yaml.YAMLError, ValueError) as exc:
+        raise ValueError(f"invalid workflow YAML: {relative}: {exc}") from exc
+    if not isinstance(loaded, dict):
+        raise ValueError(f"workflow root must be a mapping: {relative}")
+    return loaded
+
+
+def _workflow_structure_digest(value: object) -> str:
+    """Hash parsed execution structure so every job and step is fail-closed."""
+    payload = json.dumps(
+        value,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _workflow_shell_text(command: str) -> str:
+    command = re.sub(r"(?:\\|`|\^)\r?\n[ \t]*", "", command)
+    executable_lines: list[str] = []
+    heredoc_delimiter: str | None = None
+    heredoc_pattern = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1")
+    for line in command.splitlines():
+        if heredoc_delimiter is not None:
+            if line.strip() == heredoc_delimiter:
+                heredoc_delimiter = None
+            continue
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        executable_lines.append(line)
+        match = heredoc_pattern.search(line)
+        if match is not None:
+            heredoc_delimiter = match.group(2)
+    if heredoc_delimiter is not None:
+        raise ValueError("workflow command contains an unterminated heredoc")
+    return "\n".join(executable_lines)
+
+
+def _workflow_shell_segments(command: str) -> list[list[str]]:
+    executable = _workflow_shell_text(command).replace("\n", " ; ")
+    if not executable:
+        return []
+    lexer = shlex.shlex(executable, posix=True, punctuation_chars="&|;(){}")
+    lexer.commenters = "#"
+    lexer.whitespace_split = True
+    try:
+        tokens = list(lexer)
+    except ValueError as exc:
+        raise ValueError(f"workflow command is not lexically closed: {exc}") from exc
+
+    segments: list[list[str]] = []
+    segment: list[str] = []
+    for token in tokens:
+        if token and set(token) <= WORKFLOW_COMMAND_BOUNDARY_CHARS:
+            if segment:
+                segments.append(segment)
+                segment = []
+            continue
+        segment.append(token)
+    if segment:
+        segments.append(segment)
+    return segments
+
+
+def _workflow_command_head(segment: list[str]) -> str | None:
+    tokens = list(segment)
+    while tokens and tokens[0].casefold() in WORKFLOW_SHELL_CONTROL_TOKENS:
+        tokens.pop(0)
+    if not tokens or tokens[0].casefold() in {"case", "for"}:
+        return None
+    while tokens and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=.*", tokens[0], re.DOTALL):
+        tokens.pop(0)
+    return tokens[0] if tokens else None
+
+
+def _workflow_trigger_is_reachable(trigger: str, config: object) -> bool:
+    if trigger == "schedule":
+        return isinstance(config, list) and bool(config) and all(
+            isinstance(entry, dict)
+            and isinstance(entry.get("cron"), str)
+            and bool(entry["cron"].strip())
+            for entry in config
+        )
+    if config is None:
+        return True
+    if not isinstance(config, dict):
+        return False
+    for key in (
+        "branches",
+        "branches-ignore",
+        "paths",
+        "paths-ignore",
+        "tags",
+        "tags-ignore",
+    ):
+        if key not in config:
+            continue
+        values = config[key]
+        if not isinstance(values, list) or not values:
+            return False
+        if any(not isinstance(value, str) or not value.strip() for value in values):
+            return False
+    return True
+
+
+def _validate_workflow_execution_surface(
+    value: str,
+    relative: str,
+    job_name: str,
+    *,
+    reject_indirect_head: bool,
+    surface_kind: str,
+) -> None:
+    if surface_kind == "uses":
+        normalized_action = value.casefold().replace("_", "-")
+        install_action = re.search(
+            r"(?:^|[/@-])(?:pip(?:[0-9.]*)?|pipx|uv|vx)(?:[/@-]|$)",
+            normalized_action,
+        )
+        if "dcc-mcp-core" in normalized_action or install_action is not None:
+            raise ValueError(f"{relative} job {job_name} contains a competing install action")
+        return
+
+    executable = _workflow_shell_text(value)
+    function_pattern = re.compile(
+        r"(?im)^\s*(?:function\s+)?[A-Za-z_][A-Za-z0-9_]*\s*(?:\(\s*\))?\s*\{"
+    )
+    if function_pattern.search(executable):
+        raise ValueError(f"{relative} job {job_name} contains shell function indirection")
+
+    for segment in _workflow_shell_segments(value):
+        normalized = [token.casefold().replace("_", "-") for token in segment]
+        if any(token == "scripts/setup-released-core.py" for token in normalized):
+            raise ValueError(f"{relative} job {job_name} contains a non-authoritative setup route")
+
+        head = _workflow_command_head(segment)
+        if head is None:
+            continue
+        normalized_head = Path(head).name.casefold().removesuffix(".exe")
+        if reject_indirect_head and (
+            "$" in head or "`" in head or re.search(r"%[^%]+%", head)
+        ):
+            raise ValueError(f"{relative} job {job_name} contains an indirect command head")
+        if normalized_head in WORKFLOW_INDIRECT_COMMANDS:
+            raise ValueError(f"{relative} job {job_name} contains shell command indirection")
+
+        package_manager = normalized_head in WORKFLOW_PACKAGE_MANAGERS or re.fullmatch(
+            r"pip[0-9]+(?:\.[0-9]+)*",
+            normalized_head,
+        ) is not None
+        python_pip = (
+            re.fullmatch(r"(?:python(?:\d+(?:\.\d+)?)?|py)", normalized_head) is not None
+            and any(
+                normalized[index : index + 2] in (["-m", "pip"], ["-m", "ensurepip"])
+                for index in range(max(0, len(normalized) - 1))
+            )
+        )
+        core_package = any(token.startswith("dcc-mcp-core") for token in normalized)
+        dependency_action = any(token in {"add", "install", "sync"} for token in normalized)
+        if package_manager or python_pip or (core_package and dependency_action):
+            raise ValueError(f"{relative} job {job_name} contains a competing Core install route")
+
+
+def _validate_released_core_job(
+    workflow: dict,
+    relative: str,
+    job_name: str,
+    expected_command: str,
+) -> None:
+    jobs = workflow.get("jobs")
+    if not isinstance(jobs, dict):
+        raise ValueError(f"released Core workflow has no jobs mapping: {relative}")
+    job = jobs.get(job_name)
+    if not isinstance(job, dict):
+        raise ValueError(f"released Core workflow is missing required job: {job_name}")
+    expected_controls = RELEASED_CORE_JOB_EXECUTION_CONTROLS[relative][job_name]
+    actual_controls = {
+        key: value for key, value in job.items() if key in WORKFLOW_EXECUTION_CONTROL_KEYS
+    }
+    if actual_controls != expected_controls:
+        raise ValueError(
+            f"{relative} job {job_name} execution controls differ from the frozen contract"
+        )
+    steps = job.get("steps")
+    if not isinstance(steps, list):
+        raise ValueError(f"{relative} job {job_name} has no executable steps")
+
+    run_steps: list[dict] = []
+    for index, step in enumerate(steps):
+        if not isinstance(step, dict):
+            raise ValueError(f"{relative} job {job_name} step {index} must be a mapping")
+        if "run" in step:
+            if not isinstance(step["run"], str):
+                raise ValueError(f"{relative} job {job_name} step {index} run must be text")
+            run_steps.append(step)
+
+    if not run_steps or run_steps[0]["run"].strip() != expected_command:
+        raise ValueError(
+            f"{relative} job {job_name} must execute the released Core setup first"
+        )
+
+    authoritative = [step for step in run_steps if step["run"].strip() == expected_command]
+    if len(authoritative) != 1:
+        raise ValueError(
+            f"{relative} job {job_name} must contain exactly one released Core setup step"
+        )
+    setup_step = authoritative[0]
+    if setup_step != {"run": expected_command}:
+        raise ValueError(
+            f"{relative} job {job_name} weakens the released Core setup execution controls"
+        )
+
+    for step in steps:
+        if step is setup_step:
+            continue
+        execution_surfaces = [
+            (step.get("run"), True, "run"),
+            (step.get("uses"), False, "uses"),
+        ]
+        environment = step.get("env", {})
+        if not isinstance(environment, dict):
+            raise ValueError(f"{relative} job {job_name} step env must be a mapping")
+        execution_surfaces.extend((value, False, "env") for value in environment.values())
+        for value, reject_indirect_head, surface_kind in execution_surfaces:
+            if value is None:
+                continue
+            if not isinstance(value, str):
+                raise ValueError(
+                    f"{relative} job {job_name} execution surface must be text"
+                )
+            _validate_workflow_execution_surface(
+                value,
+                relative,
+                job_name,
+                reject_indirect_head=reject_indirect_head,
+                surface_kind=surface_kind,
+            )
+
+
+def validate_released_core_workflows(catalog: dict, workflows: dict[str, str]) -> None:
+    """Require one structurally executable catalog-derived Core setup per job."""
+    released = catalog["sources"]["released_cli"]
+    version_pin = re.compile(r"(?im)^\s*DCC_MCP_CORE_VERSION\s*:\s*['\"]?([^'\"\s]+)")
+    commit_pin = re.compile(r"(?im)^\s*DCC_MCP_CORE_COMMIT\s*:\s*['\"]?([0-9a-f]+)")
+
+    if set(workflows) != set(RELEASED_CORE_WORKFLOW_JOBS):
+        raise ValueError("released Core workflow set differs from the required contract")
+    for relative, commands in RELEASED_CORE_WORKFLOW_COMMANDS.items():
+        workflow_text = workflows[relative]
+        for match in version_pin.finditer(workflow_text):
+            if match.group(1) != released["version"]:
+                raise ValueError(f"workflow has a conflicting released Core version: {relative}")
+            raise ValueError(f"workflow duplicates the catalog-derived Core version: {relative}")
+        for match in commit_pin.finditer(workflow_text):
+            if match.group(1) != released["commit"]:
+                raise ValueError(f"workflow has a conflicting released Core commit: {relative}")
+            raise ValueError(f"workflow duplicates the catalog-derived Core commit: {relative}")
+        workflow = _load_workflow_yaml(workflow_text, relative)
+        if workflow.get("defaults") is not None:
+            raise ValueError(f"workflow changes the released Core default execution context: {relative}")
+        if workflow.get("env") != RELEASED_CORE_WORKFLOW_ENVIRONMENT[relative]:
+            raise ValueError(f"workflow environment differs from the frozen contract: {relative}")
+        triggers = workflow.get("on")
+        if triggers != RELEASED_CORE_WORKFLOW_REQUIRED_TRIGGERS[relative]:
+            raise ValueError(f"workflow triggers differ from the exact contract: {relative}")
+        if any(
+            not _workflow_trigger_is_reachable(trigger, config)
+            for trigger, config in triggers.items()
+        ):
+            raise ValueError(f"workflow contains an unreachable trigger: {relative}")
+
+        jobs = workflow.get("jobs")
+        expected_job_digests = RELEASED_CORE_WORKFLOW_JOB_DIGESTS[relative]
+        if not isinstance(jobs, dict) or set(jobs) != set(expected_job_digests):
+            raise ValueError(f"workflow jobs differ from the exact contract: {relative}")
+        for job_name, expected_digest in expected_job_digests.items():
+            if _workflow_structure_digest(jobs[job_name]) != expected_digest:
+                raise ValueError(
+                    f"{relative} job {job_name} execution topology differs from the exact contract"
+                )
+        for job_name, expected_command in commands.items():
+            _validate_released_core_job(workflow, relative, job_name, expected_command)
 
 
 def validate_core_catalog_snapshot(catalog: dict, payload: dict) -> None:

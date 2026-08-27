@@ -72,11 +72,13 @@ The copy is a command, and CI enforces it:
 - `scripts/sync_product_discovery.py --check` rejects drift across all generated
   manifests and interfaces. Required CI and release jobs add
   `--check-core-catalog` to compare all 35 identities, owners, repositories, and
-  install availability against the catalog at the immutable Core commit recorded
-  in `PRODUCTS.json`; this prevents a coordinated source/product rename from
-  remaining merely self-consistent. `--check-cli` additionally verifies the
-  installed released CLI's exact result without silently rewriting human-reviewed
-  aliases.
+  install availability against the catalog at the exact Core release commit
+  recorded in `PRODUCTS.json`; this prevents a coordinated source/product rename
+  from remaining merely self-consistent. The same source contract pins the
+  official repository, release tag, and commit. Required CI and release jobs
+  download the SHA-verified CLI asset for that exact version, resolve the tag
+  commit independently, and run `--check-cli` on Linux, macOS, and Windows
+  without silently rewriting human-reviewed aliases.
 - The same workflow compares against Core's default branch weekly, so newer
   upstream content surfaces as a scheduled failure instead of silent staleness.
 
