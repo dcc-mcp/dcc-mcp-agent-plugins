@@ -9,8 +9,6 @@ import textwrap
 import urllib.request
 from pathlib import Path
 
-import yaml
-
 try:
     from product_discovery import (
         ROOT,
@@ -237,6 +235,11 @@ def main(argv: list[str] | None = None) -> int:
 
     catalog = load_product_catalog()
     if args.check_core_catalog:
+        try:
+            import yaml
+        except ImportError as error:
+            print(f"immutable Core catalog check requires PyYAML: {error}")
+            return 1
         source = catalog["sources"]["core_catalog"]
         url = (
             "https://raw.githubusercontent.com/dcc-mcp/dcc-mcp-core/"
