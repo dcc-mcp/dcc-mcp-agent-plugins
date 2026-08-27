@@ -203,7 +203,7 @@ python scripts/sync_product_discovery.py
 python scripts/bump_version.py --patch
 python scripts/build_geo_site.py
 python scripts/sync_core_skills.py --source ../dcc-mcp-core --check
-python scripts/sync_product_discovery.py --check --check-cli
+python scripts/sync_product_discovery.py --check --check-core-catalog --check-cli
 ```
 
 `core-sync.yml` runs that sequence itself every Monday and on demand. When Core

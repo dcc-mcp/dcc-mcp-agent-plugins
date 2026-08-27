@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import subprocess
 import textwrap
+import urllib.request
+from pathlib import Path
+
+import yaml
 
 try:
     from product_discovery import (
@@ -18,6 +21,7 @@ try:
         skill_search_hint,
         skill_tags,
         ui_route_prompt,
+        validate_core_catalog_snapshot,
         validate_released_cli_snapshot,
     )
 except ModuleNotFoundError:  # Imported as scripts.sync_product_discovery by unit tests.
@@ -30,6 +34,7 @@ except ModuleNotFoundError:  # Imported as scripts.sync_product_discovery by uni
         skill_search_hint,
         skill_tags,
         ui_route_prompt,
+        validate_core_catalog_snapshot,
         validate_released_cli_snapshot,
     )
 
@@ -223,9 +228,31 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="compare the catalog with the installed released dcc-mcp-cli",
     )
+    parser.add_argument(
+        "--check-core-catalog",
+        action="store_true",
+        help="compare products with the immutable Core catalog source",
+    )
     args = parser.parse_args(argv)
 
     catalog = load_product_catalog()
+    if args.check_core_catalog:
+        source = catalog["sources"]["core_catalog"]
+        url = (
+            "https://raw.githubusercontent.com/dcc-mcp/dcc-mcp-core/"
+            f"{source['commit']}/{source['path']}"
+        )
+        try:
+            with urllib.request.urlopen(url, timeout=30) as response:
+                core_catalog = yaml.safe_load(response.read().decode("utf-8"))
+            validate_core_catalog_snapshot(catalog, core_catalog)
+        except (OSError, UnicodeDecodeError, ValueError, yaml.YAMLError) as error:
+            print(f"immutable Core catalog differs: {error}")
+            return 1
+        print(
+            f"Immutable Core catalog {source['commit']} matches "
+            f"{len(catalog['products'])} product identities"
+        )
     if args.check_cli:
         try:
             version_result = subprocess.run(

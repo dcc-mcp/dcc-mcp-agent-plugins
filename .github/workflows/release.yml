@@ -24,6 +24,7 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install "dcc-mcp-core==0.20.8"
       - run: python scripts/validate_repository.py
+      - run: python scripts/sync_product_discovery.py --check --check-core-catalog
       - run: python scripts/build_geo_site.py --check
       - name: Package release
         run: |
