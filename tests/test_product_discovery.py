@@ -2,24 +2,23 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
 import json
-from pathlib import Path
 import subprocess
 import sys
 import unittest
+from copy import deepcopy
+from pathlib import Path
 
+from scripts.distribution import build_catalog
 from scripts.product_discovery import (
     load_product_catalog,
     normalize_term,
     product_terms,
     resolve_product_intent,
-    validate_released_cli_snapshot,
     validate_product_catalog,
+    validate_released_cli_snapshot,
 )
-from scripts.distribution import build_catalog
 from scripts.sync_product_discovery import OPENAI_INTERFACE, rendered_outputs
-
 
 ROOT = Path(__file__).resolve().parent.parent
 PLUGIN_MANIFESTS = (
@@ -126,13 +125,17 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
 
     def test_bounded_aliases_resolve_to_one_canonical_identity(self) -> None:
         cases = {
+            "Build the scene in Blender": "blender",
+            "Create the gameplay scene in Godot": "godot",
             "Create a prop in 3dsmax": "3dsmax",
             "Animate this in C4D": "c4d",
             "Retarget this in MoBu": "mobu",
             "Set up a level in UE": "unreal",
             "Package this UE4 project": "unreal",
+            "在虚幻引擎中创建关卡": "unreal",
             "请在团结引擎中创建场景": "unity",
             "Open the Tuanjie project": "unity",
+            "Open this scene in Unity": "unity",
             "Check the task in ShotGrid": "shotgrid",
             "Author this in Substance Designer": "substance3d_designer",
             "Paint this in Substance Painter": "substance3d_painter",
@@ -158,6 +161,9 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
             "Maya civilization exhibit tickets",
             "Mari sent a message",
             "render the design after painting",
+            "I bought a blender for smoothies",
+            "We are waiting for Godot at the theatre",
+            "The coalition stands with unity",
         )
         for query in queries:
             with self.subTest(query=query):
@@ -214,9 +220,8 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
         mutations.append(missing_handoff)
 
         for mutation in mutations:
-            with self.subTest():
-                with self.assertRaises(ValueError):
-                    validate_product_catalog(mutation)
+            with self.subTest(), self.assertRaises(ValueError):
+                validate_product_catalog(mutation)
 
     def test_ui_route_is_one_fail_closed_project_provider(self) -> None:
         route = self.catalog["ui_routing"]

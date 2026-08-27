@@ -62,7 +62,7 @@ Authoritative snapshot: `dcc-mcp-cli 0.20.21 dcc-types --output json`.
 | --- | --- | --- | --- | --- |
 | `3dsmax` | [Autodesk 3ds Max](https://github.com/dcc-mcp/dcc-mcp-3dsmax) | `3ds Max`, `3dsmax`, `3ds-max` | 3d-content | yes |
 | `aftereffects` | [Adobe After Effects](https://github.com/dcc-mcp/dcc-mcp-aftereffects) | `After Effects`, `AfterEffects` | adobe-content | yes |
-| `blender` | [Blender](https://github.com/dcc-mcp/dcc-mcp-blender) | - | 3d-content | yes |
+| `blender` | [Blender](https://github.com/dcc-mcp/dcc-mcp-blender) | `Blender` | 3d-content | yes |
 | `c4d` | [Cinema 4D](https://github.com/dcc-mcp/dcc-mcp-cinema4d) | `Cinema4D`, `C4D` | 3d-content | yes |
 | `comfyui` | [ComfyUI](https://github.com/dcc-mcp/dcc-mcp-comfyui) | `Comfy UI` | generative-content | yes |
 | `freecad` | [FreeCAD](https://github.com/dcc-mcp/dcc-mcp-freecad) | - | cad | yes |
@@ -92,7 +92,7 @@ Authoritative snapshot: `dcc-mcp-cli 0.20.21 dcc-types --output json`.
 | `tiled` | [Tiled Map Editor](https://github.com/dcc-mcp/dcc-mcp-tiled) | `Tiled` | game-content | no |
 | `touchdesigner` | [TouchDesigner](https://github.com/dcc-mcp/dcc-mcp-touchdesigner) | `Touch Designer` | interactive-media | yes |
 | `unity` | [Unity Editor](https://github.com/dcc-mcp/dcc-mcp-unity) | `Tuanjie`, `Tuanjie Engine`, `团结引擎`, `Unity` | game-engine | yes |
-| `unreal` | [Unreal Engine](https://github.com/dcc-mcp/dcc-mcp-unreal) | `UE4`, `UE5`, `Unreal`, `UE` | game-engine | yes |
+| `unreal` | [Unreal Engine](https://github.com/dcc-mcp/dcc-mcp-unreal) | `UE4`, `UE5`, `虚幻引擎`, `Unreal`, `UE` | game-engine | yes |
 | `wwise` | [Audiokinetic Wwise](https://github.com/dcc-mcp/dcc-mcp-wwise) | `Wwise` | game-audio | no |
 | `zbrush` | [ZBrush](https://github.com/dcc-mcp/dcc-mcp-zbrush) | - | 3d-content | yes |
 

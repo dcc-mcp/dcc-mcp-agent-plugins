@@ -4,6 +4,9 @@
     "released_cli": {
       "name": "dcc-mcp-cli",
       "version": "0.20.21",
+      "repository": "https://github.com/dcc-mcp/dcc-mcp-core",
+      "tag": "v0.20.21",
+      "commit": "e8d070fd703164a380895af2d6b4e17b3cb2459c",
       "command": "dcc-mcp-cli dcc-types --output json",
       "checked_at": "2026-08-27",
       "reported_total": 35,
@@ -47,7 +50,7 @@
     },
     "core_catalog": {
       "repository": "https://github.com/dcc-mcp/dcc-mcp-core",
-      "commit": "c8897284163ffaa56c7d45246601e5e6ce962cbe",
+      "commit": "e8d070fd703164a380895af2d6b4e17b3cb2459c",
       "path": "dcc-mcp-catalog.yml"
     },
     "owner_repositories_checked_at": "2026-08-27"
@@ -125,7 +128,7 @@
       "id": "blender",
       "display_name": "Blender",
       "aliases": [],
-      "contextual_aliases": [],
+      "contextual_aliases": ["Blender"],
       "family": "3d-content",
       "adapter": "dcc-mcp-blender",
       "repository": "https://github.com/dcc-mcp/dcc-mcp-blender",
@@ -194,8 +197,8 @@
     {
       "id": "godot",
       "display_name": "Godot Engine",
-      "aliases": ["Godot"],
-      "contextual_aliases": [],
+      "aliases": [],
+      "contextual_aliases": ["Godot"],
       "family": "game-engine",
       "adapter": "dcc-mcp-godot",
       "repository": "https://github.com/dcc-mcp/dcc-mcp-godot",
@@ -544,7 +547,7 @@
     {
       "id": "unreal",
       "display_name": "Unreal Engine",
-      "aliases": ["UE4", "UE5"],
+      "aliases": ["UE4", "UE5", "虚幻引擎"],
       "contextual_aliases": ["Unreal", "UE"],
       "family": "game-engine",
       "adapter": "dcc-mcp-unreal",
