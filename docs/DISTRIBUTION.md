@@ -2,7 +2,7 @@
 
 # Distribution channels
 
-Released version: **0.19.94** &middot; Catalog: `https://dcc-mcp.github.io/dcc-mcp-agent-plugins/catalog.json`
+Released version: **0.19.95** &middot; Catalog: `https://dcc-mcp.github.io/dcc-mcp-agent-plugins/catalog.json`
 
 | Channel | Kind | Automation | Notes |
 | --- | --- | --- | --- |
@@ -27,19 +27,19 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp
 
 - **Name**: dcc-mcp
-- **Version**: 0.19.94
+- **Version**: 0.19.95
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.94/plugins/dcc-mcp/skills/dcc-mcp
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.95/plugins/dcc-mcp/skills/dcc-mcp
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp`
-- **Description**: Default DCC control skill — connect to and operate live Maya, Blender, Houdini, Photoshop, 3ds Max, Nuke, Unreal, Godot, RenderDoc, Substance 3D, and other DCC apps through structured DCC-MCP tools. Use this skill first for DCC operation and explicit CUA, DCC CUA, dcc-cua, our dcc-cua, or 我们的 dcc-cua requests. These select project-owned DCC UI Control even when the target is a browser or other non-DCC app; never substitute Codex/OpenAI generic Computer Use, @oai/sky, or Browser/Chrome plugins. Also use this skill first for DCC-MCP marketplace, catalog, install, or update requests: query the marketplace through dcc-mcp-cli. OpenClaw/shell agents use dcc-mcp-cli; MCP-native IDEs use the gateway MCP surface.
-- **Tags**: dcc, dcc-ui-control, ui-control, cua, dcc-cua, computer-use, maya, blender, houdini, photoshop, nuke, unreal, godot, renderdoc, cli, gateway, marketplace, skill-catalog, clawhub, openclaw
+- **Description**: Default DCC-MCP router for 35 released creative products. Use typed DCC-MCP tools first. For application UI, including browsers and non-DCC apps, DCC-CUA and ui-control name the same project-owned route and explicit DCC-CUA requests never fall back to generic Computer Use providers.
+- **Tags**: dcc, dcc-mcp, typed-tools, dcc-cua, ui-control, 3dsmax, aftereffects, blender, c4d, comfyui, freecad, gimp, godot, houdini, illustrator, katana, krita, mari, marmoset, material-maker, maya, mobu, nuke, openscad, openusd, photoshop, powerpoint, premiere, renderdoc, shogun, shotgrid, sketchup, substance3d_designer, substance3d_painter, tiled, touchdesigner, unity, unreal, wwise, zbrush
 
 ### dcc-mcp-skills-creator
 
 - **Name**: dcc-mcp-skills-creator
-- **Version**: 0.19.94
+- **Version**: 0.19.95
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.94/plugins/dcc-mcp/skills/dcc-mcp-skills-creator
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.95/plugins/dcc-mcp/skills/dcc-mcp-skills-creator
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp-skills-creator`
 - **Description**: Infrastructure skill - create, validate, scaffold, and review DCC-MCP skills for the dcc-mcp-core ecosystem. Use when authoring SKILL.md, tools.yaml, scripts, groups, prompts, or skill taxonomy. Not for creating a full DCC-MCP adapter repository - use dcc-mcp-creator.
 - **Tags**: -
@@ -47,9 +47,65 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp-creator
 
 - **Name**: dcc-mcp-creator
-- **Version**: 0.19.94
+- **Version**: 0.19.95
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.94/plugins/dcc-mcp/skills/dcc-mcp-creator
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.95/plugins/dcc-mcp/skills/dcc-mcp-creator
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp-creator`
 - **Description**: Infrastructure skill - guide developers and agents through creating or modernizing a DCC-MCP adapter or standalone internal MCP service for Nuke, Blender, 3ds Max, Unreal, ZBrush, Houdini, Maya, and custom studio systems. Use when building server, dispatcher, gateway, packaging, and runtime integration. Not for authoring individual SKILL.md tool packages - use dcc-mcp-skills-creator.
 - **Tags**: adapter-development, internal-mcp-service, standalone, host-runtime, dispatcher, gateway, nuke, blender, 3dsmax, unreal, zbrush
+
+## Released product routing matrix
+
+Authoritative snapshot: `dcc-mcp-cli 0.20.21 dcc-types --output json`.
+
+| Canonical DCC type | Product | Bounded aliases | Family | Catalog install |
+| --- | --- | --- | --- | --- |
+| `3dsmax` | [Autodesk 3ds Max](https://github.com/dcc-mcp/dcc-mcp-3dsmax) | `3ds Max`, `3dsmax`, `3ds-max` | 3d-content | yes |
+| `aftereffects` | [Adobe After Effects](https://github.com/dcc-mcp/dcc-mcp-aftereffects) | `After Effects`, `AfterEffects` | adobe-content | yes |
+| `blender` | [Blender](https://github.com/dcc-mcp/dcc-mcp-blender) | - | 3d-content | yes |
+| `c4d` | [Cinema 4D](https://github.com/dcc-mcp/dcc-mcp-cinema4d) | `Cinema4D`, `C4D` | 3d-content | yes |
+| `comfyui` | [ComfyUI](https://github.com/dcc-mcp/dcc-mcp-comfyui) | `Comfy UI` | generative-content | yes |
+| `freecad` | [FreeCAD](https://github.com/dcc-mcp/dcc-mcp-freecad) | - | cad | yes |
+| `gimp` | [GIMP](https://github.com/dcc-mcp/dcc-mcp-gimp) | `GIMP 3` | image-content | yes |
+| `godot` | [Godot Engine](https://github.com/dcc-mcp/dcc-mcp-godot) | `Godot` | game-engine | yes |
+| `houdini` | [SideFX Houdini](https://github.com/dcc-mcp/dcc-mcp-houdini) | `Houdini` | 3d-content | yes |
+| `illustrator` | [Adobe Illustrator](https://github.com/dcc-mcp/dcc-mcp-illustrator) | `Illustrator` | adobe-content | yes |
+| `katana` | [Foundry Katana](https://github.com/dcc-mcp/dcc-mcp-katana) | `Katana` | 3d-content | yes |
+| `krita` | [Krita](https://github.com/dcc-mcp/dcc-mcp-krita) | - | image-content | yes |
+| `mari` | [Foundry Mari](https://github.com/dcc-mcp/dcc-mcp-mari) | `Mari` | materials | yes |
+| `marmoset` | [Marmoset Toolbag](https://github.com/dcc-mcp/dcc-mcp-marmoset) | `Marmoset`, `Toolbag` | rendering | yes |
+| `material-maker` | [Material Maker](https://github.com/dcc-mcp/dcc-mcp-material-maker) | `MaterialMaker` | materials | no |
+| `maya` | [Autodesk Maya](https://github.com/dcc-mcp/dcc-mcp-maya) | `Maya` | 3d-content | yes |
+| `mobu` | [Autodesk MotionBuilder](https://github.com/dcc-mcp/dcc-mcp-mobu) | `MotionBuilder`, `MoBu` | animation | yes |
+| `nuke` | [Foundry Nuke](https://github.com/dcc-mcp/dcc-mcp-nuke) | `Nuke` | compositing | yes |
+| `openscad` | [OpenSCAD](https://github.com/dcc-mcp/dcc-mcp-openscad) | - | cad | yes |
+| `openusd` | [OpenUSD](https://github.com/dcc-mcp/dcc-mcp-openusd) | `Universal Scene Description` | interchange | yes |
+| `photoshop` | [Adobe Photoshop](https://github.com/dcc-mcp/dcc-mcp-photoshop) | `Photoshop` | adobe-content | yes |
+| `powerpoint` | [Microsoft PowerPoint](https://github.com/dcc-mcp/dcc-mcp-PowerPoint) | `PowerPoint` | presentation | no |
+| `premiere` | [Adobe Premiere Pro](https://github.com/dcc-mcp/dcc-mcp-premiere) | `Premiere Pro`, `Adobe Premiere`, `Premiere` | adobe-content | yes |
+| `renderdoc` | [RenderDoc](https://github.com/dcc-mcp/dcc-mcp-renderdoc) | - | graphics-debugging | yes |
+| `shogun` | [Vicon Shogun](https://github.com/dcc-mcp/dcc-mcp-shogun) | `Shogun Post`, `Shogun` | motion-capture | yes |
+| `shotgrid` | [Autodesk Flow Production Tracking](https://github.com/dcc-mcp/dcc-mcp-fpt) | `Flow Production Tracking`, `ShotGrid` | production-tracking | yes |
+| `sketchup` | [SketchUp](https://github.com/dcc-mcp/dcc-mcp-sketchup) | - | cad | yes |
+| `substance3d_designer` | [Adobe Substance 3D Designer](https://github.com/dcc-mcp/dcc-mcp-substance3d-designer) | `Substance 3D Designer`, `Substance Designer` | materials | yes |
+| `substance3d_painter` | [Adobe Substance 3D Painter](https://github.com/dcc-mcp/dcc-mcp-substance3d-painter) | `Substance 3D Painter`, `Substance Painter` | materials | yes |
+| `tiled` | [Tiled Map Editor](https://github.com/dcc-mcp/dcc-mcp-tiled) | `Tiled` | game-content | no |
+| `touchdesigner` | [TouchDesigner](https://github.com/dcc-mcp/dcc-mcp-touchdesigner) | `Touch Designer` | interactive-media | yes |
+| `unity` | [Unity Editor](https://github.com/dcc-mcp/dcc-mcp-unity) | `Tuanjie`, `Tuanjie Engine`, `团结引擎`, `Unity` | game-engine | yes |
+| `unreal` | [Unreal Engine](https://github.com/dcc-mcp/dcc-mcp-unreal) | `UE4`, `UE5`, `Unreal`, `UE` | game-engine | yes |
+| `wwise` | [Audiokinetic Wwise](https://github.com/dcc-mcp/dcc-mcp-wwise) | `Wwise` | game-audio | no |
+| `zbrush` | [ZBrush](https://github.com/dcc-mcp/dcc-mcp-zbrush) | - | 3d-content | yes |
+
+## Application UI routing contract
+
+Typed DCC-MCP tools come first. **DCC-CUA** and `ui-control` are searchable terms for
+the same project-owned application UI route across DCC, browser, and non-DCC apps.
+An explicit DCC-CUA request is a hard provider boundary: do not substitute generic
+Codex/OpenAI Computer Use, `computer-use`, `@oai/sky`, Browser, or Chrome providers.
+Before UI observation or input, attest `provider=dcc-cua`, runtime, exact PID, and exact
+HWND. Use a fresh observation and the latest snapshot or semantic reference for each
+state-dependent action, verify by post-action readback, stop on interruption or permission
+failure, and hand CAPTCHA, authentication, or security challenges to the human.
+
+This catalog and CI are discovery/package evidence only. They do not claim licensed
+real-host validation for any product.

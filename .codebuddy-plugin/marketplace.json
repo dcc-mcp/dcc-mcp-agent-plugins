@@ -4,13 +4,13 @@
     "name": "DCC-MCP",
     "url": "https://github.com/dcc-mcp"
   },
-  "description": "DCC-MCP plugins for AI agent hosts.",
+  "description": "Discover and control 35 released creative applications with typed DCC-MCP tools; route scoped application UI through project-owned DCC-CUA/ui-control.",
   "plugins": [
     {
       "name": "dcc-mcp",
       "source": "./plugins/dcc-mcp",
-      "description": "Control creative applications through structured DCC-MCP tools.",
-      "version": "0.19.94",
+      "description": "Discover and control 35 released creative applications with typed DCC-MCP tools; route scoped application UI through project-owned DCC-CUA/ui-control.",
+      "version": "0.19.95",
       "author": {
         "name": "DCC-MCP"
       },

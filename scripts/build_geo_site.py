@@ -103,6 +103,12 @@ def _index_body(catalog: dict) -> str:
         f"<td>{escape(channel['automation'])}</td><td>{escape(channel['notes'])}</td></tr>"
         for channel in catalog["channels"]
     )
+    products = "\n".join(
+        f'<tr><td><code>{escape(product["id"])}</code></td>'
+        f'<td><a href="{escape(product["repository"])}">{escape(product["display_name"])}</a></td>'
+        f"<td>{escape(product['family'])}</td></tr>"
+        for product in catalog["products"]
+    )
     return f"""<h1>{escape(catalog["name"])}</h1>
 <p>{escape(catalog["description"])}</p>
 <p>Version <strong>{escape(catalog["version"])}</strong> &middot;
@@ -118,6 +124,17 @@ def _index_body(catalog: dict) -> str:
 <table><thead><tr><th>Skill</th><th>What it does</th></tr></thead><tbody>
 {rows}
 </tbody></table>
+<h2>Released products</h2>
+<p>The released CLI catalog reports {len(catalog["products"])} canonical product identities.
+Aliases remain bounded to each identity; see <a href="catalog.json">catalog.json</a> for the
+machine-readable routing contract.</p>
+<table><thead><tr><th>DCC type</th><th>Product</th><th>Family</th></tr></thead><tbody>
+{products}
+</tbody></table>
+<h2>Application UI routing</h2>
+<p>Typed DCC-MCP tools are always preferred. <strong>DCC-CUA</strong> and
+<code>ui-control</code> are searchable names for the same project-owned application UI route;
+there is no generic Computer Use fallback.</p>
 <h2>Distribution channels</h2>
 <table><thead><tr><th>Channel</th><th>Automation</th><th>Notes</th></tr></thead><tbody>
 {channels}
@@ -162,6 +179,21 @@ def _llms_txt(catalog: dict) -> str:
         "",
     ]
     lines += [f"- [{skill['slug']}]({skill['page_url']}): {skill['description']}" for skill in catalog["skills"]]
+    lines += ["", "## Released products", ""]
+    lines += [
+        f"- {product['display_name']} (`{product['id']}`): {product['repository']}"
+        for product in catalog["products"]
+    ]
+    lines += [
+        "",
+        "## Application UI route",
+        "",
+        "Prefer typed DCC-MCP tools. DCC-CUA and ui-control identify the same project-owned "
+        "application UI route; require provider/runtime/PID/HWND attestation, fresh observation, "
+        "the latest snapshot or semantic reference, and post-action readback. Stop on interruption, "
+        "permission, CAPTCHA, authentication, or security challenges; never substitute a generic "
+        "Computer Use, Browser, or Chrome provider.",
+    ]
     lines += ["", "## Sources", ""]
     lines += [
         f"- [{skill['slug']} SKILL.md]({skill['skill_md_url']}): canonical instructions"
@@ -261,6 +293,39 @@ def _distribution_doc(catalog: dict) -> str:
             f"- **Tags**: {', '.join(skill['tags']) or '-'}",
             "",
         ]
+    lines += [
+        "## Released product routing matrix",
+        "",
+        f"Authoritative snapshot: `dcc-mcp-cli {catalog['released_product_source']['version']} "
+        "dcc-types --output json`.",
+        "",
+        "| Canonical DCC type | Product | Bounded aliases | Family | Catalog install |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for product in catalog["products"]:
+        aliases = [*product.get("aliases", []), *product.get("contextual_aliases", [])]
+        alias_text = ", ".join(f"`{alias}`" for alias in aliases) or "-"
+        install = "yes" if product["catalog_install_available"] else "no"
+        lines.append(
+            f"| `{product['id']}` | [{product['display_name']}]({product['repository']}) | "
+            f"{alias_text} | {product['family']} | {install} |"
+        )
+    lines += [
+        "",
+        "## Application UI routing contract",
+        "",
+        "Typed DCC-MCP tools come first. **DCC-CUA** and `ui-control` are searchable terms for",
+        "the same project-owned application UI route across DCC, browser, and non-DCC apps.",
+        "An explicit DCC-CUA request is a hard provider boundary: do not substitute generic",
+        "Codex/OpenAI Computer Use, `computer-use`, `@oai/sky`, Browser, or Chrome providers.",
+        "Before UI observation or input, attest `provider=dcc-cua`, runtime, exact PID, and exact",
+        "HWND. Use a fresh observation and the latest snapshot or semantic reference for each",
+        "state-dependent action, verify by post-action readback, stop on interruption or permission",
+        "failure, and hand CAPTCHA, authentication, or security challenges to the human.",
+        "",
+        "This catalog and CI are discovery/package evidence only. They do not claim licensed",
+        "real-host validation for any product.",
+    ]
     return "\n".join(lines)
 
 

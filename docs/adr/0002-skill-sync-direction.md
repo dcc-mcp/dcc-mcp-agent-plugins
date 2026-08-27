@@ -36,15 +36,43 @@ and tests that the guidance describes:
 
 This repository owns distribution: vendor manifests, standalone archives, GitHub
 Releases, ClawHub, and Smithery publication. Files under
-`plugins/dcc-mcp/skills/**` are copies. Fixes to Skill content are made in Core
-and pulled in; a change committed here alone is drift, not a fix.
+`plugins/dcc-mcp/skills/**` are copies except for the bounded distribution
+metadata below. Fixes to Skill instructions are made in Core and pulled in; an
+instructional change committed here alone is drift, not a fix.
+
+This repository owns released-product discovery because it must keep every
+installable channel and generated catalog identical. The canonical source is
+`plugins/dcc-mcp/skills/dcc-mcp/references/PRODUCTS.json`, derived from the
+released `dcc-mcp-cli dcc-types --output json` result and reconciled with the
+owning adapter repositories. It records one canonical `dcc_type`, bounded
+aliases, bilingual routing examples, owner identity, install availability, and
+the shared DCC-CUA/UI Control provider contract for every released product.
+
+The generator `scripts/sync_product_discovery.py` owns only:
+
+- the default Skill's description, `search-hint`, and tags;
+- the default Skill's bounded generated product/UI routing block;
+- `plugins/dcc-mcp/skills/dcc-mcp/agents/openai.yaml`;
+- the default Skill's `references/PRODUCTS.json`;
+- vendor manifest descriptions/keywords and generated distribution metadata.
+
+The remainder of the default Skill body remains Core-owned. DCC-CUA is a conditional UI route,
+not a hard dependency for every typed-tool task, so the generated frontmatter
+does not add `metadata.dcc-mcp.depends`. Shared canonical Skill behavior remains
+in Core; current decision-contract ownership is tracked by
+[`dcc-mcp-core#2383`](https://github.com/dcc-mcp/dcc-mcp-core/issues/2383).
 
 The copy is a command, and CI enforces it:
 
 - `scripts/sync_core_skills.py --source <core-checkout>` copies the Skill
   directories and records the Core commit in `.github/core-skills-sync.json`.
 - `.github/workflows/core-sync.yml` runs `--check` against that pinned commit on
-  every push and pull request, so a local edit to a copied file fails CI.
+  every push and pull request, so any edit outside the explicit distribution
+  ownership set fails CI.
+- `scripts/sync_product_discovery.py --check` rejects drift across all generated
+  manifests and interfaces. `--check-cli` additionally verifies the installed
+  released CLI's exact identity/owner/install-availability set without silently
+  rewriting human-reviewed aliases.
 - The same workflow compares against Core's default branch weekly, so newer
   upstream content surfaces as a scheduled failure instead of silent staleness.
 
@@ -52,6 +80,8 @@ Skill suite versions stay decoupled from Core release numbers. Skill content can
 be re-published without a Core release, and Core can release without changing
 Skill content, so `metadata.dcc-mcp.version` in each `SKILL.md` is
 repository-owned and is the one field the sync preserves rather than copies.
+The bounded default-Skill discovery fields above are also preserved and
+regenerated from `PRODUCTS.json`; every other field is compared to Core.
 Published Skill versions are immutable, so any content change requires a bump.
 
 Core's remaining top-level Skills are not distributed here:
@@ -73,9 +103,14 @@ table.
 
 - Skill guidance is written once, where its runtime lives, and cannot silently
   diverge from what it documents.
+- Released-product identities and aliases are written once in the distribution
+  catalog and projected into every installable plugin/Skill surface.
 - Drift is a CI failure with a named remedy instead of an unnoticed stale
   release.
-- Contributors who want to change Skill text are sent to `dcc-mcp-core`; this
-  repository reviews packaging, manifests, and release mechanics.
+- Contributors who want to change Skill instructions are sent to `dcc-mcp-core`;
+  this repository reviews bounded discovery metadata, packaging, manifests, and
+  release mechanics.
 - ADR 0001's planned removal of Core's copies is abandoned. Core's `skills/`
-  directory is canonical, not release debt.
+  directory remains canonical for instructions, not release debt.
+- Discovery/catalog/CI evidence remains distinct from licensed real-host
+  validation and cannot promote a product to that state.
