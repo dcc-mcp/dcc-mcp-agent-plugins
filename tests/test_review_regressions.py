@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import subprocess
+import sys
 import unittest
 from copy import deepcopy
 from pathlib import Path
@@ -25,6 +27,17 @@ class IndependentReviewRegressionTests(unittest.TestCase):
             with self.subTest(workflow=relative):
                 workflow = (ROOT / relative).read_text(encoding="utf-8")
                 self.assertIn(command, workflow)
+                self.assertIn('"PyYAML==6.0.2"', workflow)
+
+    def test_non_catalog_commands_do_not_import_optional_yaml(self) -> None:
+        result = subprocess.run(
+            [sys.executable, "-S", "-c", "import scripts.sync_product_discovery"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_immutable_catalog_rejects_a_coordinated_source_product_rename(self) -> None:
         immutable_snapshot = {
