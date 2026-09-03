@@ -208,18 +208,13 @@ python scripts/build_geo_site.py --check  # fail when the committed doc is stale
 | `dcc-mcp-skills-creator` | Create and validate DCC-MCP Skills |
 | `dcc-mcp-creator` | Create and modernize DCC-MCP adapters |
 
-Skill instructions are authored in `dcc-mcp-core`, next to the runtime they
-document; this repository owns distribution — product discovery metadata,
-vendor manifests, archives, GitHub Releases, ClawHub, and Smithery. Content is copied by
-`scripts/sync_core_skills.py` from the Core commit pinned in
-[`.github/core-skills-sync.json`](.github/core-skills-sync.json), and CI fails
-when the two sides drift. See
-[`docs/adr/0002-skill-sync-direction.md`](docs/adr/0002-skill-sync-direction.md).
+This repository is the sole source of truth for all three public Skills. It
+owns their instruction bodies, helpers, tests, versions, product discovery
+metadata, vendor manifests, archives, GitHub Releases, ClawHub, and Smithery.
+Core owns runtime code, schemas, the CLI, and Core-only/runtime Skills; public
+Skill bodies are no longer copied from Core. See
+[`docs/adr/0003-agent-plugins-source-of-truth.md`](docs/adr/0003-agent-plugins-source-of-truth.md).
 
-The sync preserves only bounded distribution-owned data: each Skill version,
-plus the default Skill's generated description, search hint, tags, OpenAI
-interface, marked product/UI routing block, and `PRODUCTS.json`. Core continues
-to own the remainder of the instructional body and every other file.
 Conditional DCC-CUA routing is deliberately not declared as a hard `depends`
 edge, so typed-tool tasks keep progressive loading and do not load the UI
 provider unless UI behavior is actually required.
@@ -227,16 +222,15 @@ provider unless UI behavior is actually required.
 The Skill suite version is this repository's own release line, deliberately
 decoupled from `dcc-mcp-core` release numbers: Skill content can be re-published
 without a Core release, and Core can release without changing Skill content.
-`metadata.dcc-mcp.version` in each `SKILL.md` is therefore the one field the
-sync preserves instead of copying.
+`metadata.dcc-mcp.version` in each `SKILL.md` follows this repository's suite
+version.
 
-Core skill synchronization and product discovery are separate contracts. The
-daily `core-sync.yml` job compares the three canonical Skill bodies with the
-pinned Core checkout. Product discovery is regenerated from `PRODUCTS.json` and
-can add a route from the current Core catalog (for example OBS Studio, LiquiGen,
-or the Office/PPT workflow) even while the released CLI snapshot remains at its
-own version. Run `sync_product_discovery.py --check --check-core-catalog` to
-verify both the generated surfaces and the pinned current catalog.
+Product discovery is a separate compatibility contract. It is regenerated from
+`PRODUCTS.json` and can add a route from the current Core catalog (for example
+OBS Studio, LiquiGen, or the Office/PPT workflow) even while the released CLI
+snapshot remains at its own version. Run
+`sync_product_discovery.py --check --check-core-catalog` to verify the generated
+surfaces against the pinned released Core catalog.
 
 When a user gives an absolute local application path, the default Skill stores
 it in the per-user cache used by
@@ -247,28 +241,18 @@ an install hint; no process is started automatically. See
 [`LOCAL_APP_PATH_CACHE.md`](plugins/dcc-mcp/skills/dcc-mcp/references/LOCAL_APP_PATH_CACHE.md).
 
 ```powershell
-# Re-sync after Core changes Skill content, then bump the suite version.
-python scripts/sync_core_skills.py --source ../dcc-mcp-core
+# After editing a public Skill, bump the suite and regenerate distribution data.
 python scripts/bump_version.py --patch
 python scripts/sync_product_discovery.py
 python scripts/build_geo_site.py
-python scripts/sync_core_skills.py --source ../dcc-mcp-core --check
 python scripts/sync_product_discovery.py --check --check-core-catalog --check-cli
 ```
 
-`core-sync.yml` runs that sequence itself every day and on demand. When Core
-has published newer Skill content it re-syncs, bumps the suite version,
-regenerates the distribution metadata, and opens or updates a pull request on
-`automation/core-skill-sync`. A Core commit that changed no Skill content opens
-nothing. Merging any validated Skill version change publishes the three Skills
-to ClawHub. Tagging `v<version>` still creates the cross-channel GitHub Release,
-Smithery, npm, and Pages release.
-
-Set an `AUTOMATION_TOKEN` or organization `PERSONAL_ACCESS_TOKEN` secret (a PAT
-with `contents` and `pull-requests` write access) so the generated pull request
-also triggers Validate; the default
-`GITHUB_TOKEN` cannot start workflows from its own commits. Without it the
-pull request is still opened, just without CI runs.
+Merging any validated Skill version change publishes the three Skills to
+ClawHub. Tagging `v<version>` creates the cross-channel GitHub Release,
+Smithery, npm, and Pages release. A coordinated Core runtime change uses a
+separate Core pull request; each repository reviews and validates its own
+contract.
 
 ## Development
 

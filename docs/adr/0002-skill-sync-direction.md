@@ -1,6 +1,6 @@
 # ADR 0002: Skill sync direction and drift control
 
-- Status: Proposed (supersedes ADR 0001)
+- Status: Superseded by [ADR 0003](0003-agent-plugins-source-of-truth.md)
 - Date: 2026-08-23
 
 ## Context

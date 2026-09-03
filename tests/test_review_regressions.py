@@ -74,7 +74,6 @@ class IndependentReviewRegressionTests(unittest.TestCase):
             relative: (ROOT / relative).read_text(encoding="utf-8")
             for relative in (
                 ".github/workflows/ci.yml",
-                ".github/workflows/core-sync.yml",
                 ".github/workflows/clawhub.yml",
                 ".github/workflows/release.yml",
             )

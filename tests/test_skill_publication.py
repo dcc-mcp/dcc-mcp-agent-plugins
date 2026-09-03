@@ -1,4 +1,4 @@
-"""Regression coverage for Core synchronization and ClawHub publication."""
+"""Regression coverage for ClawHub publication."""
 
 from __future__ import annotations
 
@@ -41,24 +41,6 @@ class SkillPublicationWorkflowTests(unittest.TestCase):
             commands.index("python -m unittest discover -s tests -q"),
             commands.index("python scripts/clawhub_sync.py"),
         )
-
-    def test_core_sync_regenerates_discovery_after_version_bump(self) -> None:
-        document = workflow(".github/workflows/core-sync.yml")
-        steps = document["jobs"]["sync-core"]["steps"]
-        script = next(
-            step["run"]
-            for step in steps
-            if step.get("name") == "Bump the Skill suite and regenerate distribution metadata"
-        )
-        self.assertLess(
-            script.index("scripts/bump_version.py"),
-            script.index("scripts/sync_product_discovery.py"),
-        )
-        self.assertLess(
-            script.index("scripts/sync_product_discovery.py"),
-            script.index("scripts/validate_repository.py"),
-        )
-
 
 if __name__ == "__main__":
     unittest.main()
