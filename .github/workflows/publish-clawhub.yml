@@ -1,0 +1,24 @@
+name: Publish merged ClawHub Skills
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "plugins/dcc-mcp/skills/**"
+      - "scripts/package_openclaw_skill.py"
+      - "scripts/clawhub_sync.py"
+      - "scripts/setup_released_core.py"
+      - ".github/clawhub-skills.json"
+      - ".github/workflows/clawhub.yml"
+      - ".github/workflows/publish-clawhub.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    uses: ./.github/workflows/clawhub.yml
+    with:
+      checkout-ref: ${{ github.sha }}
+      publish: true
+    secrets: inherit

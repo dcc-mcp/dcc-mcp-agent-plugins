@@ -51,7 +51,7 @@
       "url": "https://clawhub.ai/",
       "kind": "registry",
       "automation": "published",
-      "notes": "Published by scripts/clawhub_sync.py after the GitHub Release. Requires CLAWHUB_TOKEN."
+      "notes": "Validated Skill changes publish from main through scripts/clawhub_sync.py; tagged releases retry the same idempotent publication. Requires CLAWHUB_TOKEN."
     },
     {
       "name": "Smithery",

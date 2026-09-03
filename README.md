@@ -103,6 +103,39 @@ npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp-skills-creator
 npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp-creator
 ```
 
+#### Keep installed Skills current
+
+Use the updater that owns the installation. OpenClaw records ClawHub installs,
+so workspace and shared Skills can be refreshed non-interactively:
+
+```bash
+openclaw skills update --all
+openclaw skills update --all --global
+```
+
+A direct ClawHub install is tracked in the work directory where it was
+installed. Run the update from that same directory:
+
+```bash
+npx --yes clawhub@0.23.3 update --all
+```
+
+Skills installed from GitHub with the universal Agent Skills CLI use its own
+lock file and updater:
+
+```bash
+npx --yes skills@1.5.23 update -p -y
+npx --yes skills@1.5.23 update -g -y
+```
+
+These non-interactive commands can run from Task Scheduler, cron, or the host's
+automation service. Keep `--force` out of unattended ClawHub updates so pinned
+or locally modified Skills stay protected. The universal Agent Skills updater
+reinstalls changed managed copies from their recorded source, so custom changes
+belong in the source repository. An untracked directory copied into an agent's
+Skill folder must be reinstalled once through one of these managers before
+automatic updates can discover it.
+
 ### Smithery Skills
 
 The three canonical Skills are mapped to Smithery's GitHub-backed Skills
@@ -198,7 +231,7 @@ without a Core release, and Core can release without changing Skill content.
 sync preserves instead of copying.
 
 Core skill synchronization and product discovery are separate contracts. The
-weekly `core-sync.yml` job compares the three canonical Skill bodies with the
+daily `core-sync.yml` job compares the three canonical Skill bodies with the
 pinned Core checkout. Product discovery is regenerated from `PRODUCTS.json` and
 can add a route from the current Core catalog (for example OBS Studio, LiquiGen,
 or the Office/PPT workflow) even while the released CLI snapshot remains at its
@@ -216,22 +249,24 @@ an install hint; no process is started automatically. See
 ```powershell
 # Re-sync after Core changes Skill content, then bump the suite version.
 python scripts/sync_core_skills.py --source ../dcc-mcp-core
-python scripts/sync_product_discovery.py
 python scripts/bump_version.py --patch
+python scripts/sync_product_discovery.py
 python scripts/build_geo_site.py
 python scripts/sync_core_skills.py --source ../dcc-mcp-core --check
 python scripts/sync_product_discovery.py --check --check-core-catalog --check-cli
 ```
 
-`core-sync.yml` runs that sequence itself every Monday and on demand. When Core
+`core-sync.yml` runs that sequence itself every day and on demand. When Core
 has published newer Skill content it re-syncs, bumps the suite version,
 regenerates the distribution metadata, and opens or updates a pull request on
 `automation/core-skill-sync`. A Core commit that changed no Skill content opens
-nothing. Merging the pull request and tagging `v<version>` is the only manual
-step.
+nothing. Merging any validated Skill version change publishes the three Skills
+to ClawHub. Tagging `v<version>` still creates the cross-channel GitHub Release,
+Smithery, npm, and Pages release.
 
-Set an `AUTOMATION_TOKEN` secret (a PAT with `contents` and `pull-requests`
-write access) so the generated pull request also triggers Validate; the default
+Set an `AUTOMATION_TOKEN` or organization `PERSONAL_ACCESS_TOKEN` secret (a PAT
+with `contents` and `pull-requests` write access) so the generated pull request
+also triggers Validate; the default
 `GITHUB_TOKEN` cannot start workflows from its own commits. Without it the
 pull request is still opened, just without CI runs.
 

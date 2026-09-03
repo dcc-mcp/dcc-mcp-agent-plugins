@@ -10,7 +10,7 @@ allowed-tools: Bash Read Write Edit
 metadata:
   dcc-mcp:
     dcc: python
-    version: "0.19.96"
+    version: "0.19.97"
     layer: infrastructure
     compatibility: "Python 3.7+, dcc-mcp-core 0.17+"
     search-hint: "create dcc mcp skill, validate skill, scaffold skill, SKILL.md, tools.yaml, scripts, groups, prompts, skill taxonomy, long-running main-thread tools"
@@ -161,6 +161,23 @@ Generated `tools.yaml` entries follow the modern contract:
   the tool script or handler validation instead of `anyOf`, `oneOf`, `allOf`,
   `not`, `if`/`then`/`else`, or dependent-schema keywords. When a complex
   schema is unavoidable, discovery must route through `describe` before call.
+- Published recipe `inputs_schema` references stay within one schema resource:
+  use `#`, a local JSON Pointer such as `#/$defs/name`, or a local `$anchor`
+  such as `#name`. Recipe admission rejects `$id`, `$dynamicRef`, and
+  `$dynamicAnchor`; external and resource-relative `$ref` values are not
+  supported by the dependency-free validator.
+- A recipe `inputs_schema` may declare `$schema` only at the schema resource
+  root, and its value must be the absolute canonical Draft 2020-12 URI
+  `https://json-schema.org/draft/2020-12/schema`. Null, relative, unsupported,
+  and nested dialect declarations fail closed during recipe admission.
+- Recipe `pattern` and `patternProperties` expressions must use syntax shared
+  by Python 3.7-3.14. Version-specific constructs such as atomic groups
+  `(?>...)` fail closed; use portable constructs such as `(?:...)` only when
+  they preserve the intended matching semantics. Global inline flags such as
+  `(?i)` are portable only at the absolute start; use scoped flags such as
+  `(?i:...)` when flags must appear after a prefix or inside another group.
+  The `\B` non-boundary assertion is not portable because its empty-string
+  behavior changes in Python 3.14; express the intended boundary explicitly.
 - `execution` is `sync` or `async`; use `async` for deferred/long-running work.
 - `job_strategy` is `monolithic` (default), `chunked`, or `isolated`. Agents
   use it to select a safe execution and recovery workflow.
@@ -216,6 +233,14 @@ service-owned operation and returns a durable job id immediately. Declare the
 poll and cancel tools in `next-tools` and in the result recovery context.
 Status must remain readable after a transport disconnect or adapter restart;
 state cancellation ownership honestly when it cannot be reconstructed.
+The launch result must include the same durable `job_id` plus one canonical
+status. To make CLI `--wait` follow the adapter operation, declare the status
+tool in `next-tools.on-success` with `execution: sync`, a string `job_id` as its
+only required input, and both `read_only_hint: true` and `idempotent_hint: true`.
+Every other input must be optional and safe when omitted. Core rejects async,
+mutating, optional-id, multi-required-input, and untyped pollers. The status tool must
+return the queried ID or an explicit unknown-ID error; it must never create a
+new operation while polling.
 
 Render and cook status tools should reuse the Core progress vocabulary:
 `status`, `progress.current`, `progress.total`, and `progress.message`.
@@ -340,6 +365,15 @@ JSON plus bounded task and validation summaries. Treat `total_calls == 0` as
 missing evidence, not success. Never include hidden reasoning, raw prompts,
 credentials, or unredacted payloads.
 
+The Core `ObservabilityQuery.get_repeated_scripts()` helper is an internal,
+read-only evidence query. It is not an agent/gateway/CLI promotion entry point.
+Its `candidate_id` is a stable identity for the canonical tuple
+`sha256 + reuse_key + dcc_type + tool_name`; the result is always
+`decision=manual_review` and `recommended_action=human_review_only`. Candidate
+data must be reviewed and explicitly authorized by the task owner before any
+skill is edited, published, or otherwise promoted. Never infer authorization
+from a candidate or automate that transition.
+
 Prefer `no_change`, then improving an existing skill, and create a new skill
 only for a repeated, reusable workflow that no current skill owns. Validate any
 accepted change with `validate_skill_dir` or `dcc-mcp-cli lint` before loading
@@ -354,6 +388,12 @@ adapter's `dcc_feedback__report` is only a shared Core forwarder to that same
 gateway contract. The public-safe
 `/v1/debug/issue-reports/<request_id>` payload is suitable for a reviewed issue;
 never publish `?mode=raw` automatically.
+
+Published Skills should declare `metadata.dcc-mcp.links.repo` and
+`metadata.dcc-mcp.links.issues`. Copy those exact values into Finding v1
+`evidence.routing` before using `dcc-mcp-cli feedback route`; never infer a
+tracker from a package name. Missing, non-canonical, or conflicting ownership
+must fail closed, and resolving a route never authorizes issue creation.
 
 Fix this Skill only when the evidence identifies its schema, script,
 description, next-tool, or workflow contract. Route adapter/runtime failures to

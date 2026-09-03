@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    - cron: "17 6 * * 1"
+    - cron: "17 6 * * *"
   workflow_dispatch:
     inputs:
       bump:
@@ -66,7 +66,7 @@ jobs:
         with:
           # A PAT lets the resulting pull request trigger Validate; the default
           # token cannot start other workflows from its own commits.
-          token: ${{ secrets.AUTOMATION_TOKEN || github.token }}
+          token: ${{ secrets.AUTOMATION_TOKEN || secrets.PERSONAL_ACCESS_TOKEN || github.token }}
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
@@ -107,6 +107,7 @@ jobs:
         id: bump
         run: |
           python scripts/bump_version.py --${{ inputs.bump || 'patch' }}
+          python scripts/sync_product_discovery.py
           python scripts/build_geo_site.py
           python scripts/validate_repository.py
           version=$(python -c 'import json; print(json.load(open("plugins/dcc-mcp/plugin.json"))["version"])')
@@ -115,13 +116,13 @@ jobs:
       - name: Push the sync branch
         if: steps.sync.outputs.changed == 'true'
         env:
-          GH_TOKEN: ${{ secrets.AUTOMATION_TOKEN || github.token }}
+          GH_TOKEN: ${{ secrets.AUTOMATION_TOKEN || secrets.PERSONAL_ACCESS_TOKEN || github.token }}
           VERSION: ${{ steps.bump.outputs.version }}
           CORE_COMMIT: ${{ steps.sync.outputs.core-commit }}
         run: |
           rm -rf .core
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "loonghao"
+          git config user.email "hal.long@outlook.com"
           git checkout -B "$SYNC_BRANCH"
           git add -A
           git commit -m "chore(skills): re-sync canonical Skills from dcc-mcp-core and release ${VERSION}" \
@@ -131,7 +132,7 @@ jobs:
       - name: Open or update the pull request
         if: steps.sync.outputs.changed == 'true'
         env:
-          GH_TOKEN: ${{ secrets.AUTOMATION_TOKEN || github.token }}
+          GH_TOKEN: ${{ secrets.AUTOMATION_TOKEN || secrets.PERSONAL_ACCESS_TOKEN || github.token }}
           VERSION: ${{ steps.bump.outputs.version }}
           CORE_COMMIT: ${{ steps.sync.outputs.core-commit }}
           CORE_SHORT: ${{ steps.sync.outputs.core-short }}
@@ -146,8 +147,8 @@ jobs:
           - Skill suite bumped to \`${VERSION}\` (published Skill versions are immutable)
           - \`docs/DISTRIBUTION.md\` and the GEO catalog regenerated
 
-          Review the Skill diff, then merge and tag \`v${VERSION}\` to publish to
-          ClawHub, Smithery, npm, and GitHub Pages.
+          Review and merge the Skill diff to publish to ClawHub. Tag
+          \`v${VERSION}\` for the GitHub Release, Smithery, npm, and GitHub Pages.
           EOF
           existing=$(gh pr list --head "$SYNC_BRANCH" --state open --json number --jq '.[0].number')
           if [ -n "$existing" ]; then

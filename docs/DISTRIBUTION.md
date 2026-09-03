@@ -2,12 +2,12 @@
 
 # Distribution channels
 
-Released version: **0.19.96** &middot; Catalog: `https://dcc-mcp.github.io/dcc-mcp-agent-plugins/catalog.json`
+Released version: **0.19.97** &middot; Catalog: `https://dcc-mcp.github.io/dcc-mcp-agent-plugins/catalog.json`
 
 | Channel | Kind | Automation | Notes |
 | --- | --- | --- | --- |
 | [skills.sh](https://www.skills.sh/) | directory | verified | No publish API. The directory indexes public repositories and ranks them from anonymous skills-CLI install telemetry. Release installs all three Skills from the public repository on Linux, macOS, and Windows and asserts the released version; it never generates telemetry. |
-| [ClawHub](https://clawhub.ai/) | registry | published | Published by scripts/clawhub_sync.py after the GitHub Release. Requires CLAWHUB_TOKEN. |
+| [ClawHub](https://clawhub.ai/) | registry | published | Validated Skill changes publish from main through scripts/clawhub_sync.py; tagged releases retry the same idempotent publication. Requires CLAWHUB_TOKEN. |
 | [Smithery](https://smithery.ai/) | registry | published | GitHub-backed Skills registry. Published by scripts/smithery_sync.py. Requires SMITHERY_API_KEY. |
 | [npm](https://www.npmjs.com/package/@dcc-mcp/skills) | registry | published | Publishes the canonical Skill suite as a package so hosts can vendor it through node_modules. Requires NPM_TOKEN. |
 | [GitHub Releases](https://github.com/dcc-mcp/dcc-mcp-agent-plugins/releases) | artifact | published | Portable Agent Plugin archive plus per-Skill ZIPs. |
@@ -17,7 +17,8 @@ Released version: **0.19.96** &middot; Catalog: `https://dcc-mcp.github.io/dcc-m
 | [Awesome lists](https://github.com/topics/agent-skills) | directory | manual | One-line entries for awesome-claude-code, awesome-agent-skills, and awesome-mcp style lists are generated into the catalog so submissions never drift from the released version. |
 | [PulseMCP](https://www.pulsemcp.com/submit) | directory | not-applicable | Catalogs MCP Servers, not Agent Skills. Submit only when the owning Core/adapter release ships a public MCP endpoint. Do not represent an Agent Skill ZIP as an MCP Server. |
 
-`published` channels run from `.github/workflows/release.yml` on a `v*` tag.
+`published` channels run from `.github/workflows/release.yml` on a `v*` tag;
+ClawHub also publishes validated Skill changes directly from `main`.
 `verified` channels are checked against the public repository but expose no publish API.
 `manual` channels need a human submission; the entries below are regenerated from
 the released Skill suite so a submission never quotes stale metadata.
@@ -27,9 +28,9 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp
 
 - **Name**: dcc-mcp
-- **Version**: 0.19.96
+- **Version**: 0.19.97
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.96/plugins/dcc-mcp/skills/dcc-mcp
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.97/plugins/dcc-mcp/skills/dcc-mcp
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp`
 - **Description**: Default DCC-MCP router for 35 released creative products and 3 current application routes. Use typed DCC-MCP tools first. For application UI, including browsers and non-DCC apps, DCC-CUA and ui-control name the same project-owned route and explicit DCC-CUA requests never fall back to generic Computer Use providers.
 - **Tags**: dcc, dcc-mcp, typed-tools, dcc-cua, ui-control, 3dsmax, aftereffects, blender, c4d, comfyui, freecad, gimp, godot, houdini, illustrator, katana, krita, mari, marmoset, material-maker, maya, mobu, nuke, openscad, openusd, photoshop, powerpoint, premiere, renderdoc, shogun, shotgrid, sketchup, substance3d_designer, substance3d_painter, tiled, touchdesigner, unity, unreal, wwise, zbrush, obs, liquigen, office-suite
@@ -37,9 +38,9 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp-skills-creator
 
 - **Name**: dcc-mcp-skills-creator
-- **Version**: 0.19.96
+- **Version**: 0.19.97
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.96/plugins/dcc-mcp/skills/dcc-mcp-skills-creator
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.97/plugins/dcc-mcp/skills/dcc-mcp-skills-creator
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp-skills-creator`
 - **Description**: Infrastructure skill - create, validate, scaffold, and review DCC-MCP skills for the dcc-mcp-core ecosystem. Use when authoring SKILL.md, tools.yaml, scripts, groups, prompts, or skill taxonomy. Not for creating a full DCC-MCP adapter repository - use dcc-mcp-creator.
 - **Tags**: -
@@ -47,9 +48,9 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp-creator
 
 - **Name**: dcc-mcp-creator
-- **Version**: 0.19.96
+- **Version**: 0.19.97
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.96/plugins/dcc-mcp/skills/dcc-mcp-creator
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.97/plugins/dcc-mcp/skills/dcc-mcp-creator
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp-creator`
 - **Description**: Infrastructure skill - guide developers and agents through creating or modernizing a DCC-MCP adapter or standalone internal MCP service for Nuke, Blender, 3ds Max, Unreal, ZBrush, Houdini, Maya, and custom studio systems. Use when building server, dispatcher, gateway, packaging, and runtime integration. Not for authoring individual SKILL.md tool packages - use dcc-mcp-skills-creator.
 - **Tags**: adapter-development, internal-mcp-service, standalone, host-runtime, dispatcher, gateway, nuke, blender, 3dsmax, unreal, zbrush

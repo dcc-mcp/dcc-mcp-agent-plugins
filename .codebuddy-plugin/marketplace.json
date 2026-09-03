@@ -10,7 +10,7 @@
       "name": "dcc-mcp",
       "source": "./plugins/dcc-mcp",
       "description": "Discover and control 35 released creative applications plus 3 current Core application routes with typed DCC-MCP tools; route scoped application UI through project-owned DCC-CUA/ui-control.",
-      "version": "0.19.96",
+      "version": "0.19.97",
       "author": {
         "name": "DCC-MCP"
       },
