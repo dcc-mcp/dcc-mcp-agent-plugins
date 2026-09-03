@@ -103,6 +103,13 @@ def main() -> int:
         raise ValueError(f"catalog version differs from plugin: {catalog['version']}")
     if catalog["products"] != product_catalog["products"]:
         raise ValueError("public catalog products differ from PRODUCTS.json")
+    if catalog.get("application_routes", []) != product_catalog.get("application_routes", []):
+        raise ValueError("public catalog application routes differ from PRODUCTS.json")
+    expected_current_source = product_catalog["sources"].get(
+        "current_core_catalog", product_catalog["sources"]["core_catalog"]
+    )
+    if catalog.get("current_product_source") != expected_current_source:
+        raise ValueError("public catalog current product source differs from PRODUCTS.json")
     if catalog["ui_routing"] != product_catalog["ui_routing"]:
         raise ValueError("public catalog UI routing differs from PRODUCTS.json")
     npm_package = load_manifest()["npm"]["package"]
@@ -117,7 +124,8 @@ def main() -> int:
     manifests = len(PLUGIN_MANIFESTS) + len(MARKETPLACE_MANIFESTS) + 2
     print(
         f"Validated {len(entries)} Skills, {manifests} manifests, "
-        f"{len(product_catalog['products'])} released products, and "
+        f"{len(product_catalog['products'])} released products plus "
+        f"{len(product_catalog.get('application_routes', []))} application routes, and "
         f"{len(catalog['channels'])} distribution channels at {version}"
     )
     return 0

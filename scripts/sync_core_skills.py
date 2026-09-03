@@ -35,6 +35,8 @@ VERSION_LINE = re.compile(r'^(?P<indent>\s+)version:\s*"(?P<version>[^"]*)"\s*(?
 DISTRIBUTION_OWNED_FILES = {
     ("dcc-mcp", Path("agents/openai.yaml")),
     ("dcc-mcp", Path("references/PRODUCTS.json")),
+    ("dcc-mcp", Path("references/LOCAL_APP_PATH_CACHE.md")),
+    ("dcc-mcp", Path("scripts/app_path_cache.py")),
 }
 DISTRIBUTION_OWNED_SKILL_FIELDS = {
     "dcc-mcp": (("description", 0), ("search-hint", 4), ("tags", 4)),

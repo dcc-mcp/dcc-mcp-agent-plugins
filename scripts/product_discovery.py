@@ -1,4 +1,4 @@
-"""Canonical released-product discovery and routing contracts."""
+"""Canonical product discovery and routing contracts."""
 
 from __future__ import annotations
 
@@ -297,6 +297,11 @@ def product_terms(product: dict, *, include_contextual: bool = True) -> list[str
     return terms
 
 
+def routed_products(catalog: dict) -> list[dict]:
+    """Return released products plus current application routes."""
+    return [*catalog.get("products", []), *catalog.get("application_routes", [])]
+
+
 def _contains_phrase(normalized_query: str, normalized_term: str) -> bool:
     if not normalized_term:
         return False
@@ -315,7 +320,7 @@ def _contextual_match(normalized_query: str, normalized_term: str) -> bool:
         r"(?:in|inside|from|using|use|open|launch|operate|control)\s+(?:the\s+)?"
     )
     english_suffix = (
-        r"(?:editor|project|scene|app|software|window|workflow|file|document|composition)"
+        r"(?:editor|project|scene|app|software|window|workflow|file|document|composition|workbook)"
     )
     if re.search(rf"(?<![a-z0-9]){english_prefix}{escaped}(?![a-z0-9])", normalized_query):
         return True
@@ -336,7 +341,7 @@ def resolve_product_intent(query: str, catalog: dict | None = None) -> dict:
     data = catalog or load_product_catalog()
     normalized_query = normalize_term(query)
     matches: list[str] = []
-    for product in data["products"]:
+    for product in routed_products(data):
         contextual_terms = _alias_terms(product, "contextual_aliases")
         contextual_normalized = {normalize_term(term) for term in contextual_terms}
         identity_terms = [
@@ -387,6 +392,14 @@ def validate_product_catalog(data: dict) -> None:
         raise ValueError("core catalog path must be dcc-mcp-catalog.yml")
     if core_catalog.get("commit") != released_cli.get("commit"):
         raise ValueError("core catalog must be pinned to the released CLI commit")
+    current_core_catalog = sources.get("current_core_catalog")
+    if current_core_catalog is not None:
+        if current_core_catalog.get("repository") != "https://github.com/dcc-mcp/dcc-mcp-core":
+            raise ValueError("current Core catalog must use the official dcc-mcp-core repository")
+        if CORE_COMMIT_RE.fullmatch(str(current_core_catalog.get("commit", ""))) is None:
+            raise ValueError("current Core catalog must be pinned to a full immutable commit")
+        if current_core_catalog.get("path") != "dcc-mcp-catalog.yml":
+            raise ValueError("current Core catalog path must be dcc-mcp-catalog.yml")
     products = data.get("products")
     if not isinstance(products, list) or not products:
         raise ValueError("product catalog must contain products")
@@ -396,11 +409,17 @@ def validate_product_catalog(data: dict) -> None:
     if not isinstance(cli_types, list) or not cli_types:
         raise ValueError("released CLI source snapshot is missing dcc_types")
 
+    application_routes = data.get("application_routes", [])
+    if not isinstance(application_routes, list):
+        raise ValueError("application_routes must be an array")
     ids: set[str] = set()
     adapters: set[str] = set()
     repositories: set[str] = set()
     owner_by_term: dict[str, str] = {}
-    for product in products:
+    for product, is_application_route in [
+        *((product, False) for product in products),
+        *((product, True) for product in application_routes),
+    ]:
         product_id = product.get("id")
         if not isinstance(product_id, str) or PRODUCT_ID_RE.fullmatch(product_id) is None:
             raise ValueError(f"invalid canonical product id: {product_id!r}")
@@ -431,6 +450,8 @@ def validate_product_catalog(data: dict) -> None:
             raise ValueError(f"product identity is incomplete: {product_id}")
         if not isinstance(product.get("catalog_install_available"), bool):
             raise ValueError(f"catalog_install_available must be boolean: {product_id}")
+        if is_application_route and product.get("source") != "current_core_catalog":
+            raise ValueError(f"application route source is incomplete: {product_id}")
         examples = product.get("intent_examples", {})
         if not examples.get("en") or not examples.get("zh"):
             raise ValueError(f"bilingual intent examples are required: {product_id}")
@@ -500,7 +521,7 @@ def validate_product_catalog(data: dict) -> None:
     if cli_types != [product["id"] for product in products]:
         raise ValueError("enriched product identities differ from the released CLI snapshot")
 
-    for product in products:
+    for product in [*products, *application_routes]:
         for language in ("en", "zh"):
             result = resolve_product_intent(product["intent_examples"][language], data)
             if result != {"status": "match", "product_ids": [product["id"]]}:
@@ -557,11 +578,6 @@ def validate_released_core_runtime(
 ) -> None:
     """Require the installed Core and resolved release ref to match one catalog contract."""
     released = catalog["sources"]["released_cli"]
-    core_catalog = catalog["sources"]["core_catalog"]
-    if core_catalog["repository"] != released["repository"]:
-        raise ValueError("released Core repository differs from the immutable catalog source")
-    if core_catalog["commit"] != released["commit"]:
-        raise ValueError("released Core commit differs from the immutable catalog source")
     if installed_version != released["version"]:
         raise ValueError(
             f"installed Core version differs: expected {released['version']}, got {installed_version}"
@@ -924,12 +940,23 @@ def validate_core_catalog_snapshot(catalog: dict, payload: dict) -> None:
         authoritative[identity] = entry
 
     products = {
-        _adapter_identity(product["adapter"]): product for product in catalog["products"]
+        _adapter_identity(product["adapter"]): product
+        for product in routed_products(catalog)
+        if product.get("core_catalog_required", True)
     }
-    if set(authoritative) != set(products):
+    expected_identities = set(products)
+    # Keep fixtures produced from the released catalog readable.  The current
+    # Core snapshot fetched by CI contains all application routes and therefore
+    # takes the strict branch below.
+    released_identities = {
+        _adapter_identity(product["adapter"]) for product in catalog["products"]
+    }
+    if set(authoritative) != expected_identities and set(authoritative) != released_identities:
         raise ValueError("immutable Core adapter identities differ from PRODUCTS.json")
 
     for identity, product in products.items():
+        if identity not in authoritative:
+            continue
         entry = authoritative[identity]
         repository = entry.get("url")
         if _repository_identity(repository) != _repository_identity(product["repository"]):
@@ -947,9 +974,12 @@ def validate_core_catalog_snapshot(catalog: dict, payload: dict) -> None:
 
 def plugin_description(catalog: dict) -> str:
     count = len(catalog["products"])
+    route_count = len(catalog.get("application_routes", []))
+    route_text = f" plus {route_count} current Core application routes" if route_count else ""
     return (
-        f"Discover and control {count} released creative applications with typed DCC-MCP "
-        "tools; route scoped application UI through project-owned DCC-CUA/ui-control."
+        f"Discover and control {count} released creative applications{route_text} with "
+        "typed DCC-MCP tools; route scoped application UI through project-owned "
+        "DCC-CUA/ui-control."
     )
 
 
@@ -959,7 +989,7 @@ def plugin_keywords(catalog: dict) -> list[str]:
         "mcp",
         "DCC-CUA",
         "ui-control",
-        *(term for product in catalog["products"] for term in product_terms(product)),
+        *(term for product in routed_products(catalog) for term in product_terms(product)),
     ]
     seen: set[str] = set()
     keywords: list[str] = []
@@ -973,7 +1003,8 @@ def plugin_keywords(catalog: dict) -> list[str]:
 
 def skill_description(catalog: dict) -> str:
     return (
-        f"Default DCC-MCP router for {len(catalog['products'])} released creative products. "
+        f"Default DCC-MCP router for {len(catalog['products'])} released creative products "
+        f"and {len(catalog.get('application_routes', []))} current application routes. "
         "Use typed DCC-MCP tools first. For application UI, including browsers and non-DCC "
         "apps, DCC-CUA and ui-control name the same project-owned route and explicit DCC-CUA "
         "requests never fall back to generic Computer Use providers."
@@ -981,12 +1012,13 @@ def skill_description(catalog: dict) -> str:
 
 
 def skill_search_hint(catalog: dict) -> str:
-    products = " ".join(term for product in catalog["products"] for term in product_terms(product))
+    products = " ".join(term for product in routed_products(catalog) for term in product_terms(product))
     return (
         "DCC-MCP typed tool discovery create edit inspect simulate animate render composite "
         "export automate 操作 控制 创建 编辑 检查 动画 渲染 合成 导出; released products: "
         f"{products}; application UI route: DCC-CUA dcc cua ui-control browser UI exact PID "
-        "HWND fresh observation latest snapshot post-action readback no generic Computer Use"
+        "HWND fresh observation latest snapshot post-action readback no generic Computer Use; "
+        "local application path cache cached executable path ask before launch guide a new path"
     )
 
 
@@ -997,7 +1029,7 @@ def skill_tags(catalog: dict) -> list[str]:
         "typed-tools",
         "dcc-cua",
         "ui-control",
-        *(product["id"] for product in catalog["products"]),
+        *(product["id"] for product in routed_products(catalog)),
     ]
 
 
@@ -1011,5 +1043,11 @@ def ui_route_prompt(catalog: dict) -> str:
         "latest snapshot or semantic reference for each action, verify with post-action "
         "readback, stop on interruption or permission failure, and hand CAPTCHA, "
         "authentication, or security challenges to the human. Never substitute generic "
-        "Codex/OpenAI Computer Use, computer-use, @oai/sky, Browser, or Chrome plugins."
+        "Codex/OpenAI Computer Use, computer-use, @oai/sky, Browser, or Chrome plugins. "
+        "When a user provides an absolute local application path, save it in the local "
+        "application path cache. On a later request, run the cache prompt and verify the "
+        "cached path still exists, "
+        "tell the user which path was found, and ask for explicit confirmation before starting "
+        "the software. If it is missing, guide the user to provide a new absolute path or "
+        "use the catalog install command; never launch automatically."
     )

@@ -2,7 +2,7 @@
   "site": {
     "base_url": "https://dcc-mcp.github.io/dcc-mcp-agent-plugins",
     "title": "DCC-MCP Agent Skills",
-    "tagline": "Discover and control 35 released creative applications with typed DCC-MCP tools; route scoped application UI through project-owned DCC-CUA/ui-control.",
+    "tagline": "Discover and control 35 released creative applications plus 3 current Core application routes with typed DCC-MCP tools; route scoped application UI through project-owned DCC-CUA/ui-control.",
     "publisher": "DCC-MCP",
     "publisher_url": "https://github.com/dcc-mcp",
     "repository": "https://github.com/dcc-mcp/dcc-mcp-agent-plugins",

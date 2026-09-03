@@ -15,9 +15,10 @@ manifests are thin adapters; they do not fork instructions or runtime behavior.
 Released-product discovery is generated from
 [`plugins/dcc-mcp/skills/dcc-mcp/references/PRODUCTS.json`](plugins/dcc-mcp/skills/dcc-mcp/references/PRODUCTS.json),
 a provenance-bearing snapshot of the official `dcc-mcp-cli dcc-types` catalog
-reconciled with the owning adapter repositories. It carries one canonical
-identity and bounded aliases per product instead of repeating hand-maintained
-product lists across manifests.
+reconciled with the owning adapter repositories. It also carries a small
+current-Core route set for adapters that have landed in Core before the next
+CLI release. It carries one canonical identity and bounded aliases per route
+instead of repeating hand-maintained product lists across manifests.
 
 ## Install
 
@@ -195,6 +196,22 @@ decoupled from `dcc-mcp-core` release numbers: Skill content can be re-published
 without a Core release, and Core can release without changing Skill content.
 `metadata.dcc-mcp.version` in each `SKILL.md` is therefore the one field the
 sync preserves instead of copying.
+
+Core skill synchronization and product discovery are separate contracts. The
+weekly `core-sync.yml` job compares the three canonical Skill bodies with the
+pinned Core checkout. Product discovery is regenerated from `PRODUCTS.json` and
+can add a route from the current Core catalog (for example OBS Studio, LiquiGen,
+or the Office/PPT workflow) even while the released CLI snapshot remains at its
+own version. Run `sync_product_discovery.py --check --check-core-catalog` to
+verify both the generated surfaces and the pinned current catalog.
+
+When a user gives an absolute local application path, the default Skill stores
+it in the per-user cache used by
+[`scripts/app_path_cache.py`](plugins/dcc-mcp/skills/dcc-mcp/scripts/app_path_cache.py).
+Later requests reuse the path only after checking that it still exists and
+asking the user to confirm startup. Missing paths produce a new-path prompt and
+an install hint; no process is started automatically. See
+[`LOCAL_APP_PATH_CACHE.md`](plugins/dcc-mcp/skills/dcc-mcp/references/LOCAL_APP_PATH_CACHE.md).
 
 ```powershell
 # Re-sync after Core changes Skill content, then bump the suite version.

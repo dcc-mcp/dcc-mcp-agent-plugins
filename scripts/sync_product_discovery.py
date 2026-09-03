@@ -97,6 +97,16 @@ def _render_ui_route_block(catalog: dict) -> str:
         "Missing or stale binding data stops the action. For every state-dependent UI action, "
         f"require {actions}. Stop fail-closed on interruption or permission failure, and hand "
         f"{handoff} to a human instead of bypassing it.\n\n"
+        "Local application path cache: when the user gives an absolute local software path, "
+        "record it with `python scripts/app_path_cache.py set --product <id> --path \"<path>\"` "
+        "and retain only the normalized path and verification timestamps. On a later launch "
+        "request, run `python scripts/app_path_cache.py prompt --product <id> --name \"<name>\"` "
+        "(add `--install-available` only for an installable route), "
+        "tell the user the cached path, and ask explicitly "
+        "whether to start it; never launch from a cached path without confirmation. If the "
+        "path is stale or missing, guide the user to provide a new absolute path and show "
+        "`dcc-mcp-cli install --dcc-type <id> --dcc-path \"<path>\"` when installation is available. "
+        "See `references/LOCAL_APP_PATH_CACHE.md`.\n\n"
         "Discovery and packaging evidence do not claim licensed real-host validation.\n"
         f"{UI_ROUTE_END}"
     )
@@ -160,8 +170,10 @@ def _render_skill_md(current: str, catalog: dict) -> str:
 
 
 def _render_openai_interface(catalog: dict) -> str:
+    route_count = len(catalog.get("application_routes", []))
     short = (
-        f"Route {len(catalog['products'])} released creative products "
+        f"Route {len(catalog['products'])} released creative products and {route_count} "
+        "current application routes "
         "and DCC-CUA application UI"
     )
     prompt = ui_route_prompt(catalog)
@@ -178,6 +190,9 @@ def rendered_outputs(catalog: dict) -> dict[Path, str]:
     description = plugin_description(catalog)
     keywords = plugin_keywords(catalog)
     product_names = ", ".join(product["display_name"] for product in catalog["products"])
+    route_names = ", ".join(
+        product["display_name"] for product in catalog.get("application_routes", [])
+    ) or "none"
     outputs: dict[Path, str] = {}
 
     for path in PLUGIN_MANIFESTS:
@@ -187,10 +202,12 @@ def rendered_outputs(catalog: dict) -> dict[Path, str]:
         if path.parent.name == ".codex-plugin":
             interface = manifest["interface"]
             interface["shortDescription"] = (
-                f"Typed control for {count} creative products plus DCC-CUA UI routing."
+                f"Typed control for {count} creative products plus current application routes "
+                "and DCC-CUA UI routing."
             )
             interface["longDescription"] = (
                 f"{description} Released product identities: {product_names}. "
+                f"Current Core application routes: {route_names}. "
                 "Typed tools remain first; DCC-CUA and ui-control are one project-owned UI route."
             )
             interface["capabilities"] = [
@@ -247,7 +264,7 @@ def main(argv: list[str] | None = None) -> int:
         except ImportError as error:
             print(f"immutable Core catalog check requires PyYAML: {error}")
             return 1
-        source = catalog["sources"]["core_catalog"]
+        source = catalog["sources"].get("current_core_catalog", catalog["sources"]["core_catalog"])
         url = (
             "https://raw.githubusercontent.com/dcc-mcp/dcc-mcp-core/"
             f"{source['commit']}/{source['path']}"
@@ -261,7 +278,7 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         print(
             f"Immutable Core catalog {source['commit']} matches "
-            f"{len(catalog['products'])} product identities"
+            f"{len(catalog['products']) + len(catalog.get('application_routes', []))} routed identities"
         )
     if args.check_cli:
         try:

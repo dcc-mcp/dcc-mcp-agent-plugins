@@ -1,10 +1,10 @@
 ---
 name: dcc-mcp
 description: >-
-  Default DCC-MCP router for 35 released creative products. Use typed DCC-MCP tools first. For
-  application UI, including browsers and non-DCC apps, DCC-CUA and ui-control name the same
-  project-owned route and explicit DCC-CUA requests never fall back to generic Computer Use
-  providers.
+  Default DCC-MCP router for 35 released creative products and 3 current application routes. Use
+  typed DCC-MCP tools first. For application UI, including browsers and non-DCC apps, DCC-CUA and
+  ui-control name the same project-owned route and explicit DCC-CUA requests never fall back to
+  generic Computer Use providers.
 license: MIT-0
 allowed-tools: Bash Read
 metadata:
@@ -12,9 +12,9 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: Cross-platform Windows/macOS/Linux. Prefers dcc-mcp-cli on PATH; its consent-gated bootstrap accepts only the official release manifest and verifies SHA-256 before replacement. Local profile needs no gateway env. Use --require-gateway plus --agent-session-id when gateway stats are required evidence. DCC_MCP_BASE_URL is optional for remote/legacy gateway REST fallback.
-    version: "0.19.95"
-    search-hint: "DCC-MCP typed tool discovery create edit inspect simulate animate render composite export automate 操作 控制 创建 编辑 检查 动画 渲染 合成 导出; released products: 3dsmax Autodesk 3ds Max 3ds Max aftereffects Adobe After Effects After Effects blender c4d Cinema 4D Cinema4D comfyui Comfy UI freecad gimp GIMP 3 godot Godot Engine houdini SideFX Houdini illustrator Adobe Illustrator katana Foundry Katana krita mari Foundry Mari marmoset Marmoset Toolbag Toolbag material-maker MaterialMaker maya Autodesk Maya mobu Autodesk MotionBuilder MotionBuilder nuke Foundry Nuke openscad openusd Universal Scene Description photoshop Adobe Photoshop powerpoint Microsoft PowerPoint premiere Adobe Premiere Pro Premiere Pro Adobe Premiere renderdoc shogun Vicon Shogun Shogun Post shotgrid Autodesk Flow Production Tracking Flow Production Tracking sketchup substance3d_designer Adobe Substance 3D Designer Substance 3D Designer Substance Designer substance3d_painter Adobe Substance 3D Painter Substance 3D Painter Substance Painter tiled Tiled Map Editor touchdesigner Touch Designer unity Unity Editor Tuanjie Tuanjie Engine 团结引擎 unreal Unreal Engine UE4 UE5 虚幻引擎 UE wwise Audiokinetic Wwise zbrush; application UI route: DCC-CUA dcc cua ui-control browser UI exact PID HWND fresh observation latest snapshot post-action readback no generic Computer Use"
-    tags: "dcc, dcc-mcp, typed-tools, dcc-cua, ui-control, 3dsmax, aftereffects, blender, c4d, comfyui, freecad, gimp, godot, houdini, illustrator, katana, krita, mari, marmoset, material-maker, maya, mobu, nuke, openscad, openusd, photoshop, powerpoint, premiere, renderdoc, shogun, shotgrid, sketchup, substance3d_designer, substance3d_painter, tiled, touchdesigner, unity, unreal, wwise, zbrush"
+    version: "0.19.96"
+    search-hint: "DCC-MCP typed tool discovery create edit inspect simulate animate render composite export automate 操作 控制 创建 编辑 检查 动画 渲染 合成 导出; released products: 3dsmax Autodesk 3ds Max 3ds Max aftereffects Adobe After Effects After Effects blender c4d Cinema 4D Cinema4D comfyui Comfy UI freecad gimp GIMP 3 godot Godot Engine houdini SideFX Houdini illustrator Adobe Illustrator katana Foundry Katana krita mari Foundry Mari marmoset Marmoset Toolbag Toolbag material-maker MaterialMaker maya Autodesk Maya mobu Autodesk MotionBuilder MotionBuilder nuke Foundry Nuke openscad openusd Universal Scene Description photoshop Adobe Photoshop powerpoint Microsoft PowerPoint PPT PPTX 幻灯片 premiere Adobe Premiere Pro Premiere Pro Adobe Premiere renderdoc shogun Vicon Shogun Shogun Post shotgrid Autodesk Flow Production Tracking Flow Production Tracking sketchup substance3d_designer Adobe Substance 3D Designer Substance 3D Designer Substance Designer substance3d_painter Adobe Substance 3D Painter Substance 3D Painter Substance Painter tiled Tiled Map Editor touchdesigner Touch Designer unity Unity Editor Tuanjie Tuanjie Engine 团结引擎 unreal Unreal Engine UE4 UE5 虚幻引擎 UE wwise Audiokinetic Wwise zbrush obs OBS Studio OBS 录屏 OBS录屏 OBS 录制 OBS录制 liquigen Liquid Gen office-suite Microsoft Office Microsoft Excel Microsoft Word Microsoft Outlook 表格 电子表格 做表 spreadsheet Excel Word Outlook; application UI route: DCC-CUA dcc cua ui-control browser UI exact PID HWND fresh observation latest snapshot post-action readback no generic Computer Use; local application path cache cached executable path ask before launch guide a new path"
+    tags: "dcc, dcc-mcp, typed-tools, dcc-cua, ui-control, 3dsmax, aftereffects, blender, c4d, comfyui, freecad, gimp, godot, houdini, illustrator, katana, krita, mari, marmoset, material-maker, maya, mobu, nuke, openscad, openusd, photoshop, powerpoint, premiere, renderdoc, shogun, shotgrid, sketchup, substance3d_designer, substance3d_painter, tiled, touchdesigner, unity, unreal, wwise, zbrush, obs, liquigen, office-suite"
   openclaw:
     emoji: "🖥️"
     homepage: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/blob/main/plugins/dcc-mcp/skills/dcc-mcp/SKILL.md
@@ -28,6 +28,8 @@ Load `references/PRODUCTS.json` only when released-product support, aliases, or 
 `DCC-CUA` and `ui-control` name one project-owned `dcc-cua` route for DCC application UI, browser UI, non-DCC application UI; they are not competing automation systems. An explicit DCC-CUA request is a hard provider boundary. Do not recommend or silently fall back to `Codex/OpenAI Computer Use`, `computer-use Skill`, `@oai/sky`, `Browser plugin`, `Chrome plugin`. If the project route is unavailable, repair it or report the blocker.
 
 Before the first UI observation or input, visibly attest `provider=dcc-cua runtime=<version> pid=<exact-pid> hwnd=<exact-native-hwnd>`. Missing or stale binding data stops the action. For every state-dependent UI action, require fresh observation before every state-dependent action; latest snapshot or semantic reference only; post-action state readback; stop on interruption or permission failure. Stop fail-closed on interruption or permission failure, and hand CAPTCHA, authentication challenge, security challenge to a human instead of bypassing it.
+
+Local application path cache: when the user gives an absolute local software path, record it with `python scripts/app_path_cache.py set --product <id> --path "<path>"` and retain only the normalized path and verification timestamps. On a later launch request, run `python scripts/app_path_cache.py prompt --product <id> --name "<name>"` (add `--install-available` only for an installable route), tell the user the cached path, and ask explicitly whether to start it; never launch from a cached path without confirmation. If the path is stale or missing, guide the user to provide a new absolute path and show `dcc-mcp-cli install --dcc-type <id> --dcc-path "<path>"` when installation is available. See `references/LOCAL_APP_PATH_CACHE.md`.
 
 Discovery and packaging evidence do not claim licensed real-host validation.
 <!-- END GENERATED PRODUCT DISCOVERY ROUTING -->

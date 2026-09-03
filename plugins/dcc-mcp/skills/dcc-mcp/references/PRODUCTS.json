@@ -53,7 +53,14 @@
       "commit": "e8d070fd703164a380895af2d6b4e17b3cb2459c",
       "path": "dcc-mcp-catalog.yml"
     },
-    "owner_repositories_checked_at": "2026-08-27"
+    "owner_repositories_checked_at": "2026-09-03",
+    "current_core_catalog": {
+      "repository": "https://github.com/dcc-mcp/dcc-mcp-core",
+      "commit": "8450345113745beebc36684316390f90e515c4a1",
+      "path": "dcc-mcp-catalog.yml",
+      "ref": "main",
+      "checked_at": "2026-09-02"
+    }
   },
   "ui_routing": {
     "canonical_provider": "dcc-cua",
@@ -393,7 +400,7 @@
     {
       "id": "powerpoint",
       "display_name": "Microsoft PowerPoint",
-      "aliases": ["PowerPoint"],
+      "aliases": ["PowerPoint", "PPT", "PPTX", "幻灯片"],
       "contextual_aliases": [],
       "family": "presentation",
       "adapter": "dcc-mcp-PowerPoint",
@@ -584,6 +591,54 @@
       "intent_examples": {
         "en": "Sculpt and inspect a model in ZBrush.",
         "zh": "在 ZBrush 中雕刻并检查模型。"
+      }
+    }
+  ],
+  "application_routes": [
+    {
+      "id": "obs",
+      "display_name": "OBS Studio",
+      "aliases": ["OBS", "OBS Studio"],
+      "contextual_aliases": ["OBS 录屏", "OBS录屏", "OBS 录制", "OBS录制"],
+      "family": "broadcast",
+      "adapter": "dcc-mcp-obs",
+      "repository": "https://github.com/dcc-mcp/dcc-mcp-obs",
+      "catalog_install_available": true,
+      "source": "current_core_catalog",
+      "intent_examples": {
+        "en": "Start a recording in OBS Studio.",
+        "zh": "在 OBS 中开始录屏。"
+      }
+    },
+    {
+      "id": "liquigen",
+      "display_name": "LiquiGen",
+      "aliases": ["LiquiGen", "Liquid Gen"],
+      "contextual_aliases": [],
+      "family": "water simulation",
+      "adapter": "dcc-mcp-liquigen",
+      "repository": "https://github.com/dcc-mcp/dcc-mcp-liquigen",
+      "catalog_install_available": true,
+      "source": "current_core_catalog",
+      "intent_examples": {
+        "en": "Inspect the simulation in LiquiGen.",
+        "zh": "在 LiquiGen 中检查液体模拟。"
+      }
+    },
+    {
+      "id": "office-suite",
+      "display_name": "Microsoft Office",
+      "aliases": ["Microsoft Office", "Microsoft Excel", "Microsoft Word", "Microsoft Outlook", "表格", "电子表格", "做表", "spreadsheet"],
+      "contextual_aliases": ["Excel", "Word", "Outlook"],
+      "family": "office",
+      "adapter": "dcc-mcp-office",
+      "repository": "https://github.com/dcc-mcp/dcc-mcp-office",
+      "catalog_install_available": false,
+      "core_catalog_required": false,
+      "source": "current_core_catalog",
+      "intent_examples": {
+        "en": "Create a spreadsheet in Microsoft Excel.",
+        "zh": "在 Excel 中创建并填写表格。"
       }
     }
   ]
