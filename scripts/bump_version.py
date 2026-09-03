@@ -18,12 +18,10 @@ from pathlib import Path
 import re
 import sys
 
-from sync_core_skills import VERSION_LINE, frontmatter_lines
-
-
 ROOT = Path(__file__).resolve().parent.parent
 PLUGIN = ROOT / "plugins" / "dcc-mcp"
 SEMVER = re.compile(r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)$")
+VERSION_LINE = re.compile(r'^(?P<indent>\s+)version:\s*"(?P<version>[^"]*)"\s*(?P<comment>#.*)?$')
 
 PLUGIN_MANIFESTS = (
     PLUGIN / "plugin.json",
@@ -36,6 +34,16 @@ MARKETPLACE_MANIFESTS = (
     ROOT / ".codebuddy-plugin" / "marketplace.json",
 )
 CLAWHUB_MANIFEST = ROOT / ".github" / "clawhub-skills.json"
+
+
+def frontmatter_lines(text: str) -> list[str]:
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return []
+    for index, line in enumerate(lines[1:], start=1):
+        if line.strip() == "---":
+            return lines[1:index]
+    return []
 
 
 def current_version(root: Path = ROOT) -> str:

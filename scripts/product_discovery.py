@@ -33,7 +33,6 @@ RELEASED_CORE_WORKFLOW_COMMANDS = {
         ),
         "validate": RELEASED_CORE_CATALOG_SETUP_COMMAND,
     },
-    ".github/workflows/core-sync.yml": {"sync-core": RELEASED_CORE_CATALOG_SETUP_COMMAND},
     ".github/workflows/clawhub.yml": {"sync-skills": RELEASED_CORE_CATALOG_SETUP_COMMAND},
     ".github/workflows/release.yml": {
         "github-release": (
@@ -49,7 +48,6 @@ RELEASED_CORE_WORKFLOW_JOBS = {
 }
 RELEASED_CORE_WORKFLOW_ENVIRONMENT = {
     ".github/workflows/ci.yml": None,
-    ".github/workflows/core-sync.yml": {"SYNC_BRANCH": "automation/core-skill-sync"},
     ".github/workflows/clawhub.yml": {
         "CLAWHUB_CLI_PACKAGE": "clawhub@0.23.1",
         "CLAWHUB_CONFIG_PATH": ".clawhub/config.json",
@@ -62,22 +60,6 @@ RELEASED_CORE_WORKFLOW_REQUIRED_TRIGGERS = {
         "push": {"branches": ["main"]},
         "pull_request": {"branches": ["main"]},
         "workflow_dispatch": None,
-    },
-    ".github/workflows/core-sync.yml": {
-        "push": {"branches": ["main"]},
-        "pull_request": {"branches": ["main"]},
-        "schedule": [{"cron": "17 6 * * *"}],
-        "workflow_dispatch": {
-            "inputs": {
-                "bump": {
-                    "description": "Version part to bump when Skill content changed",
-                    "required": False,
-                    "type": "choice",
-                    "default": "patch",
-                    "options": ["patch", "minor", "major"],
-                }
-            }
-        },
     },
     ".github/workflows/clawhub.yml": {
         "workflow_call": {
@@ -120,10 +102,6 @@ RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
         "product-discovery": "f548c76c55d0a0901fcc29489d635ba1c0fc0d3c07ecc283ed3d102ceb918d49",
         "validate": "3d9ffa7bcb000cacb170786d81467beb18d63de758ce093bfc3a165a91381a89",
     },
-    ".github/workflows/core-sync.yml": {
-        "verify-pin": "4c071dc815592aef174dd1c6d89089cefb75e7a0cc2170354fd101868d3d5170",
-        "sync-core": "6deb9886d914fa48f279f31d7202258d53372729bee3e9c57d68b6f464238a02",
-    },
     ".github/workflows/clawhub.yml": {
         "sync-skills": "aa75c5fe311d8edad7fdaf0122c44f71a2a7f9debfea9639b59b3937e6924e4b",
     },
@@ -153,13 +131,6 @@ RELEASED_CORE_JOB_EXECUTION_CONTROLS = {
             "timeout-minutes": 15,
         },
         "validate": {"runs-on": "ubuntu-latest", "timeout-minutes": 15},
-    },
-    ".github/workflows/core-sync.yml": {
-        "sync-core": {
-            "if": "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'",
-            "runs-on": "ubuntu-latest",
-            "timeout-minutes": 15,
-        }
     },
     ".github/workflows/clawhub.yml": {
         "sync-skills": {"runs-on": "ubuntu-latest", "timeout-minutes": 20}
