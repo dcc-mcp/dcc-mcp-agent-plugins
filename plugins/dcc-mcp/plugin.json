@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "dcc-mcp",
-  "version": "0.19.95",
-  "description": "Discover and control 35 released creative applications with typed DCC-MCP tools; route scoped application UI through project-owned DCC-CUA/ui-control.",
+  "version": "0.19.96",
+  "description": "Discover and control 35 released creative applications plus 3 current Core application routes with typed DCC-MCP tools; route scoped application UI through project-owned DCC-CUA/ui-control.",
   "author": {
     "name": "DCC-MCP",
     "url": "https://github.com/dcc-mcp"
@@ -60,6 +60,9 @@
     "Adobe Photoshop",
     "powerpoint",
     "Microsoft PowerPoint",
+    "PPT",
+    "PPTX",
+    "幻灯片",
     "premiere",
     "Adobe Premiere Pro",
     "Premiere Pro",
@@ -97,6 +100,26 @@
     "UE",
     "wwise",
     "Audiokinetic Wwise",
-    "zbrush"
+    "zbrush",
+    "obs",
+    "OBS Studio",
+    "OBS 录屏",
+    "OBS录屏",
+    "OBS 录制",
+    "OBS录制",
+    "liquigen",
+    "Liquid Gen",
+    "office-suite",
+    "Microsoft Office",
+    "Microsoft Excel",
+    "Microsoft Word",
+    "Microsoft Outlook",
+    "表格",
+    "电子表格",
+    "做表",
+    "spreadsheet",
+    "Excel",
+    "Word",
+    "Outlook"
   ]
 }

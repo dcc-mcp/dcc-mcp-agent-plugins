@@ -2,7 +2,7 @@
 
 # Distribution channels
 
-Released version: **0.19.95** &middot; Catalog: `https://dcc-mcp.github.io/dcc-mcp-agent-plugins/catalog.json`
+Released version: **0.19.96** &middot; Catalog: `https://dcc-mcp.github.io/dcc-mcp-agent-plugins/catalog.json`
 
 | Channel | Kind | Automation | Notes |
 | --- | --- | --- | --- |
@@ -27,19 +27,19 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp
 
 - **Name**: dcc-mcp
-- **Version**: 0.19.95
+- **Version**: 0.19.96
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.95/plugins/dcc-mcp/skills/dcc-mcp
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.96/plugins/dcc-mcp/skills/dcc-mcp
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp`
-- **Description**: Default DCC-MCP router for 35 released creative products. Use typed DCC-MCP tools first. For application UI, including browsers and non-DCC apps, DCC-CUA and ui-control name the same project-owned route and explicit DCC-CUA requests never fall back to generic Computer Use providers.
-- **Tags**: dcc, dcc-mcp, typed-tools, dcc-cua, ui-control, 3dsmax, aftereffects, blender, c4d, comfyui, freecad, gimp, godot, houdini, illustrator, katana, krita, mari, marmoset, material-maker, maya, mobu, nuke, openscad, openusd, photoshop, powerpoint, premiere, renderdoc, shogun, shotgrid, sketchup, substance3d_designer, substance3d_painter, tiled, touchdesigner, unity, unreal, wwise, zbrush
+- **Description**: Default DCC-MCP router for 35 released creative products and 3 current application routes. Use typed DCC-MCP tools first. For application UI, including browsers and non-DCC apps, DCC-CUA and ui-control name the same project-owned route and explicit DCC-CUA requests never fall back to generic Computer Use providers.
+- **Tags**: dcc, dcc-mcp, typed-tools, dcc-cua, ui-control, 3dsmax, aftereffects, blender, c4d, comfyui, freecad, gimp, godot, houdini, illustrator, katana, krita, mari, marmoset, material-maker, maya, mobu, nuke, openscad, openusd, photoshop, powerpoint, premiere, renderdoc, shogun, shotgrid, sketchup, substance3d_designer, substance3d_painter, tiled, touchdesigner, unity, unreal, wwise, zbrush, obs, liquigen, office-suite
 
 ### dcc-mcp-skills-creator
 
 - **Name**: dcc-mcp-skills-creator
-- **Version**: 0.19.95
+- **Version**: 0.19.96
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.95/plugins/dcc-mcp/skills/dcc-mcp-skills-creator
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.96/plugins/dcc-mcp/skills/dcc-mcp-skills-creator
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp-skills-creator`
 - **Description**: Infrastructure skill - create, validate, scaffold, and review DCC-MCP skills for the dcc-mcp-core ecosystem. Use when authoring SKILL.md, tools.yaml, scripts, groups, prompts, or skill taxonomy. Not for creating a full DCC-MCP adapter repository - use dcc-mcp-creator.
 - **Tags**: -
@@ -47,9 +47,9 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp-creator
 
 - **Name**: dcc-mcp-creator
-- **Version**: 0.19.95
+- **Version**: 0.19.96
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.95/plugins/dcc-mcp/skills/dcc-mcp-creator
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.96/plugins/dcc-mcp/skills/dcc-mcp-creator
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp-creator`
 - **Description**: Infrastructure skill - guide developers and agents through creating or modernizing a DCC-MCP adapter or standalone internal MCP service for Nuke, Blender, 3ds Max, Unreal, ZBrush, Houdini, Maya, and custom studio systems. Use when building server, dispatcher, gateway, packaging, and runtime integration. Not for authoring individual SKILL.md tool packages - use dcc-mcp-skills-creator.
 - **Tags**: adapter-development, internal-mcp-service, standalone, host-runtime, dispatcher, gateway, nuke, blender, 3dsmax, unreal, zbrush
@@ -81,7 +81,7 @@ Authoritative snapshot: `dcc-mcp-cli 0.20.21 dcc-types --output json`.
 | `openscad` | [OpenSCAD](https://github.com/dcc-mcp/dcc-mcp-openscad) | - | cad | yes |
 | `openusd` | [OpenUSD](https://github.com/dcc-mcp/dcc-mcp-openusd) | `Universal Scene Description` | interchange | yes |
 | `photoshop` | [Adobe Photoshop](https://github.com/dcc-mcp/dcc-mcp-photoshop) | `Photoshop` | adobe-content | yes |
-| `powerpoint` | [Microsoft PowerPoint](https://github.com/dcc-mcp/dcc-mcp-PowerPoint) | `PowerPoint` | presentation | no |
+| `powerpoint` | [Microsoft PowerPoint](https://github.com/dcc-mcp/dcc-mcp-PowerPoint) | `PowerPoint`, `PPT`, `PPTX`, `幻灯片` | presentation | no |
 | `premiere` | [Adobe Premiere Pro](https://github.com/dcc-mcp/dcc-mcp-premiere) | `Premiere Pro`, `Adobe Premiere`, `Premiere` | adobe-content | yes |
 | `renderdoc` | [RenderDoc](https://github.com/dcc-mcp/dcc-mcp-renderdoc) | - | graphics-debugging | yes |
 | `shogun` | [Vicon Shogun](https://github.com/dcc-mcp/dcc-mcp-shogun) | `Shogun Post`, `Shogun` | motion-capture | yes |
@@ -95,6 +95,16 @@ Authoritative snapshot: `dcc-mcp-cli 0.20.21 dcc-types --output json`.
 | `unreal` | [Unreal Engine](https://github.com/dcc-mcp/dcc-mcp-unreal) | `UE4`, `UE5`, `虚幻引擎`, `Unreal`, `UE` | game-engine | yes |
 | `wwise` | [Audiokinetic Wwise](https://github.com/dcc-mcp/dcc-mcp-wwise) | `Wwise` | game-audio | no |
 | `zbrush` | [ZBrush](https://github.com/dcc-mcp/dcc-mcp-zbrush) | - | 3d-content | yes |
+
+## Current Core application route matrix
+
+These routes are sourced from the current Core catalog and may precede a released CLI snapshot.
+
+| Route | Product | Bounded aliases | Family | Catalog install |
+| --- | --- | --- | --- | --- |
+| `obs` | [OBS Studio](https://github.com/dcc-mcp/dcc-mcp-obs) | `OBS`, `OBS Studio`, `OBS 录屏`, `OBS录屏`, `OBS 录制`, `OBS录制` | broadcast | yes |
+| `liquigen` | [LiquiGen](https://github.com/dcc-mcp/dcc-mcp-liquigen) | `LiquiGen`, `Liquid Gen` | water simulation | yes |
+| `office-suite` | [Microsoft Office](https://github.com/dcc-mcp/dcc-mcp-office) | `Microsoft Office`, `Microsoft Excel`, `Microsoft Word`, `Microsoft Outlook`, `表格`, `电子表格`, `做表`, `spreadsheet`, `Excel`, `Word`, `Outlook` | office | no |
 
 ## Application UI routing contract
 

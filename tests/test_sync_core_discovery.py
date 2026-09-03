@@ -50,6 +50,12 @@ class CoreSyncDiscoveryOwnershipTests(unittest.TestCase):
     def test_only_bounded_distribution_files_are_owned_outside_core(self) -> None:
         self.assertTrue(is_distribution_owned_file("dcc-mcp", Path("agents/openai.yaml")))
         self.assertTrue(is_distribution_owned_file("dcc-mcp", Path("references/PRODUCTS.json")))
+        self.assertTrue(
+            is_distribution_owned_file("dcc-mcp", Path("references/LOCAL_APP_PATH_CACHE.md"))
+        )
+        self.assertTrue(
+            is_distribution_owned_file("dcc-mcp", Path("scripts/app_path_cache.py"))
+        )
         self.assertFalse(is_distribution_owned_file("dcc-mcp", Path("references/CLI_CHEATSHEET.md")))
         self.assertFalse(is_distribution_owned_file("dcc-mcp-creator", Path("agents/openai.yaml")))
 

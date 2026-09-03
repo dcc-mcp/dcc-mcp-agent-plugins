@@ -112,6 +112,12 @@ def _index_body(catalog: dict) -> str:
         f"<td>{escape(product['family'])}</td></tr>"
         for product in catalog["products"]
     )
+    application_routes = "\n".join(
+        f'<tr><td><code>{escape(product["id"])}</code></td>'
+        f'<td><a href="{escape(product["repository"])}">{escape(product["display_name"])}</a></td>'
+        f"<td>{escape(product['family'])}</td></tr>"
+        for product in catalog.get("application_routes", [])
+    )
     return f"""<h1>{escape(catalog["name"])}</h1>
 <p>{escape(catalog["description"])}</p>
 <p>Version <strong>{escape(catalog["version"])}</strong> &middot;
@@ -133,6 +139,12 @@ Aliases remain bounded to each identity; see <a href="catalog.json">catalog.json
 machine-readable routing contract.</p>
 <table><thead><tr><th>DCC type</th><th>Product</th><th>Family</th></tr></thead><tbody>
 {products}
+</tbody></table>
+<h2>Current Core application routes</h2>
+<p>These routes are present in the current Core catalog and are discoverable immediately;
+the released CLI snapshot remains versioned separately.</p>
+<table><thead><tr><th>Route</th><th>Product</th><th>Family</th></tr></thead><tbody>
+{application_routes}
 </tbody></table>
 <h2>Application UI routing</h2>
 <p>Typed DCC-MCP tools are always preferred. <strong>DCC-CUA</strong> and
@@ -219,6 +231,11 @@ def _llms_txt(catalog: dict) -> str:
     lines += [
         f"- {product['display_name']} (`{product['id']}`): {product['repository']}"
         for product in catalog["products"]
+    ]
+    lines += ["", "## Current Core application routes", ""]
+    lines += [
+        f"- {product['display_name']} (`{product['id']}`): {product['repository']}"
+        for product in catalog.get("application_routes", [])
     ]
     lines += ["", "## Application UI route", "", *_ui_routing_lines(catalog["ui_routing"])]
     lines += ["", "## Sources", ""]
@@ -332,6 +349,23 @@ def _distribution_doc(catalog: dict) -> str:
         "| --- | --- | --- | --- | --- |",
     ]
     for product in catalog["products"]:
+        aliases = [*product.get("aliases", []), *product.get("contextual_aliases", [])]
+        alias_text = ", ".join(f"`{alias}`" for alias in aliases) or "-"
+        install = "yes" if product["catalog_install_available"] else "no"
+        lines.append(
+            f"| `{product['id']}` | [{product['display_name']}]({product['repository']}) | "
+            f"{alias_text} | {product['family']} | {install} |"
+        )
+    lines += [
+        "",
+        "## Current Core application route matrix",
+        "",
+        "These routes are sourced from the current Core catalog and may precede a released CLI snapshot.",
+        "",
+        "| Route | Product | Bounded aliases | Family | Catalog install |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for product in catalog.get("application_routes", []):
         aliases = [*product.get("aliases", []), *product.get("contextual_aliases", [])]
         alias_text = ", ".join(f"`{alias}`" for alias in aliases) or "-"
         install = "yes" if product["catalog_install_available"] else "no"

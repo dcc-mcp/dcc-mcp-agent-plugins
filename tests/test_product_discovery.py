@@ -16,6 +16,7 @@ from scripts.product_discovery import (
     product_terms,
     resolve_product_intent,
     validate_product_catalog,
+    validate_core_catalog_snapshot,
     validate_released_cli_snapshot,
 )
 from scripts.sync_product_discovery import OPENAI_INTERFACE, rendered_outputs
@@ -123,6 +124,35 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
                         ),
                     )
 
+    def test_current_route_intent_examples_resolve_uniquely(self) -> None:
+        for product in self.catalog.get("application_routes", []):
+            for language in ("en", "zh"):
+                with self.subTest(product=product["id"], language=language):
+                    self.assertEqual(
+                        {"status": "match", "product_ids": [product["id"]]},
+                        resolve_product_intent(
+                            product["intent_examples"][language], self.catalog
+                        ),
+                    )
+
+    def test_current_core_snapshot_includes_adapter_routes(self) -> None:
+        payload = {
+            "entries": [
+                {
+                    "name": product["adapter"],
+                    "dcc": [product["id"]],
+                    "url": product["repository"],
+                    "tags": ["adapter"],
+                    **({"install": {"type": "pip"}} if product["catalog_install_available"] else {}),
+                }
+                for product in [
+                    *self.catalog["products"],
+                    *[p for p in self.catalog["application_routes"] if p.get("core_catalog_required", True)],
+                ]
+            ]
+        }
+        validate_core_catalog_snapshot(self.catalog, payload)
+
     def test_bounded_aliases_resolve_to_one_canonical_identity(self) -> None:
         cases = {
             "Build the scene in Blender": "blender",
@@ -147,6 +177,24 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
                     resolve_product_intent(query, self.catalog),
                 )
 
+    def test_current_application_routes_cover_obs_office_and_powerpoint_requests(self) -> None:
+        cases = {
+            "帮我用 OBS 录屏": "obs",
+            "Start a recording in OBS Studio": "obs",
+            "在 Excel 中做表": "office-suite",
+            "Create a spreadsheet in Microsoft Excel": "office-suite",
+            "Create a spreadsheet": "office-suite",
+            "做一个 PPTX 演示": "powerpoint",
+            "在幻灯片里整理内容": "powerpoint",
+            "Inspect the simulation in LiquiGen": "liquigen",
+        }
+        for query, expected in cases.items():
+            with self.subTest(query=query):
+                self.assertEqual(
+                    {"status": "match", "product_ids": [expected]},
+                    resolve_product_intent(query, self.catalog),
+                )
+
     def test_generic_words_and_non_product_uses_do_not_hijack_routing(self) -> None:
         queries = (
             "maximize the browser window",
@@ -155,6 +203,8 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
             "the movie premiere starts at eight",
             "the price is ten USD",
             "open the office document",
+            "count every word in this paragraph",
+            "I excel at solving puzzles",
             "hire an illustrator for the poster",
             "the katana was forged by hand",
             "this floor is tiled already",
@@ -287,6 +337,9 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
     def test_public_distribution_catalog_projects_the_canonical_contract(self) -> None:
         public_catalog = build_catalog(ROOT)
         self.assertEqual(self.catalog["products"], public_catalog["products"])
+        self.assertEqual(
+            self.catalog["application_routes"], public_catalog["application_routes"]
+        )
         self.assertEqual(self.catalog["ui_routing"], public_catalog["ui_routing"])
         self.assertEqual(
             self.catalog["sources"]["released_cli"],

@@ -107,7 +107,11 @@ def build_catalog(root: Path = ROOT, manifest_path: Path = DISTRIBUTION_MANIFEST
         },
         "skills": skills,
         "products": product_catalog["products"],
+        "application_routes": product_catalog.get("application_routes", []),
         "ui_routing": product_catalog["ui_routing"],
         "released_product_source": product_catalog["sources"]["released_cli"],
+        "current_product_source": product_catalog["sources"].get(
+            "current_core_catalog", product_catalog["sources"]["core_catalog"]
+        ),
         "channels": manifest["channels"],
     }
