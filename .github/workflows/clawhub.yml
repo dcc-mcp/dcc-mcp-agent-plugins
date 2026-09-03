@@ -23,6 +23,7 @@ on:
       - "scripts/setup_released_core.py"
       - ".github/clawhub-skills.json"
       - ".github/workflows/clawhub.yml"
+      - ".github/workflows/publish-clawhub.yml"
   workflow_dispatch:
     inputs:
       publish:
@@ -56,6 +57,7 @@ jobs:
           python-version: "3.12"
       - run: python scripts/setup_released_core.py --with-catalog-dependencies
       - run: python scripts/validate_repository.py
+      - run: python -m unittest discover -s tests -q
       - run: python scripts/package_openclaw_skill.py .github/clawhub-skills.json dist/skills --manifest
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

@@ -66,7 +66,7 @@ RELEASED_CORE_WORKFLOW_REQUIRED_TRIGGERS = {
     ".github/workflows/core-sync.yml": {
         "push": {"branches": ["main"]},
         "pull_request": {"branches": ["main"]},
-        "schedule": [{"cron": "17 6 * * 1"}],
+        "schedule": [{"cron": "17 6 * * *"}],
         "workflow_dispatch": {
             "inputs": {
                 "bump": {
@@ -96,6 +96,7 @@ RELEASED_CORE_WORKFLOW_REQUIRED_TRIGGERS = {
                 "scripts/setup_released_core.py",
                 ".github/clawhub-skills.json",
                 ".github/workflows/clawhub.yml",
+                ".github/workflows/publish-clawhub.yml",
             ],
         },
         "workflow_dispatch": {
@@ -121,10 +122,10 @@ RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
     },
     ".github/workflows/core-sync.yml": {
         "verify-pin": "4c071dc815592aef174dd1c6d89089cefb75e7a0cc2170354fd101868d3d5170",
-        "sync-core": "c6144286012f7676fd324a09427caf5759ee0eb6b8c5ae4567841de24b9d8477",
+        "sync-core": "6deb9886d914fa48f279f31d7202258d53372729bee3e9c57d68b6f464238a02",
     },
     ".github/workflows/clawhub.yml": {
-        "sync-skills": "bc3fbd6dd149b5fcb324109bd045f99518f45d6757854c11ad739566035cf3a1",
+        "sync-skills": "aa75c5fe311d8edad7fdaf0122c44f71a2a7f9debfea9639b59b3937e6924e4b",
     },
     ".github/workflows/release.yml": {
         "github-release": "99356779fa49b277609f1a6575c274dff907e1edf914203a23c07ac209cfe006",

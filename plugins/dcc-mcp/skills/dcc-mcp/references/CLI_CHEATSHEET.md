@@ -119,11 +119,15 @@ path resubmits work. A 410 lifecycle response becomes
 `recommended_next_action` instead of treating every missing route as 503.
 
 Async responses identify the wrapper as `core_job_id` with
-`job_id_owner=core`; legacy `job_id` is the same Core ID. A terminal Core call
-may expose a second `adapter_job_id`. `call --wait` resolves the Core wrapper
-and surfaces the adapter identity; if `adapter_job.poll` is present, call that
-typed read-only tool with the adapter ID. Never pass an adapter ID to
-`jobs_get_status`, and do not assume Core parent cancellation propagates to it.
+`job_id_owner=core`; legacy `job_id` is the same Core ID. A direct or terminal
+Core call may expose a second `adapter_job_id`. `call --wait` resolves the Core
+wrapper and automatically follows `adapter_job.poll` on the same instance when
+the declared status tool is synchronous, read-only, idempotent, and declares a
+string `job_id` as its only required input. Every other input must be optional
+and safe when omitted. Never pass an adapter ID to `jobs_get_status`, and do not assume
+Core parent cancellation propagates to it. Missing/unsafe poll metadata,
+non-canonical status, or a different returned ID fails closed without replay;
+inspect `wait` and `tracking_status` instead of treating the launch as terminal.
 
 If owner death or remote TTL expiry removes the row, wait for an explicitly
 authorized DCC restart, then use the replacement instance and fresh
@@ -146,6 +150,54 @@ telemetry evidence, not that no calls occurred. Feed the JSON
 plus bounded task and validation summaries to the `review_skill_improvement`
 prompt in `dcc-mcp-skills-creator`; do not include raw prompts, secrets, private
 paths, or full tool payloads.
+
+## Failure findings and public-safe bundles
+
+```bash
+dcc-mcp-cli feedback route finding.json --json
+dcc-mcp-cli feedback bundle reviewed-finding.json --json
+dcc-mcp-cli feedback bundle reviewed-finding.json \
+  --install-report install-report.json --json
+dcc-mcp-cli feedback bundle reviewed-finding.json \
+  --dcc-pid 4321 --log-dir /safe/log/root --host-error-lines 50 --json
+dcc-mcp-cli feedback file reviewed-finding.json --json
+# Only after reviewing the plan and receiving explicit user authorization,
+# execute the returned next_step.argv exactly.
+```
+
+`route` resolves exact ownership without a Gateway. `bundle` also avoids
+Gateway auto-start, but uses an already reachable endpoint for the stable
+public-safe issue report when the Finding has a request id. Run it only after
+human review has set `redaction_status.mode=public-safe` and every exclusion
+flag to true. The host-error source is one exact regular file, capped at 256
+KiB and at most 200 requested records; raw messages, tracebacks, metadata,
+paths, tokens, and PID are excluded. When `install --execute --json` produced a
+terminal report, save that single stdout object and pass it with
+`--install-report`. The bundle accepts only a regular non-symlink file up to
+256 KiB whose DCC/core/adapter identity matches the Finding, then projects only
+public-safe Install SOP v1 fields. Invalid or mismatched input fails closed.
+The raw report is validated against the published Draft 2020-12 schema first,
+including mutually exclusive `command`/`file_edit` next steps. Public output
+redacts sensitive option/value pairs, relative and absolute paths, and all URL
+schemes; it omits `file_edit.content` and the input report path.
+Treat `unavailable` components and `complete=false` as incomplete evidence.
+Keep raw issue reports and host logs local, and never infer permission to create
+or attach to an external issue. A
+failed `DccServerBase.start()` is available through `feedback list`/`export` as
+a `needs-review` startup Finding without a request id; review and redact its
+exception-derived observed text before using `route`, `bundle`, or `file`.
+`file` is read-only unless `--yes` is paired with exactly one explicit decision
+and the complete authorization binding from the plan. It searches the routed
+repository by fingerprint before title keywords. The replay binds the canonical
+Finding path, canonical catalog path or exact bundled-catalog sentinel, Finding
+content SHA-256, fingerprint, repository, and catalog SHA-256, then rechecks
+that binding and the exact match immediately before a write. Every `gh` call is
+pinned to `github.com`, limited to 30 seconds, and started in an owned process
+tree; a timeout terminates and reaps the full tree under bounded pipe cleanup.
+Issue/comment bodies above 65,536 Unicode scalar values are rejected before
+tracker I/O. Exact conflicts, drift, closed issues, tracker errors, and
+ambiguous candidates stop the command. Never auto-select keyword-only results,
+reconstruct the replay argv, or add `--yes` without user authorization.
 
 ## Install and marketplace
 

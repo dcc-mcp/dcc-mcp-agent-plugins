@@ -316,7 +316,8 @@ def _distribution_doc(catalog: dict) -> str:
         )
     lines += [
         "",
-        "`published` channels run from `.github/workflows/release.yml` on a `v*` tag.",
+        "`published` channels run from `.github/workflows/release.yml` on a `v*` tag;",
+        "ClawHub also publishes validated Skill changes directly from `main`.",
         "`verified` channels are checked against the public repository but expose no publish API.",
         "`manual` channels need a human submission; the entries below are regenerated from",
         "the released Skill suite so a submission never quotes stale metadata.",
