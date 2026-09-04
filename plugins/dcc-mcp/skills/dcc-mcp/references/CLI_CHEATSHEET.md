@@ -58,6 +58,7 @@ vx python scripts/dcc_gateway.py --ensure-cli list
 | Command | Purpose |
 |---------|---------|
 | `dcc-mcp-cli dcc-types` | List adapter-backed DCC identifiers from the bundled release catalog without starting a gateway |
+| `dcc-mcp-cli --output json dcc-types --dcc-type unreal` | Emit the v1 local discovery decision without collapsing catalog support, registration, readiness, and real-host evidence |
 | `dcc-mcp-cli dcc-types --catalog path/to/catalog.yml` | Inspect a studio or test catalog through the same typed contract |
 | `dcc-mcp-cli list` | Ensure the local loopback gateway, then list local DCC instances from the FileRegistry |
 | `dcc-mcp-cli doctor` | Report profile, registry, local inventory, direct-control readiness counts, gateway daemon status, and server binary diagnostics without launching services |
@@ -88,6 +89,14 @@ vx python scripts/dcc_gateway.py --ensure-cli list
 their canonical `dcc_type`, adapters, version/source data when available, and
 `catalog_install_available`. Unknown/custom DCC identifiers remain valid at the
 core boundary even when no catalog install plan exists.
+
+The targeted `dcc-types --dcc-type <dcc>` form also reads the local
+FileRegistry and returns the versioned zero-instance decision. A zero
+`live_instances` count proves only that no matching live local row was found;
+package state, project bootstrap, custom-fork compatibility, and real-host
+effects remain independent. Follow its read-only `next_action` exactly. A
+custom catalog is not labeled as the released public catalog, and its
+installation URL is not copied into the public decision.
 
 ### Job strategy and recovery
 

@@ -12,7 +12,7 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: Cross-platform Windows/macOS/Linux. Prefers dcc-mcp-cli on PATH; its consent-gated bootstrap accepts only the official release manifest and verifies SHA-256 before replacement. Local profile needs no gateway env. Use --require-gateway plus --agent-session-id when gateway stats are required evidence. DCC_MCP_BASE_URL is optional for remote/legacy gateway REST fallback.
-    version: "0.19.97"
+    version: "0.19.98"
     search-hint: "DCC-MCP typed tool discovery create edit inspect simulate animate render composite export automate 操作 控制 创建 编辑 检查 动画 渲染 合成 导出; released products: 3dsmax Autodesk 3ds Max 3ds Max aftereffects Adobe After Effects After Effects blender c4d Cinema 4D Cinema4D comfyui Comfy UI freecad gimp GIMP 3 godot Godot Engine houdini SideFX Houdini illustrator Adobe Illustrator katana Foundry Katana krita mari Foundry Mari marmoset Marmoset Toolbag Toolbag material-maker MaterialMaker maya Autodesk Maya mobu Autodesk MotionBuilder MotionBuilder nuke Foundry Nuke openscad openusd Universal Scene Description photoshop Adobe Photoshop powerpoint Microsoft PowerPoint PPT PPTX 幻灯片 premiere Adobe Premiere Pro Premiere Pro Adobe Premiere renderdoc shogun Vicon Shogun Shogun Post shotgrid Autodesk Flow Production Tracking Flow Production Tracking sketchup substance3d_designer Adobe Substance 3D Designer Substance 3D Designer Substance Designer substance3d_painter Adobe Substance 3D Painter Substance 3D Painter Substance Painter tiled Tiled Map Editor touchdesigner Touch Designer unity Unity Editor Tuanjie Tuanjie Engine 团结引擎 unreal Unreal Engine UE4 UE5 虚幻引擎 UE wwise Audiokinetic Wwise zbrush obs OBS Studio OBS 录屏 OBS录屏 OBS 录制 OBS录制 liquigen Liquid Gen office-suite Microsoft Office Microsoft Excel Microsoft Word Microsoft Outlook 表格 电子表格 做表 spreadsheet Excel Word Outlook; application UI route: DCC-CUA dcc cua ui-control browser UI exact PID HWND fresh observation latest snapshot post-action readback no generic Computer Use; local application path cache cached executable path ask before launch guide a new path"
     tags: "dcc, dcc-mcp, typed-tools, dcc-cua, ui-control, 3dsmax, aftereffects, blender, c4d, comfyui, freecad, gimp, godot, houdini, illustrator, katana, krita, mari, marmoset, material-maker, maya, mobu, nuke, openscad, openusd, photoshop, powerpoint, premiere, renderdoc, shogun, shotgrid, sketchup, substance3d_designer, substance3d_painter, tiled, touchdesigner, unity, unreal, wwise, zbrush, obs, liquigen, office-suite"
   openclaw:
@@ -72,7 +72,8 @@ Run documented commands directly; do not preflight them with
 `dcc-mcp-cli <command> --help`. Follow CLI-returned `next_step.command` and
 `next_step.arguments` unchanged. Use targeted subcommand help at most once per
 CLI version only after the documented syntax is rejected or when an option is
-not covered here. Do not request `--output json` for agent-readable output.
+not covered here. Use `--output json` for the versioned zero-instance decision;
+otherwise do not request it merely for agent-readable output.
 
 ```bash
 dcc-mcp-cli reload-skills --instance-id <instance-id> --output toon
@@ -138,7 +139,9 @@ For these requests:
 1. **Prefer structured DCC-MCP tools** over direct application scripting,
    DCC UI Control, generic Computer Use, or shell automation.
 2. If host support is unclear, run `dcc-mcp-cli dcc-types`; use its exact
-   `dcc_type` value instead of guessing aliases.
+   `dcc_type` value instead of guessing aliases. For one local target, run
+   `dcc-mcp-cli --output json dcc-types --dcc-type <dcc>` and keep catalog,
+   registration, readiness, and later capability evidence separate.
 3. Inventory live instances before choosing a host. If more than one matching
    instance exists, use task context or ask the user which scene/session owns
    the change.
@@ -182,7 +185,13 @@ or when the user explicitly chooses that integration.
    user to switch clients or manually repeat the operation.
 4. **Do not mix paths in one turn** — pick CLI+REST or MCP for the whole task,
    not both.
-5. **Zero instances** — stop, explain, ask consent before bootstrap; see
+5. **Zero instances** — stop calls and mutations, identify whether the selected
+   inventory is local or remote, and keep those evidence branches separate.
+   Only local zero inventory uses the targeted typed decision and its
+   `next_action`; remote zero inventory uses exact catalog matching followed by
+   a plan-only install command. `live_instances: 0` is not proof of absent
+   support, installation, or a project-local plugin. Ask before any mutation or
+   launch. See
    [`references/ZERO_INSTANCES_CLI.md`](references/ZERO_INSTANCES_CLI.md).
 
 ### CLI/MCP preflight and installation
@@ -314,7 +323,7 @@ Then follow the CLI/MCP preflight above.
 | **Task needs gateway stats or Skill reflection** | Add `--require-gateway --agent-session-id <task-id>` before the first tool call and keep the same task ID for all calls; do not mix direct and measured routes |
 | Shell reports `dcc-mcp-cli` command-not-found | Ask permission, then run `python scripts/check_cli.py --ensure-cli --pretty`; the approved helper installs and rechecks health/inventory without another confirmation |
 | CLI runs but gateway auto-ensure fails | Run `dcc-mcp-cli doctor`; do not reinstall the CLI or inspect Python-package/server internals |
-| Inventory returns `total == 0` | Stop; do not run `search`, `describe`, or `call` |
+| Inventory returns `total == 0` | Stop `search`, `describe`, and `call`; for one local target run `dcc-mcp-cli --output json dcc-types --dcc-type <dcc>`, follow only its read-only action, and preserve every unobserved gate as unknown |
 | Remote gateway unreachable | Stop; explain; ask user permission before troubleshooting |
 | User has not agreed to setup | Do not install packages, edit env files, launch GUI apps, or write configs |
 | User approved setup | Follow [`references/ZERO_INSTANCES_CLI.md`](references/ZERO_INSTANCES_CLI.md) |
@@ -339,7 +348,7 @@ Interpret the result:
 
 ## Step 1 — Select a Live Instance
 
-Run `dcc-mcp-cli list` whenever a DCC starts or stops. Report `total`, counts by `dcc_type`, stale rows, and the chosen instance. If `total == 0`, stop and ask whether the user wants setup guidance; continue only after approval.
+Run `dcc-mcp-cli list` whenever a DCC starts or stops. Report `total`, counts by `dcc_type`, stale rows, and the chosen instance. If `total == 0`, stop tool discovery and calls, run the read-only targeted decision for a known local DCC, and follow the zero-instance guide. Ask for approval before its first mutating or launch step, not before catalog inspection or plan-only installation guidance.
 
 ## Step 2 — Search Tools
 
