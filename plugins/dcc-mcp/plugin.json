@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "dcc-mcp",
-  "version": "0.19.97",
+  "version": "0.19.98",
   "description": "Discover and control 35 released creative applications plus 3 current Core application routes with typed DCC-MCP tools; route scoped application UI through project-owned DCC-CUA/ui-control.",
   "author": {
     "name": "DCC-MCP",
