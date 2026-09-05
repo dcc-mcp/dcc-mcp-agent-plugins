@@ -130,9 +130,16 @@ def launch_prompt(
     display_name: str | None = None,
     *,
     install_available: bool = False,
+    host_install_url: str | None = None,
 ) -> str:
     name = display_name or product_id
     entry = get_path(product_id)
+    if host_install_url is not None and not host_install_url.startswith("https://"):
+        raise ValueError("host install URL must use https")
+    install_question = (
+        f"如果 {name} 尚未安装，是否需要我先提供官方安装方式？下载、安装和启动都需要你的明确确认；"
+        "不会仅凭路径缺失自动执行。"
+    )
     if entry and not entry.get("stale"):
         return (
             f"已找到 {name} 的本地路径：{entry['path']}。是否要启动这个软件？"
@@ -144,15 +151,18 @@ def launch_prompt(
         if install_available
         else ""
     )
+    host_install_hint = f"官方安装页面：{host_install_url}。" if host_install_url else ""
     if entry and entry.get("stale"):
         return (
             f"之前缓存的 {name} 路径已不存在：{entry['path']}。请提供新的软件绝对路径，"
-            f"例如 C:\\Program Files\\...\\{product_id}.exe。{install_hint}"
+            f"例如 C:\\Program Files\\...\\{product_id}.exe，或者明确告诉我需要安装它。"
+            f"{install_question}{host_install_hint}{install_hint}"
         )
     return (
         f"尚未找到 {name} 的本地安装路径。请提供软件的绝对路径（例如 "
-        f"C:\\Program Files\\...\\{product_id}.exe）；我会记住它并在启动前再次询问。"
-        f"{install_hint}"
+        f"C:\\Program Files\\...\\{product_id}.exe），或者明确告诉我需要安装它。"
+        f"我会记住你提供的路径，并在启动前再次询问。{install_question}"
+        f"{host_install_hint}{install_hint}"
     )
 
 
@@ -168,6 +178,7 @@ def _main() -> int:
     prompter.add_argument("--product", required=True)
     prompter.add_argument("--name")
     prompter.add_argument("--install-available", action="store_true")
+    prompter.add_argument("--host-install-url")
     clearer = subparsers.add_parser("clear")
     clearer.add_argument("--product", required=True)
     args = parser.parse_args()
@@ -181,6 +192,7 @@ def _main() -> int:
                 args.product,
                 args.name,
                 install_available=args.install_available,
+                host_install_url=args.host_install_url,
             )
         )
     else:

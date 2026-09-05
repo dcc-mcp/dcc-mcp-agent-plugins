@@ -157,6 +157,12 @@ class ZeroInstanceGuidanceTests(unittest.TestCase):
         self.assertLess(consent, execute)
         self.assertIn("`requires_consent: false`", self.guide[:consent])
 
+    def test_zero_inventory_asks_before_host_install_and_separates_adapter_install(self) -> None:
+        self.assertIn("是否需要我提供或执行官方安装方式", self.guide)
+        self.assertIn("host_install", self.guide)
+        self.assertIn("Keep this separate", self.guide)
+        self.assertIn("explicit consent", self.guide)
+
 
 if __name__ == "__main__":
     unittest.main()

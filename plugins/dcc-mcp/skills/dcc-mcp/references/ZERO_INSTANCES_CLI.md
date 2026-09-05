@@ -140,6 +140,14 @@ Until consent is explicit, do not pass `--execute`, edit environment files,
 modify project configuration, or launch a host. A read-only decision or plan
 with `requires_consent: false` does not authorize its later mutating steps.
 
+When the host application itself is missing, ask one concise follow-up before
+choosing a setup path: “未发现 `<dcc>` 的可用实例。你已经安装它了吗？如果没有，
+是否需要我提供或执行官方安装方式？” If the product record has `host_install`,
+show that official HTTPS source. Keep this separate from
+`dcc-mcp-cli install --dcc-type <dcc>`, which installs the DCC-MCP adapter and does
+not prove that the host application is installed. Never download, install, or
+launch the host from a missing path without the user's explicit consent.
+
 ## Plan and bootstrap
 
 Build the plan using the exact argv from the decision. For a legacy CLI, use:

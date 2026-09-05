@@ -111,7 +111,7 @@ RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
         "publish-smithery": "2749e01e660ea0ed74c37d4e4f25c23f6848925055806bf91ca4634e67e75530",
         "publish-npm": "944cbdfc9bdfdcbf38a745c83f6a3c16ef20fbde965b3a9fd939f4a0070814e6",
         "publish-pages": "0e2635dfcc1358f8f5f02623a837d7e4434f18b5a023fe6f580c1463ae3644bd",
-        "verify-public-install": "58c37a5068557a0a5d9f94545301d0a8ebff25fad8e1ce2719f1ae1a34c77656",
+        "verify-public-install": "5d3eea176016637733db1ae176e91aedd1348bc3b8fb6ec9dabd0784c43c1bd2",
     },
 }
 RELEASED_CORE_JOB_EXECUTION_CONTROLS = {
@@ -422,6 +422,15 @@ def validate_product_catalog(data: dict) -> None:
             raise ValueError(f"product identity is incomplete: {product_id}")
         if not isinstance(product.get("catalog_install_available"), bool):
             raise ValueError(f"catalog_install_available must be boolean: {product_id}")
+        host_install = product.get("host_install")
+        if host_install is not None:
+            if not isinstance(host_install, dict):
+                raise ValueError(f"host_install must be an object: {product_id}")
+            if host_install.get("kind") != "free_open_source":
+                raise ValueError(f"host_install kind must be free_open_source: {product_id}")
+            official_url = host_install.get("official_url")
+            if not isinstance(official_url, str) or not official_url.startswith("https://"):
+                raise ValueError(f"host_install official_url must be https: {product_id}")
         if is_application_route and product.get("source") != "current_core_catalog":
             raise ValueError(f"application route source is incomplete: {product_id}")
         examples = product.get("intent_examples", {})
@@ -1020,6 +1029,9 @@ def ui_route_prompt(catalog: dict) -> str:
         "application path cache. On a later request, run the cache prompt and verify the "
         "cached path still exists, "
         "tell the user which path was found, and ask for explicit confirmation before starting "
-        "the software. If it is missing, guide the user to provide a new absolute path or "
-        "use the catalog install command; never launch automatically."
+        "the software. If it is missing, ask whether the user wants the host application "
+        "installed. For a product record with `host_install`, show its official HTTPS source "
+        "and wait for explicit consent before downloading or installing; keep host software "
+        "installation separate from the DCC-MCP adapter command. Guide the user to provide a "
+        "new absolute path or use the catalog install command; never launch automatically."
     )

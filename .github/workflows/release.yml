@@ -152,9 +152,9 @@ jobs:
           install_root=$(mktemp -d)
           cd "$install_root"
           npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins \
-            --skill dcc-mcp dcc-mcp-creator dcc-mcp-skills-creator \
+            --skill dcc-mcp dcc-mcp-creator dcc-mcp-skills-creator dcc-cua \
             --agent claude-code codex cursor --copy --yes
-          for slug in dcc-mcp dcc-mcp-creator dcc-mcp-skills-creator; do
+          for slug in dcc-mcp dcc-mcp-creator dcc-mcp-skills-creator dcc-cua; do
             skill=".claude/skills/$slug/SKILL.md"
             test -f "$skill"
             grep -q "\"$version\"" "$skill" \

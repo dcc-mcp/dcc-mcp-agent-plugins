@@ -140,6 +140,10 @@
       "adapter": "dcc-mcp-blender",
       "repository": "https://github.com/dcc-mcp/dcc-mcp-blender",
       "catalog_install_available": true,
+      "host_install": {
+        "kind": "free_open_source",
+        "official_url": "https://www.blender.org/download/"
+      },
       "intent_examples": {
         "en": "Build and render a scene in Blender.",
         "zh": "在 Blender 中搭建并渲染场景。"
@@ -168,6 +172,10 @@
       "adapter": "dcc-mcp-comfyui",
       "repository": "https://github.com/dcc-mcp/dcc-mcp-comfyui",
       "catalog_install_available": true,
+      "host_install": {
+        "kind": "free_open_source",
+        "official_url": "https://github.com/Comfy-Org/ComfyUI#installing"
+      },
       "intent_examples": {
         "en": "Run a bounded image workflow in ComfyUI.",
         "zh": "在 ComfyUI 中运行一个有界的图像工作流。"
@@ -182,6 +190,10 @@
       "adapter": "dcc-mcp-freecad",
       "repository": "https://github.com/dcc-mcp/dcc-mcp-freecad",
       "catalog_install_available": true,
+      "host_install": {
+        "kind": "free_open_source",
+        "official_url": "https://www.freecad.org/downloads.php"
+      },
       "intent_examples": {
         "en": "Create a parametric part in FreeCAD.",
         "zh": "在 FreeCAD 中创建一个参数化零件。"
@@ -196,6 +208,10 @@
       "adapter": "dcc-mcp-gimp",
       "repository": "https://github.com/dcc-mcp/dcc-mcp-gimp",
       "catalog_install_available": true,
+      "host_install": {
+        "kind": "free_open_source",
+        "official_url": "https://www.gimp.org/downloads/"
+      },
       "intent_examples": {
         "en": "Edit and export an image in GIMP.",
         "zh": "在 GIMP 中编辑并导出图像。"
@@ -210,6 +226,10 @@
       "adapter": "dcc-mcp-godot",
       "repository": "https://github.com/dcc-mcp/dcc-mcp-godot",
       "catalog_install_available": true,
+      "host_install": {
+        "kind": "free_open_source",
+        "official_url": "https://godotengine.org/download/"
+      },
       "intent_examples": {
         "en": "Build a playable scene in Godot Engine.",
         "zh": "在 Godot Engine 中制作一个可玩场景。"
@@ -266,6 +286,10 @@
       "adapter": "dcc-mcp-krita",
       "repository": "https://github.com/dcc-mcp/dcc-mcp-krita",
       "catalog_install_available": true,
+      "host_install": {
+        "kind": "free_open_source",
+        "official_url": "https://krita.org/en/download/"
+      },
       "intent_examples": {
         "en": "Paint and export an illustration in Krita.",
         "zh": "在 Krita 中绘制并导出插画。"
@@ -364,6 +388,10 @@
       "adapter": "dcc-mcp-openscad",
       "repository": "https://github.com/dcc-mcp/dcc-mcp-openscad",
       "catalog_install_available": true,
+      "host_install": {
+        "kind": "free_open_source",
+        "official_url": "https://openscad.org/downloads.html"
+      },
       "intent_examples": {
         "en": "Create and export a deterministic model in OpenSCAD.",
         "zh": "在 OpenSCAD 中创建并导出确定性模型。"
@@ -604,6 +632,10 @@
       "adapter": "dcc-mcp-obs",
       "repository": "https://github.com/dcc-mcp/dcc-mcp-obs",
       "catalog_install_available": true,
+      "host_install": {
+        "kind": "free_open_source",
+        "official_url": "https://obsproject.com/download"
+      },
       "source": "current_core_catalog",
       "intent_examples": {
         "en": "Start a recording in OBS Studio.",

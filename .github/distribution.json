@@ -44,7 +44,7 @@
       "url": "https://www.skills.sh/",
       "kind": "directory",
       "automation": "verified",
-      "notes": "No publish API. The directory indexes public repositories and ranks them from anonymous skills-CLI install telemetry. Release installs all three Skills from the public repository on Linux, macOS, and Windows and asserts the released version; it never generates telemetry."
+      "notes": "No publish API. The directory indexes public repositories and ranks them from anonymous skills-CLI install telemetry. Release installs all four Skills from the public repository on Linux, macOS, and Windows and asserts the released version; it never generates telemetry."
     },
     {
       "name": "ClawHub",

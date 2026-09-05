@@ -17,6 +17,12 @@
       "slug": "dcc-mcp-creator",
       "owner": "loonghao",
       "version": "0.19.98"
+    },
+    {
+      "path": "plugins/dcc-mcp/skills/dcc-cua",
+      "slug": "dcc-cua",
+      "owner": "loonghao",
+      "version": "0.19.98"
     }
   ]
 }

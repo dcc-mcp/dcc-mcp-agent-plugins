@@ -93,6 +93,7 @@ from the GitHub Release to **Skills > Add skill > Upload skill**.
 openclaw skills install @loonghao/dcc-mcp
 openclaw skills install @loonghao/dcc-mcp-skills-creator
 openclaw skills install @loonghao/dcc-mcp-creator
+openclaw skills install @loonghao/dcc-cua
 ```
 
 Direct ClawHub installs are also supported:
@@ -101,6 +102,7 @@ Direct ClawHub installs are also supported:
 npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp
 npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp-skills-creator
 npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp-creator
+npx --yes clawhub@0.23.1 install @loonghao/dcc-cua
 ```
 
 #### Keep installed Skills current
@@ -138,7 +140,7 @@ automatic updates can discover it.
 
 ### Smithery Skills
 
-The three canonical Skills are mapped to Smithery's GitHub-backed Skills
+The four canonical Skills are mapped to Smithery's GitHub-backed Skills
 Registry. Search and install them with the Smithery CLI:
 
 ```bash
@@ -207,8 +209,9 @@ python scripts/build_geo_site.py --check  # fail when the committed doc is stale
 | `dcc-mcp` | Operate live DCC applications through structured tools |
 | `dcc-mcp-skills-creator` | Create and validate DCC-MCP Skills |
 | `dcc-mcp-creator` | Create and modernize DCC-MCP adapters |
+| `dcc-cua` | Route bounded DCC, browser, and non-DCC UI actions through project-owned DCC-CUA |
 
-This repository is the sole source of truth for all three public Skills. It
+This repository is the sole source of truth for all four public Skills. It
 owns their instruction bodies, helpers, tests, versions, product discovery
 metadata, vendor manifests, archives, GitHub Releases, ClawHub, and Smithery.
 Core owns runtime code, schemas, the CLI, and Core-only/runtime Skills; public
@@ -237,7 +240,10 @@ it in the per-user cache used by
 [`scripts/app_path_cache.py`](plugins/dcc-mcp/skills/dcc-mcp/scripts/app_path_cache.py).
 Later requests reuse the path only after checking that it still exists and
 asking the user to confirm startup. Missing paths produce a new-path prompt and
-an install hint; no process is started automatically. See
+ask whether the host application needs installation. Free/open-source products
+with `host_install` metadata show their official HTTPS source; downloading,
+installing, and launching still require explicit user consent and remain
+separate from the DCC-MCP adapter install hint. See
 [`LOCAL_APP_PATH_CACHE.md`](plugins/dcc-mcp/skills/dcc-mcp/references/LOCAL_APP_PATH_CACHE.md).
 
 ```powershell
@@ -248,7 +254,7 @@ python scripts/build_geo_site.py
 python scripts/sync_product_discovery.py --check --check-core-catalog --check-cli
 ```
 
-Merging any validated Skill version change publishes the three Skills to
+Merging any validated Skill version change publishes the four Skills to
 ClawHub. Tagging `v<version>` creates the cross-channel GitHub Release,
 Smithery, npm, and Pages release. A coordinated Core runtime change uses a
 separate Core pull request; each repository reviews and validates its own

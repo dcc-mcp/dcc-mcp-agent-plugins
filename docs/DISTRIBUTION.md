@@ -6,7 +6,7 @@ Released version: **0.19.98** &middot; Catalog: `https://dcc-mcp.github.io/dcc-m
 
 | Channel | Kind | Automation | Notes |
 | --- | --- | --- | --- |
-| [skills.sh](https://www.skills.sh/) | directory | verified | No publish API. The directory indexes public repositories and ranks them from anonymous skills-CLI install telemetry. Release installs all three Skills from the public repository on Linux, macOS, and Windows and asserts the released version; it never generates telemetry. |
+| [skills.sh](https://www.skills.sh/) | directory | verified | No publish API. The directory indexes public repositories and ranks them from anonymous skills-CLI install telemetry. Release installs all four Skills from the public repository on Linux, macOS, and Windows and asserts the released version; it never generates telemetry. |
 | [ClawHub](https://clawhub.ai/) | registry | published | Validated Skill changes publish from main through scripts/clawhub_sync.py; tagged releases retry the same idempotent publication. Requires CLAWHUB_TOKEN. |
 | [Smithery](https://smithery.ai/) | registry | published | GitHub-backed Skills registry. Published by scripts/smithery_sync.py. Requires SMITHERY_API_KEY. |
 | [npm](https://www.npmjs.com/package/@dcc-mcp/skills) | registry | published | Publishes the canonical Skill suite as a package so hosts can vendor it through node_modules. Requires NPM_TOKEN. |
@@ -54,6 +54,16 @@ the released Skill suite so a submission never quotes stale metadata.
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp-creator`
 - **Description**: Infrastructure skill - guide developers and agents through creating or modernizing a DCC-MCP adapter or standalone internal MCP service for Nuke, Blender, 3ds Max, Unreal, ZBrush, Houdini, Maya, and custom studio systems. Use when building server, dispatcher, gateway, packaging, and runtime integration. Not for authoring individual SKILL.md tool packages - use dcc-mcp-skills-creator.
 - **Tags**: adapter-development, internal-mcp-service, standalone, host-runtime, dispatcher, gateway, nuke, blender, 3dsmax, unreal, zbrush
+
+### dcc-cua
+
+- **Name**: dcc-cua
+- **Version**: 0.19.98
+- **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.98/plugins/dcc-mcp/skills/dcc-cua
+- **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-cua`
+- **Description**: Project-owned DCC-CUA routing skill for bounded application UI automation. Use this skill whenever the user says dcc-cua, DCC CUA, our dcc-cua, or 我们的 dcc-cua, including browser and other non-DCC UI tasks. These phrases are a hard route to the dcc-mcp project UI Control stack and take precedence over generic Codex/OpenAI Computer Use, the computer-use Skill, @oai/sky, and Browser/Chrome plugins. If DCC-CUA is unavailable, repair or report the project route; never silently fall back to a generic computer-use provider.
+- **Tags**: dcc-cua, dcc-ui-control, ui-control, browser-dom, exact-window, computer-use, infrastructure
 
 ## Released product routing matrix
 
