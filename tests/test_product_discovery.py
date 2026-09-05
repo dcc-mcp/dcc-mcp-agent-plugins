@@ -195,6 +195,44 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
                     resolve_product_intent(query, self.catalog),
                 )
 
+    def test_free_open_source_products_expose_official_host_install_sources(self) -> None:
+        expected = {
+            "blender",
+            "comfyui",
+            "freecad",
+            "gimp",
+            "godot",
+            "krita",
+            "openscad",
+            "obs",
+        }
+        products = {
+            product["id"]: product
+            for product in [*self.catalog["products"], *self.catalog["application_routes"]]
+            if product.get("host_install")
+        }
+        self.assertEqual(expected, set(products))
+        for product_id, product in products.items():
+            with self.subTest(product=product_id):
+                self.assertEqual("free_open_source", product["host_install"]["kind"])
+                self.assertTrue(product["host_install"]["official_url"].startswith("https://"))
+
+    def test_host_install_metadata_rejects_non_official_sources(self) -> None:
+        invalid_kind = deepcopy(self.catalog)
+        invalid_kind["products"][0]["host_install"] = {
+            "kind": "commercial",
+            "official_url": "https://example.com/install",
+        }
+        invalid_url = deepcopy(self.catalog)
+        invalid_url["products"][0]["host_install"] = {
+            "kind": "free_open_source",
+            "official_url": "http://example.com/install",
+        }
+        for mutation in (invalid_kind, invalid_url):
+            with self.subTest(mutation=mutation["products"][0]["host_install"]):
+                with self.assertRaises(ValueError):
+                    validate_product_catalog(mutation)
+
     def test_generic_words_and_non_product_uses_do_not_hijack_routing(self) -> None:
         queries = (
             "maximize the browser window",

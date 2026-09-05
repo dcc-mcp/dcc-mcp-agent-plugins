@@ -81,8 +81,9 @@ def main() -> int:
         )
 
     entries = json.loads(CLAWHUB_MANIFEST.read_text(encoding="utf-8"))["skills"]
-    if len(entries) != 3:
-        raise ValueError("ClawHub manifest must contain the three public Skills")
+    expected_slugs = {"dcc-mcp", "dcc-mcp-skills-creator", "dcc-mcp-creator", "dcc-cua"}
+    if {entry.get("slug") for entry in entries} != expected_slugs:
+        raise ValueError("ClawHub manifest must contain the four public Skills")
     for entry in entries:
         skill_dir = ROOT / entry["path"]
         report = dcc_mcp_core.validate_skill(str(skill_dir))

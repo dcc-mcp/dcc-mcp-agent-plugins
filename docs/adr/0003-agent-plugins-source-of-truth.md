@@ -6,7 +6,7 @@
 
 ## Context
 
-The three public Agent Skills have independent versions, manifests, tests, and
+The four public Agent Skills have independent versions, manifests, tests, and
 publication channels in this repository. Keeping authoring copies in
 `dcc-mcp-core` made ownership ambiguous and required a reverse copy workflow.
 That workflow also prevented Core from removing compatibility mirrors after the
@@ -19,6 +19,7 @@ distribution repository became self-sufficient.
 - `dcc-mcp`
 - `dcc-mcp-creator`
 - `dcc-mcp-skills-creator`
+- `dcc-cua`
 
 All instruction bodies, helpers, tests, versions, vendor manifests, archives,
 and publication workflows for those Skills are maintained here. Changes land
@@ -33,7 +34,7 @@ compatibility check does not transfer Skill ownership back to Core.
 ## Consequences
 
 - Public Skill changes have one owner and one review path.
-- Core can remove the three compatibility mirrors without breaking a sync job.
+- Core can remove the four compatibility mirrors without breaking a sync job.
 - Runtime or schema changes that require guidance updates need coordinated PRs
   in both repositories, with each repository reviewing its own contract.
 - Product discovery and release validation continue to pin released Core
