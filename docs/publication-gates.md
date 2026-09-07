@@ -156,3 +156,70 @@ failure is post-merge evidence; this standalone workflow does not order or cance
 separate publishing workflows. Registry upload acceptance, moderation state,
 exact-version public visibility, and a registry's `latest` pointer remain
 separate checks.
+
+## Read back a PR's publication evidence
+
+Use an authenticated GitHub CLI with read access. Run this Bash example with
+the PR number you are reviewing; it performs only reads:
+
+```bash
+set -euo pipefail
+repo=dcc-mcp/dcc-mcp-agent-plugins
+read -r -p 'PR number: ' pr
+before=$(gh pr view "$pr" --repo "$repo" --json headRefOid,baseRefOid \
+  --jq '"\(.headRefOid) \(.baseRefOid)"')
+read -r head base <<< "$before"
+printf 'Expected HEAD: %s\nExpected base: %s\n' "$head" "$base"
+status_path="repos/$repo/commits/$head/status?per_page=100"
+read_receipt() {
+  gh api "$status_path" --jq '[.sha, (.statuses[] |
+    select(.context == "publication-contract") | .id, .state, .target_url)] | @tsv'
+}
+receipt=$(read_receipt)
+read -r reported_head status_id state run_url <<< "$receipt"
+printf 'HEAD/status ID/state/target_url: %s\n' "$receipt"
+[[ "$reported_head" == "$head" && "$state" == success ]] || {
+  printf '%s\n' 'Missing, non-success, or mismatched HEAD status; not verified.' >&2; exit 1;
+}
+case "$run_url" in
+  "https://github.com/$repo/actions/runs/"*) ;;
+  *) printf '%s\n' 'No publication workflow receipt; not verified.' >&2; exit 1 ;;
+esac
+run_id=${run_url##*/}
+[[ "$run_id" =~ ^[0-9]+$ ]]
+read_run() {
+  gh api "repos/$repo/actions/runs/$run_id" \
+    --jq '[.path, .event, .head_sha, .run_attempt, .status, .conclusion] | @tsv'
+}
+run=$(read_run)
+read -r workflow event run_head attempt run_status conclusion <<< "$run"
+[[ "$workflow" == .github/workflows/publication-gates.yml && "$event" == pull_request_target ]]
+[[ "$run_status" == completed && "$conclusion" == success ]]
+gh run view "$run_id" --repo "$repo" --attempt "$attempt" --json jobs
+gh run view "$run_id" --repo "$repo" --attempt "$attempt" --log
+after=$(gh pr view "$pr" --repo "$repo" --json headRefOid,baseRefOid \
+  --jq '"\(.headRefOid) \(.baseRefOid)"')
+[[ "$after" == "$before" ]] || { printf '%s\n' 'PR revisions changed; not verified.' >&2; exit 1; }
+[[ "$(read_receipt)" == "$receipt" && "$(read_run)" == "$run" ]] || {
+  printf '%s\n' 'Status or run attempt changed; not verified.' >&2; exit 1;
+}
+```
+
+Require the returned `sha` to equal the full expected HEAD and the latest
+`publication-contract` status to be `success`. Its `target_url` must identify
+the same completed, successful run whose three gate jobs succeeded. Do not
+select an older green status from its history. If more than 100 distinct status
+contexts exist, paginate the combined-status endpoint before deciding that a
+context is absent. In the captured run attempt's logs, verify the baseline
+checker actually executed, with the expected
+base and candidate, and the terminal publisher's JSON reports matching
+`base_sha`, `head_sha`, `merge_sha`, and `run_id`. The candidate must be the
+same exact synthetic merge whose event base/head parents passed verification;
+`BOOTSTRAP NOT ENFORCED`, skipped policy, or missing evidence is not acceptance.
+
+For `pull_request_target`, the run-level `headSha` describes the base context;
+do not substitute it for the PR HEAD. If the captured merge was unavailable or
+stale, preserve the failed run and obtain a fresh PR event after correcting
+the cause. Blindly rerunning the old event does not refresh its revisions.
+This readback verifies one event's evidence; it neither configures nor proves
+an active ruleset or required-status rule.
