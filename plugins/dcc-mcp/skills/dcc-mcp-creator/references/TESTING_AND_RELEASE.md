@@ -16,6 +16,28 @@ HTTP-level smoke when behavior crosses process boundaries.
 | Packaging | wheel or plugin archive installs into the target host runtime |
 | Install SOP | `plan -> execute -> verify -> status -> uninstall`, including rollback |
 
+## Protocol Compatibility Gates
+
+Protocol selection and wire types belong to Core. Follow the
+[Core protocol router](https://github.com/dcc-mcp/dcc-mcp-core/blob/main/docs/adr/033-mcp-http-protocol-router.md)
+for the exact revision under test; adapters should not duplicate its envelopes
+or enable an opt-in protocol solely because a newer model or SDK exists.
+
+| Boundary | Required evidence when changing protocol support |
+|---|---|
+| Feature flags | Test feature-on and feature-off builds; keep legacy initialize/list/call working. Advertise only implemented handlers, providers, and notification channels. |
+| Official client | Pin the SDK and lockfile. Exercise auto negotiation and explicit version selection with discovery, a nonempty tool list, and a deterministic call. Record SDK/source differences instead of silently skipping cases. |
+| Wire contracts | Cover malformed metadata/headers, request identity, argument shape, and body limits before execution; distinguish ingress errors from in-band tool failures. |
+| Artifact | Verify the PR head, CI artifact hash, and installed native module origin. Then repeat on the published wheel/sidecar with the actual feature set; source tests are not release evidence. |
+| Execution | The same declared sync/async tool must preserve result/job semantics through REST and MCP. A timeout hint is not a substitute for `execution: async`. |
+
+Successful protocol tests do not prove full conformance or host correctness.
+For response-correlation issues, also test a slow call followed by uniquely
+marked fast calls on the same real host/session, tracing IDs through every hop.
+Echoing the current request ID around a stale payload is not a fix. After a
+timeout, query the existing job; never replay a mutation just to flush a queue.
+Keep real-host, PR-artifact, and published-release acceptance separate.
+
 ## Install SOP Gate
 
 Adapter lifecycle commands must follow
@@ -65,7 +87,7 @@ match the touched crates.
 For gateway discovery performance, use deterministic tests or Criterion as the
 regression gate. If a regression needs local diagnosis, build
 `dcc-mcp-server` with `--no-default-features --features gateway-daemon,tracy`
-and follow the [local Tracy workflow](../../../docs/guide/observability.md#6-local-tracy-profiling).
+and follow the [local Tracy workflow](https://github.com/dcc-mcp/dcc-mcp-core/blob/main/docs/guide/observability.md#6-local-tracy-profiling).
 Do not wrap async work across `.await` in a Tracy zone; correlate those phases
 with the existing request IDs and OTLP spans instead.
 
@@ -100,4 +122,7 @@ PR descriptions should include:
 - short summary of runtime or skill behavior changed;
 - validation commands, without machine-specific paths;
 - any live-DCC gap that remains;
+- exact-head terminal CI and any protocol feature, SDK, or artifact evidence;
+- the matching public Skill PR when Core changes authoring or testing contracts,
+  or a concise reason no Skill update is needed;
 - linked core issues for deferred shared APIs.
