@@ -71,10 +71,10 @@ and use [Python isolated mode](https://docs.python.org/3/using/cmdline.html#cmdo
 
 ## Status belongs to the PR HEAD
 
-The automatic check for `pull_request_target` is associated with the base SHA,
-not the candidate HEAD. Separate status jobs therefore publish the
-`publication-contract` commit status on the exact event HEAD, while recording the
-synthetic merge SHA separately as validation evidence.
+Do not infer the executed checker revision from an automatic Actions check or
+run's commit association. Separate status jobs publish the
+`publication-contract` commit status on the exact event HEAD, while recording
+the trusted base and synthetic merge SHA separately as validation evidence.
 
 Before validation, the trusted publisher retrieves the current PR and verifies
 the repository, PR identity, base SHA, head SHA, and head repository against
@@ -217,9 +217,11 @@ base and candidate, and the terminal publisher's JSON reports matching
 same exact synthetic merge whose event base/head parents passed verification;
 `BOOTSTRAP NOT ENFORCED`, skipped policy, or missing evidence is not acceptance.
 
-For `pull_request_target`, the run-level `headSha` describes the base context;
-do not substitute it for the PR HEAD. If the captured merge was unavailable or
-stale, preserve the failed run and obtain a fresh PR event after correcting
+Actions run/check metadata can associate `pull_request_target` runs with the
+PR HEAD; that association does not prove which code was executed. The explicit
+trusted checkout and checker/publisher SHA evidence establish that boundary.
+If the captured merge was unavailable or stale, preserve the failed run and
+obtain a fresh PR event after correcting
 the cause. Blindly rerunning the old event does not refresh its revisions.
 This readback verifies one event's evidence; it neither configures nor proves
 an active ruleset or required-status rule.
