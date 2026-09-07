@@ -260,6 +260,11 @@ Smithery, npm, and Pages release. A coordinated Core runtime change uses a
 separate Core pull request; each repository reviews and validates its own
 contract.
 
+[Publication gates](docs/publication-gates.md) check canonical manifest
+coverage and version increases against a trusted Git baseline. Its first-time
+activation and branch-protection requirements are documented separately from
+upload acceptance and public registry visibility.
+
 ## Development
 
 ```powershell

@@ -14,11 +14,11 @@ from product_discovery import (
     validate_released_core_workflows,
 )
 from smithery_sync import validate_manifest as validate_smithery_manifest
+from publication_manifest import load_canonical_manifest
 from sync_product_discovery import rendered_outputs
 
 ROOT = Path(__file__).resolve().parent.parent
 PLUGIN = ROOT / "plugins" / "dcc-mcp"
-CLAWHUB_MANIFEST = ROOT / ".github" / "clawhub-skills.json"
 SMITHERY_MANIFEST = ROOT / ".github" / "smithery-skills.json"
 AGENT_PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 PLUGIN_MANIFESTS = (
@@ -80,10 +80,7 @@ def main() -> int:
             f"Agent Plugins marketplace points at another plugin directory: {AGENTS_MARKETPLACE_MANIFEST}"
         )
 
-    entries = json.loads(CLAWHUB_MANIFEST.read_text(encoding="utf-8"))["skills"]
-    expected_slugs = {"dcc-mcp", "dcc-mcp-skills-creator", "dcc-mcp-creator", "dcc-cua"}
-    if {entry.get("slug") for entry in entries} != expected_slugs:
-        raise ValueError("ClawHub manifest must contain the four public Skills")
+    entries = load_canonical_manifest(ROOT)
     for entry in entries:
         skill_dir = ROOT / entry["path"]
         report = dcc_mcp_core.validate_skill(str(skill_dir))
