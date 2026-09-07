@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from pathlib import PurePosixPath
 import re
 import sys
 from zipfile import ZIP_DEFLATED
@@ -80,6 +81,15 @@ def workspace_version(repo_root: Path) -> str:
     return str(data["workspace"]["package"]["version"])
 
 
+def is_packable_path(relative: PurePosixPath) -> bool:
+    """Use the same byte-selection policy for archives and Git snapshot gates."""
+    return (
+        not any(part in IGNORED_DIRECTORY_NAMES for part in relative.parts[:-1])
+        and relative.name not in IGNORED_NAMES
+        and relative.suffix.lower() not in IGNORED_SUFFIXES
+    )
+
+
 def iter_skill_files(skill_dir: Path):
     """Yield packable files under a skill directory."""
     if skill_dir.is_symlink():
@@ -95,14 +105,8 @@ def iter_skill_files(skill_dir: Path):
             resolved.relative_to(resolved_root)
         except ValueError as error:
             raise ValueError(f"Skill file escapes package root: {path}") from error
-        relative_parts = path.relative_to(skill_dir).parts
-        if any(part in IGNORED_DIRECTORY_NAMES for part in relative_parts[:-1]):
-            continue
-        if path.name in IGNORED_NAMES:
-            continue
-        if path.suffix.lower() in IGNORED_SUFFIXES:
-            continue
-        yield path
+        if is_packable_path(PurePosixPath(path.relative_to(skill_dir).as_posix())):
+            yield path
 
 
 def resolve_skill_dirs(source: Path, package_all: bool) -> list[Path]:
