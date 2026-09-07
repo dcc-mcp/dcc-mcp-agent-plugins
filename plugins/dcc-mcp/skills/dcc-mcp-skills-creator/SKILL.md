@@ -10,7 +10,7 @@ allowed-tools: Bash Read Write Edit
 metadata:
   dcc-mcp:
     dcc: python
-    version: "0.19.99"
+    version: "0.19.100"
     layer: infrastructure
     compatibility: "Python 3.7+, dcc-mcp-core 0.17+"
     search-hint: "create dcc mcp skill, validate skill, scaffold skill, SKILL.md, tools.yaml, scripts, groups, prompts, skill taxonomy, long-running main-thread tools"
@@ -264,10 +264,11 @@ For one indivisible DCC-native call, keep `job_strategy: monolithic`. Prefer
 `execution: async` so the initial transport returns a core job id, then poll
 the instance-routable `jobs_get_status`. A transport timeout is not completion
 or cancellation: rediscover the instance and query the job before retrying.
-Do not publish a potentially long tool as `execution: sync` with no timeout
-metadata. A positive `timeout_hint_secs` also makes Core return a job envelope;
-use it when duration is known but the tool otherwise retains synchronous
-semantics inside the worker.
+Declare potentially long tools as `execution: async` with a realistic positive
+`timeout_hint_secs`. The timeout hint describes a budget, not an execution mode;
+do not rely on it to obtain a job envelope. Some older REST runtimes promoted
+hinted synchronous tools differently from MCP, so validate both routes on the
+exact target Core artifact and keep the execution declaration explicit.
 The creator scaffold deliberately emits `monolithic` for async tools; change it
 only with the matching chunked runner or isolated status/cancel implementation.
 
