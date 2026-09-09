@@ -49,6 +49,10 @@ def probe(
     """Return CLI availability and inventory, with opt-in verified install."""
     resolved = shutil.which(cli)
     url = base_url or os.environ.get("DCC_MCP_BASE_URL") or DEFAULT_BASE_URL
+    try:
+        url = dcc_gateway.validate_gateway_url(url)
+    except ValueError as exc:
+        return {"success": False, "error": "invalid-gateway-url", "detail": str(exc)}
     result: dict[str, Any] = {
         "cli": cli,
         "cli_path": resolved,
