@@ -17,6 +17,8 @@ from typing import Any
 import urllib.error
 import urllib.request
 
+from gateway_endpoint import NoGatewayRedirect, validate_gateway_url
+
 DEFAULT_BASE_URL = "http://127.0.0.1:9765"
 OFFICIAL_REPO = "dcc-mcp/dcc-mcp-core"
 DEFAULT_VERSION = "latest"
@@ -55,14 +57,18 @@ def _run_json(argv: list[str]) -> tuple[bool, dict[str, Any]]:
 
 
 def _request_json(base_url: str, method: str, path: str, body: dict[str, Any] | None = None) -> dict[str, Any]:
-    url = f"{base_url.rstrip('/')}{path}"
+    try:
+        base_url = validate_gateway_url(base_url)
+    except ValueError as exc:
+        return {"success": False, "error": "invalid-gateway-url", "detail": str(exc)}
+    url = f"{base_url}{path}"
     data = None if body is None else json.dumps(body).encode("utf-8")
     request = urllib.request.Request(url, data=data, method=method)
     request.add_header("Accept", "application/json")
     if body is not None:
         request.add_header("Content-Type", "application/json")
     try:
-        with urllib.request.urlopen(request, timeout=60) as response:
+        with urllib.request.build_opener(NoGatewayRedirect()).open(request, timeout=60) as response:
             text = response.read().decode("utf-8")
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")
@@ -296,6 +302,10 @@ def python_fallback(command: str, args: argparse.Namespace) -> dict[str, Any]:
 
 def run_command(command: str, args: argparse.Namespace) -> dict[str, Any]:
     """Prefer dcc-mcp-cli, optionally install it, then fall back to Python REST."""
+    try:
+        args.base_url = validate_gateway_url(args.base_url)
+    except ValueError as exc:
+        return {"success": False, "error": "invalid-gateway-url", "detail": str(exc)}
     cli_path, cli_details = resolve_cli(args)
     if cli_path:
         args.cli_path = cli_path
