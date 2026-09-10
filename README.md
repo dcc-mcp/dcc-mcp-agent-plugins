@@ -138,6 +138,27 @@ belong in the source repository. An untracked directory copied into an agent's
 Skill folder must be reinstalled once through one of these managers before
 automatic updates can discover it.
 
+### Adapter connection troubleshooting
+
+After installing the Skill, start the DCC application and enable its DCC-MCP
+adapter. Then run:
+
+```powershell
+dcc-mcp-cli list
+```
+
+The output must contain a running instance with the adapter's documented
+`dcc_type`. If the command is missing, follow the adapter repository's setup
+guide for the official CLI. If the command works but lists no matching
+instance, keep the DCC application open and check that its extension, add-on,
+or plugin is enabled. Restart the agent after installing a Skill or native
+plugin when that agent discovers integrations only at startup.
+
+Adapter repositories intentionally carry only a generated, short installation
+entry. This repository owns the canonical commands and troubleshooting links;
+see [Maintaining adapter README quickstarts](docs/adapter-readme-quickstarts.md)
+for the rollout and drift-check contract.
+
 ### Smithery Skills
 
 The four canonical Skills are mapped to Smithery's GitHub-backed Skills

@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "repositories": {
+    "dcc-mcp-blender": {
+      "dcc_name": "Blender",
+      "dcc_type": "blender",
+      "smoke_prompt": "Use dcc-mcp to inspect the current Blender scene."
+    },
+    "dcc-mcp-comfyui": {
+      "dcc_name": "ComfyUI",
+      "dcc_type": "comfyui",
+      "smoke_prompt": "Use dcc-mcp to inspect the current ComfyUI workflow and queue status."
+    },
+    "dcc-mcp-godot": {
+      "dcc_name": "Godot",
+      "dcc_type": "godot",
+      "smoke_prompt": "Use dcc-mcp to inspect the current Godot project."
+    },
+    "dcc-mcp-houdini": {
+      "dcc_name": "Houdini",
+      "dcc_type": "houdini",
+      "smoke_prompt": "Use dcc-mcp to inspect the current Houdini scene."
+    },
+    "dcc-mcp-maya": {
+      "dcc_name": "Maya",
+      "dcc_type": "maya",
+      "smoke_prompt": "Use dcc-mcp to inspect the current Maya scene."
+    },
+    "dcc-mcp-obs": {
+      "dcc_name": "OBS Studio",
+      "dcc_type": "obs",
+      "smoke_prompt": "Use dcc-mcp to inspect the current OBS scene and streaming status."
+    },
+    "dcc-mcp-unreal": {
+      "dcc_name": "Unreal Engine",
+      "dcc_type": "unreal",
+      "smoke_prompt": "Use dcc-mcp to inspect the current Unreal Engine project and level."
+    }
+  }
+}

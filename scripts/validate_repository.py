@@ -16,6 +16,7 @@ from product_discovery import (
 from smithery_sync import validate_manifest as validate_smithery_manifest
 from publication_manifest import load_canonical_manifest
 from sync_product_discovery import rendered_outputs
+from sync_adapter_readme import load_entry, render
 
 ROOT = Path(__file__).resolve().parent.parent
 PLUGIN = ROOT / "plugins" / "dcc-mcp"
@@ -36,10 +37,38 @@ MARKETPLACE_MANIFESTS = (
 AGENTS_MARKETPLACE_MANIFEST = ROOT / ".agents" / "plugins" / "marketplace.json"
 PLUGIN_SOURCE_PATH = "./plugins/dcc-mcp"
 CHANNEL_AUTOMATION = {"published", "verified", "manual", "not-applicable"}
+ADAPTER_QUICKSTART_REGISTRY = ROOT / ".github" / "adapter-readme-quickstarts.json"
+ADAPTER_QUICKSTART_TEMPLATE = ROOT / "templates" / "adapter-readme-agent-quickstart.md"
 
 
 def main() -> int:
+    quickstart_registry = json.loads(ADAPTER_QUICKSTART_REGISTRY.read_text(encoding="utf-8"))
+    repositories = quickstart_registry.get("repositories")
+    if not isinstance(repositories, dict) or not repositories:
+        raise ValueError("adapter quickstart registry must contain repositories")
+    quickstart_template = ADAPTER_QUICKSTART_TEMPLATE.read_text(encoding="utf-8")
+    for repository in repositories:
+        render(
+            quickstart_template,
+            load_entry(ADAPTER_QUICKSTART_REGISTRY, repository),
+        )
+
     product_catalog = load_product_catalog()
+    released_repositories = {
+        product["repository"].rstrip("/").rsplit("/", 1)[-1]: product["id"]
+        for product in product_catalog["products"]
+    }
+    released_repositories.update(
+        {
+            product["repository"].rstrip("/").rsplit("/", 1)[-1]: product["id"]
+            for product in product_catalog.get("application_routes", [])
+        }
+    )
+    for repository, entry in repositories.items():
+        if repository not in released_repositories:
+            raise ValueError(f"adapter quickstart is not in the released catalog: {repository}")
+        if entry["dcc_type"] != released_repositories[repository]:
+            raise ValueError(f"adapter quickstart dcc_type differs from catalog: {repository}")
     validate_released_core_workflows(
         product_catalog,
         {
