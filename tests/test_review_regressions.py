@@ -50,7 +50,7 @@ class IndependentReviewRegressionTests(unittest.TestCase):
         self.assertEqual("https://github.com/dcc-mcp/dcc-mcp-core", source["repository"])
         self.assertEqual(f"v{source['version']}", source["tag"])
         self.assertEqual(
-            "e8d070fd703164a380895af2d6b4e17b3cb2459c",
+            "05b3c61cf787045f11e4fd49019c2be090e9db78",
             source["commit"],
         )
         self.assertEqual(

@@ -21,6 +21,7 @@ try:
         ui_route_prompt,
         validate_core_catalog_snapshot,
         validate_released_cli_snapshot,
+        validate_released_install_plan,
         validate_released_source_snapshot,
     )
 except ModuleNotFoundError:  # Imported as scripts.sync_product_discovery by unit tests.
@@ -35,6 +36,7 @@ except ModuleNotFoundError:  # Imported as scripts.sync_product_discovery by uni
         ui_route_prompt,
         validate_core_catalog_snapshot,
         validate_released_cli_snapshot,
+        validate_released_install_plan,
         validate_released_source_snapshot,
     )
 
@@ -322,6 +324,23 @@ def main(argv: list[str] | None = None) -> int:
                 check=True,
             )
             validate_released_cli_snapshot(catalog, cli_version, json.loads(catalog_result.stdout))
+            for product in catalog["products"]:
+                if "catalog_adapter_version" not in product:
+                    continue
+                install_result = subprocess.run(
+                    [
+                        args.cli,
+                        "install",
+                        "--dcc-type",
+                        product["id"],
+                        "--output",
+                        "json",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                validate_released_install_plan(product, json.loads(install_result.stdout))
         except (IndexError, json.JSONDecodeError, OSError, subprocess.CalledProcessError, ValueError) as error:
             print(f"released CLI discovery differs: {error}")
             return 1

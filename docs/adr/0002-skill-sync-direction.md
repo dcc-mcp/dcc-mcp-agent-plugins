@@ -71,7 +71,7 @@ The copy is a command, and CI enforces it:
   ownership set fails CI.
 - `scripts/sync_product_discovery.py --check` rejects drift across all generated
   manifests and interfaces. Required CI and release jobs add
-  `--check-core-catalog` to compare all 35 identities, owners, repositories, and
+  `--check-core-catalog` to compare all 37 identities, owners, repositories, and
   install availability against the catalog at the exact Core release commit
   recorded in `PRODUCTS.json`; this prevents a coordinated source/product rename
   from remaining merely self-consistent. The same source contract pins the

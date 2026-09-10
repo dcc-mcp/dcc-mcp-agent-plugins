@@ -15,9 +15,10 @@ from scripts.product_discovery import (
     normalize_term,
     product_terms,
     resolve_product_intent,
-    validate_product_catalog,
     validate_core_catalog_snapshot,
+    validate_product_catalog,
     validate_released_cli_snapshot,
+    validate_released_install_plan,
 )
 from scripts.sync_product_discovery import OPENAI_INTERFACE, rendered_outputs
 
@@ -63,7 +64,7 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
         cli_types = self.catalog["sources"]["released_cli"]["dcc_types"]
         product_types = [product["id"] for product in self.catalog["products"]]
         self.assertEqual(cli_types, product_types)
-        self.assertEqual(35, len(product_types))
+        self.assertEqual(37, len(product_types))
 
     def test_released_cli_snapshot_rejects_missing_or_misdirected_products(self) -> None:
         payload = {
@@ -177,7 +178,7 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
                     resolve_product_intent(query, self.catalog),
                 )
 
-    def test_current_application_routes_cover_obs_office_and_powerpoint_requests(self) -> None:
+    def test_routed_products_cover_obs_liquigen_office_and_powerpoint_requests(self) -> None:
         cases = {
             "帮我用 OBS 录屏": "obs",
             "Start a recording in OBS Studio": "obs",
@@ -194,6 +195,96 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
                     {"status": "match", "product_ids": [expected]},
                     resolve_product_intent(query, self.catalog),
                 )
+
+    def test_maya_assetsync_capability_is_versioned_beyond_the_released_install(self) -> None:
+        maya = next(
+            product for product in self.catalog["products"] if product["id"] == "maya"
+        )
+        for language in ("en", "zh"):
+            with self.subTest(language=language):
+                intent = maya["intent_examples"][language]
+                self.assertNotIn("AssetSync v2", intent)
+                self.assertEqual(
+                    {"status": "match", "product_ids": ["maya"]},
+                    resolve_product_intent(intent, self.catalog),
+                )
+        self.assertEqual("0.9.22", maya["catalog_adapter_version"])
+        self.assertEqual(1, len(maya["versioned_capabilities"]))
+        capability = maya["versioned_capabilities"][0]
+        self.assertEqual("0.9.26", capability["minimum_adapter_version"])
+        self.assertEqual("requires_adapter_upgrade", capability["availability"])
+        self.assertEqual(
+            "https://github.com/dcc-mcp/dcc-mcp-maya/pull/486",
+            capability["source_url"],
+        )
+        for language in ("en", "zh"):
+            self.assertIn("AssetSync v2", capability["summary"][language])
+            self.assertIn("Arnold", capability["summary"][language])
+
+        good_plan = {
+            "dcc_type": "maya",
+            "version": "0.9.22",
+            "adapter": {
+                "name": "dcc-mcp-maya",
+                "version": "0.9.22",
+                "url": "https://github.com/dcc-mcp/dcc-mcp-maya",
+            },
+            "steps": [
+                {
+                    "action": {
+                        "type": "PipInstall",
+                        "package": "dcc-mcp-maya",
+                        "version": "0.9.22",
+                    }
+                }
+            ],
+        }
+        validate_released_install_plan(maya, good_plan)
+        mutations = []
+        for path, value in (
+            (("dcc_type",), "blender"),
+            (("version",), "0.9.26"),
+            (("adapter", "version"), "0.9.26"),
+            (("adapter", "name"), "attacker"),
+            (("adapter", "url"), "https://github.com/attacker/dcc-mcp-maya"),
+            (("steps", 0, "action", "version"), "0.9.26"),
+            (("steps", 0, "action", "package"), "attacker"),
+        ):
+            mutation = deepcopy(good_plan)
+            target = mutation
+            for key in path[:-1]:
+                target = target[key]
+            target[path[-1]] = value
+            mutations.append(mutation)
+        for mutation in mutations:
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                validate_released_install_plan(maya, mutation)
+
+    def test_versioned_capability_metadata_fails_closed(self) -> None:
+        maya_index = next(
+            index
+            for index, product in enumerate(self.catalog["products"])
+            if product["id"] == "maya"
+        )
+        mutations = []
+        for field, value in (
+            ("catalog_adapter_version", "0.9"),
+            ("catalog_adapter_version", "0.9.26"),
+        ):
+            mutation = deepcopy(self.catalog)
+            mutation["products"][maya_index][field] = value
+            mutations.append(mutation)
+        for field, value in (
+            ("minimum_adapter_version", "0.9.22"),
+            ("availability", "available"),
+            ("source_url", "https://github.com/attacker/dcc-mcp-maya/pull/486"),
+        ):
+            mutation = deepcopy(self.catalog)
+            mutation["products"][maya_index]["versioned_capabilities"][0][field] = value
+            mutations.append(mutation)
+        for mutation in mutations:
+            with self.subTest(), self.assertRaises(ValueError):
+                validate_product_catalog(mutation)
 
     def test_free_open_source_products_expose_official_host_install_sources(self) -> None:
         expected = {
@@ -362,15 +453,15 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
         for path in PLUGIN_MANIFESTS:
             manifest = json.loads(outputs[path])
             with self.subTest(path=path.relative_to(ROOT).as_posix()):
-                self.assertIn("34 released creative applications", manifest["description"])
+                self.assertIn("36 released creative applications", manifest["description"])
 
         codex_manifest = json.loads(outputs[PLUGIN_MANIFESTS[1]])
-        self.assertIn("34 creative products", codex_manifest["interface"]["shortDescription"])
+        self.assertIn("36 creative products", codex_manifest["interface"]["shortDescription"])
         self.assertIn(
-            "34 released creative applications",
+            "36 released creative applications",
             codex_manifest["interface"]["longDescription"],
         )
-        self.assertIn("Route 34 released creative products", outputs[OPENAI_INTERFACE])
+        self.assertIn("Route 36 released creative products", outputs[OPENAI_INTERFACE])
 
     def test_public_distribution_catalog_projects_the_canonical_contract(self) -> None:
         public_catalog = build_catalog(ROOT)

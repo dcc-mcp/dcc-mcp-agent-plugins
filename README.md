@@ -230,8 +230,8 @@ version.
 
 Product discovery is a separate compatibility contract. It is regenerated from
 `PRODUCTS.json` and can add a route from the current Core catalog (for example
-OBS Studio, LiquiGen, or the Office/PPT workflow) even while the released CLI
-snapshot remains at its own version. Run
+the Office/PPT workflow) even while the released CLI snapshot remains at its
+own version. OBS Studio and LiquiGen are part of the released CLI catalog. Run
 `sync_product_discovery.py --check --check-core-catalog` to verify the generated
 surfaces against the pinned released Core catalog.
 

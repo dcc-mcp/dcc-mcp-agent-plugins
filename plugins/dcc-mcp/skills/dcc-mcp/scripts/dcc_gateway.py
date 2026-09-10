@@ -5,17 +5,18 @@ from __future__ import annotations
 import argparse
 import contextlib
 import hashlib
+import http.client
 import json
 import os
-from pathlib import Path
 import platform
 import re
 import shutil
 import subprocess
 import tempfile
-from typing import Any
 import urllib.error
 import urllib.request
+from pathlib import Path
+from typing import Any
 
 from gateway_endpoint import NoGatewayRedirect, validate_gateway_url
 
@@ -71,7 +72,10 @@ def _request_json(base_url: str, method: str, path: str, body: dict[str, Any] | 
         with urllib.request.build_opener(NoGatewayRedirect()).open(request, timeout=60) as response:
             text = response.read().decode("utf-8")
     except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")
+        try:
+            detail = exc.read().decode("utf-8", errors="replace")
+        except (OSError, http.client.HTTPException):
+            detail = "response body unavailable"
         return {"success": False, "error": "http-error", "status": exc.code, "detail": detail}
     except (urllib.error.URLError, OSError) as exc:
         return {"success": False, "error": "connection-error", "detail": str(exc)}
