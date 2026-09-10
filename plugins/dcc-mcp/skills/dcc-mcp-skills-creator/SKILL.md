@@ -10,7 +10,7 @@ allowed-tools: Bash Read Write Edit
 metadata:
   dcc-mcp:
     dcc: python
-    version: "0.19.101"
+    version: "0.19.102"
     layer: infrastructure
     compatibility: "Python 3.7+, dcc-mcp-core 0.17+"
     search-hint: "create dcc mcp skill, validate skill, scaffold skill, SKILL.md, tools.yaml, scripts, groups, prompts, skill taxonomy, long-running main-thread tools"
@@ -36,14 +36,12 @@ those adapters.
 
 ## Install and Route
 
-Install the published
-[`@loonghao/dcc-mcp-skills-creator`](https://clawhub.ai/loonghao/skills/dcc-mcp-skills-creator)
-package, then start a new agent turn:
-
-```bash
-openclaw skills install @loonghao/dcc-mcp-skills-creator
-npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp-skills-creator
-```
+Install from an explicitly reviewed, full Git commit using the
+[verified installation procedure](references/VERIFIED_INSTALL.md), then start
+a new agent turn. It verifies the pinned Git objects before exporting the
+Skill and does not execute a downloaded installer. Obtain the commit ID from
+your trusted review record; a mutable branch, tag, or registry `latest` is not
+an integrity pin. Treat each upgrade as a new review and pin.
 
 ## Distribution Boundary
 
