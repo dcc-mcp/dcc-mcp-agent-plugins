@@ -3,13 +3,13 @@
   "sources": {
     "released_cli": {
       "name": "dcc-mcp-cli",
-      "version": "0.20.21",
+      "version": "0.20.25",
       "repository": "https://github.com/dcc-mcp/dcc-mcp-core",
-      "tag": "v0.20.21",
-      "commit": "e8d070fd703164a380895af2d6b4e17b3cb2459c",
+      "tag": "v0.20.25",
+      "commit": "05b3c61cf787045f11e4fd49019c2be090e9db78",
       "command": "dcc-mcp-cli dcc-types --output json",
-      "checked_at": "2026-08-27",
-      "reported_total": 35,
+      "checked_at": "2026-09-10",
+      "reported_total": 37,
       "dcc_types": [
         "3dsmax",
         "aftereffects",
@@ -23,12 +23,14 @@
         "illustrator",
         "katana",
         "krita",
+        "liquigen",
         "mari",
         "marmoset",
         "material-maker",
         "maya",
         "mobu",
         "nuke",
+        "obs",
         "openscad",
         "openusd",
         "photoshop",
@@ -50,16 +52,16 @@
     },
     "core_catalog": {
       "repository": "https://github.com/dcc-mcp/dcc-mcp-core",
-      "commit": "e8d070fd703164a380895af2d6b4e17b3cb2459c",
+      "commit": "05b3c61cf787045f11e4fd49019c2be090e9db78",
       "path": "dcc-mcp-catalog.yml"
     },
-    "owner_repositories_checked_at": "2026-09-03",
+    "owner_repositories_checked_at": "2026-09-10",
     "current_core_catalog": {
       "repository": "https://github.com/dcc-mcp/dcc-mcp-core",
-      "commit": "8450345113745beebc36684316390f90e515c4a1",
+      "commit": "05b3c61cf787045f11e4fd49019c2be090e9db78",
       "path": "dcc-mcp-catalog.yml",
       "ref": "main",
-      "checked_at": "2026-09-02"
+      "checked_at": "2026-09-10"
     }
   },
   "ui_routing": {
@@ -296,6 +298,20 @@
       }
     },
     {
+      "id": "liquigen",
+      "display_name": "LiquiGen",
+      "aliases": ["LiquiGen", "Liquid Gen"],
+      "contextual_aliases": [],
+      "family": "water simulation",
+      "adapter": "dcc-mcp-liquigen",
+      "repository": "https://github.com/dcc-mcp/dcc-mcp-liquigen",
+      "catalog_install_available": true,
+      "intent_examples": {
+        "en": "Inspect the simulation in LiquiGen.",
+        "zh": "在 LiquiGen 中检查液体模拟。"
+      }
+    },
+    {
       "id": "mari",
       "display_name": "Foundry Mari",
       "aliases": [],
@@ -346,10 +362,23 @@
       "adapter": "dcc-mcp-maya",
       "repository": "https://github.com/dcc-mcp/dcc-mcp-maya",
       "catalog_install_available": true,
+      "catalog_adapter_version": "0.9.22",
       "intent_examples": {
-        "en": "Model and animate a character in Autodesk Maya.",
-        "zh": "在 Autodesk Maya 中建模并制作角色动画。"
-      }
+        "en": "Inspect scene state, DAG nodes, animation, and materials in Autodesk Maya.",
+        "zh": "在 Autodesk Maya 中检查场景状态、DAG 节点、动画与材质。"
+      },
+      "versioned_capabilities": [
+        {
+          "id": "assetsync-v2-native-lookdev",
+          "minimum_adapter_version": "0.9.26",
+          "availability": "requires_adapter_upgrade",
+          "source_url": "https://github.com/dcc-mcp/dcc-mcp-maya/pull/486",
+          "summary": {
+            "en": "AssetSync v2 editable rig, groom, materials, animation, and Arnold lookdev support is available after upgrading the Maya adapter.",
+            "zh": "升级 Maya 适配器后，可使用 AssetSync v2 的可编辑绑定、毛发、材质、动画与 Arnold 外观开发能力。"
+          }
+        }
+      ]
     },
     {
       "id": "mobu",
@@ -377,6 +406,24 @@
       "intent_examples": {
         "en": "Composite a shot in Foundry Nuke.",
         "zh": "在 Foundry Nuke 中合成镜头。"
+      }
+    },
+    {
+      "id": "obs",
+      "display_name": "OBS Studio",
+      "aliases": ["OBS", "OBS Studio"],
+      "contextual_aliases": ["OBS 录屏", "OBS录屏", "OBS 录制", "OBS录制"],
+      "family": "broadcast",
+      "adapter": "dcc-mcp-obs",
+      "repository": "https://github.com/dcc-mcp/dcc-mcp-obs",
+      "catalog_install_available": true,
+      "host_install": {
+        "kind": "free_open_source",
+        "official_url": "https://obsproject.com/download"
+      },
+      "intent_examples": {
+        "en": "Start a recording in OBS Studio.",
+        "zh": "在 OBS 中开始录屏。"
       }
     },
     {
@@ -623,40 +670,6 @@
     }
   ],
   "application_routes": [
-    {
-      "id": "obs",
-      "display_name": "OBS Studio",
-      "aliases": ["OBS", "OBS Studio"],
-      "contextual_aliases": ["OBS 录屏", "OBS录屏", "OBS 录制", "OBS录制"],
-      "family": "broadcast",
-      "adapter": "dcc-mcp-obs",
-      "repository": "https://github.com/dcc-mcp/dcc-mcp-obs",
-      "catalog_install_available": true,
-      "host_install": {
-        "kind": "free_open_source",
-        "official_url": "https://obsproject.com/download"
-      },
-      "source": "current_core_catalog",
-      "intent_examples": {
-        "en": "Start a recording in OBS Studio.",
-        "zh": "在 OBS 中开始录屏。"
-      }
-    },
-    {
-      "id": "liquigen",
-      "display_name": "LiquiGen",
-      "aliases": ["LiquiGen", "Liquid Gen"],
-      "contextual_aliases": [],
-      "family": "water simulation",
-      "adapter": "dcc-mcp-liquigen",
-      "repository": "https://github.com/dcc-mcp/dcc-mcp-liquigen",
-      "catalog_install_available": true,
-      "source": "current_core_catalog",
-      "intent_examples": {
-        "en": "Inspect the simulation in LiquiGen.",
-        "zh": "在 LiquiGen 中检查液体模拟。"
-      }
-    },
     {
       "id": "office-suite",
       "display_name": "Microsoft Office",

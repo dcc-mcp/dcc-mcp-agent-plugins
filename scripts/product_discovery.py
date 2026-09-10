@@ -21,6 +21,10 @@ PRODUCT_CATALOG = (
 )
 PRODUCT_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 CORE_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
+STABLE_VERSION_RE = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
+PULL_REQUEST_URL_RE = re.compile(
+    r"^https://github\.com/dcc-mcp/(?P<adapter>[a-z0-9_-]+)/pull/[1-9][0-9]*$"
+)
 RELEASED_CORE_SETUP_COMMAND = "python scripts/setup_released_core.py"
 RELEASED_CORE_CATALOG_SETUP_COMMAND = (
     f"{RELEASED_CORE_SETUP_COMMAND} --with-catalog-dependencies"
@@ -255,6 +259,15 @@ def _repository_identity(value: str) -> str:
     return value.rstrip("/").casefold()
 
 
+def _stable_version(value: object, *, field: str, product_id: str) -> tuple[int, int, int]:
+    if not isinstance(value, str):
+        raise ValueError(f"{field} must be a stable semantic version: {product_id}")
+    match = STABLE_VERSION_RE.fullmatch(value)
+    if match is None:
+        raise ValueError(f"{field} must be a stable semantic version: {product_id}")
+    return tuple(int(part) for part in match.groups())
+
+
 def product_terms(product: dict, *, include_contextual: bool = True) -> list[str]:
     values = [product["id"], product["display_name"], *_alias_terms(product, "aliases")]
     if include_contextual:
@@ -422,6 +435,73 @@ def validate_product_catalog(data: dict) -> None:
             raise ValueError(f"product identity is incomplete: {product_id}")
         if not isinstance(product.get("catalog_install_available"), bool):
             raise ValueError(f"catalog_install_available must be boolean: {product_id}")
+        catalog_adapter_version = product.get("catalog_adapter_version")
+        versioned_capabilities = product.get("versioned_capabilities", [])
+        if catalog_adapter_version is not None:
+            current_version = _stable_version(
+                catalog_adapter_version,
+                field="catalog_adapter_version",
+                product_id=product_id,
+            )
+            if product["catalog_install_available"] is not True:
+                raise ValueError(
+                    f"catalog_adapter_version requires an installable product: {product_id}"
+                )
+        else:
+            current_version = None
+        if not isinstance(versioned_capabilities, list):
+            raise ValueError(f"versioned_capabilities must be an array: {product_id}")
+        if versioned_capabilities and current_version is None:
+            raise ValueError(
+                f"versioned_capabilities require catalog_adapter_version: {product_id}"
+            )
+        capability_ids: set[str] = set()
+        for capability in versioned_capabilities:
+            if not isinstance(capability, dict):
+                raise ValueError(f"versioned capability must be an object: {product_id}")
+            if set(capability) != {
+                "id",
+                "minimum_adapter_version",
+                "availability",
+                "source_url",
+                "summary",
+            }:
+                raise ValueError(f"versioned capability fields differ: {product_id}")
+            capability_id = capability.get("id")
+            if (
+                not isinstance(capability_id, str)
+                or PRODUCT_ID_RE.fullmatch(capability_id) is None
+                or capability_id in capability_ids
+            ):
+                raise ValueError(f"invalid versioned capability id: {product_id}")
+            capability_ids.add(capability_id)
+            minimum_version = _stable_version(
+                capability.get("minimum_adapter_version"),
+                field="minimum_adapter_version",
+                product_id=product_id,
+            )
+            if minimum_version <= current_version:
+                raise ValueError(
+                    f"versioned capability must require a newer adapter: {product_id}"
+                )
+            if capability.get("availability") != "requires_adapter_upgrade":
+                raise ValueError(f"versioned capability availability differs: {product_id}")
+            source_match = PULL_REQUEST_URL_RE.fullmatch(
+                str(capability.get("source_url", ""))
+            )
+            if source_match is None or source_match.group("adapter") != adapter:
+                raise ValueError(f"versioned capability source differs: {product_id}")
+            summary = capability.get("summary")
+            if (
+                not isinstance(summary, dict)
+                or set(summary) != {"en", "zh"}
+                or any(
+                    not isinstance(summary.get(language), str)
+                    or not summary[language].strip()
+                    for language in ("en", "zh")
+                )
+            ):
+                raise ValueError(f"versioned capability summary is incomplete: {product_id}")
         host_install = product.get("host_install")
         if host_install is not None:
             if not isinstance(host_install, dict):
@@ -542,6 +622,44 @@ def validate_released_cli_snapshot(catalog: dict, cli_version: str, payload: dic
             raise ValueError(f"released CLI repository differs: {row['dcc_type']}")
         if adapter.get("catalog_install_available") is not product["catalog_install_available"]:
             raise ValueError(f"released CLI install availability differs: {row['dcc_type']}")
+
+
+def validate_released_install_plan(product: dict, payload: dict) -> None:
+    """Bind versioned capability notes to the adapter selected by the released CLI."""
+    expected_version = product.get("catalog_adapter_version")
+    if expected_version is None:
+        raise ValueError(f"product has no catalog adapter version: {product.get('id')}")
+    if (
+        not isinstance(payload, dict)
+        or payload.get("dcc_type") != product["id"]
+        or payload.get("version") != expected_version
+    ):
+        raise ValueError(f"released install plan version differs: {product['id']}")
+    adapter = payload.get("adapter")
+    if not isinstance(adapter, dict):
+        raise ValueError(f"released install plan adapter is missing: {product['id']}")
+    if (
+        adapter.get("name") != product["adapter"]
+        or adapter.get("version") != expected_version
+        or adapter.get("url", "").rstrip("/") != product["repository"].rstrip("/")
+    ):
+        raise ValueError(f"released install plan adapter differs: {product['id']}")
+    steps = payload.get("steps")
+    if not isinstance(steps, list):
+        raise ValueError(f"released install plan steps are missing: {product['id']}")
+    pip_installs = [
+        step.get("action")
+        for step in steps
+        if isinstance(step, dict)
+        and isinstance(step.get("action"), dict)
+        and step["action"].get("type") == "PipInstall"
+    ]
+    if (
+        len(pip_installs) != 1
+        or pip_installs[0].get("package") != product["adapter"]
+        or pip_installs[0].get("version") != expected_version
+    ):
+        raise ValueError(f"released install plan package differs: {product['id']}")
 
 
 def validate_released_source_snapshot(catalog: dict, snapshot: dict) -> None:

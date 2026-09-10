@@ -9,11 +9,16 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import shutil
 import sys
+from pathlib import Path
 
-from distribution import ROOT, build_catalog, load_manifest
+try:
+    from distribution import ROOT, build_catalog, load_manifest
+    from package_openclaw_skill import iter_skill_files
+except ModuleNotFoundError:  # Imported as scripts.build_npm_package by unit tests.
+    from .distribution import ROOT, build_catalog, load_manifest
+    from .package_openclaw_skill import iter_skill_files
 
 
 DEFAULT_OUTPUT = ROOT / "dist" / "npm"
@@ -88,6 +93,15 @@ Machine-readable metadata: [`catalog.json`]({catalog["homepage"]}/catalog.json) 
 """
 
 
+def copy_skill(source: Path, destination: Path) -> None:
+    """Copy exactly the regular files accepted by the canonical Skill packager."""
+    destination.mkdir(parents=True, exist_ok=True)
+    for source_file in iter_skill_files(source):
+        target = destination / source_file.relative_to(source)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_file, target)
+
+
 def build(output: Path, root: Path = ROOT) -> dict:
     catalog = build_catalog(root)
     manifest = load_manifest()
@@ -97,7 +111,7 @@ def build(output: Path, root: Path = ROOT) -> dict:
     output.mkdir(parents=True)
 
     for skill in catalog["skills"]:
-        shutil.copytree(root / skill["source_path"], output / "skills" / skill["slug"])
+        copy_skill(root / skill["source_path"], output / "skills" / skill["slug"])
 
     package = _package_json(catalog, manifest)
     (output / "package.json").write_text(json.dumps(package, indent=2) + "\n", encoding="utf-8")

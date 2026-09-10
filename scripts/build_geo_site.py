@@ -106,10 +106,21 @@ def _index_body(catalog: dict) -> str:
         f"<td>{escape(channel['automation'])}</td><td>{escape(channel['notes'])}</td></tr>"
         for channel in catalog["channels"]
     )
+    def capability_note(product: dict) -> str:
+        notes = []
+        for capability in product.get("versioned_capabilities", []):
+            notes.append(
+                f'{capability["summary"]["en"]} Requires {product["adapter"]} '
+                f'&gt;={capability["minimum_adapter_version"]}; the released Core install plan '
+                f'selects {product["catalog_adapter_version"]}. '
+                f'<a href="{escape(capability["source_url"])}">Source PR</a>.'
+            )
+        return "<br>".join(notes) or "-"
+
     products = "\n".join(
         f'<tr><td><code>{escape(product["id"])}</code></td>'
         f'<td><a href="{escape(product["repository"])}">{escape(product["display_name"])}</a></td>'
-        f"<td>{escape(product['family'])}</td></tr>"
+        f"<td>{escape(product['family'])}</td><td>{capability_note(product)}</td></tr>"
         for product in catalog["products"]
     )
     application_routes = "\n".join(
@@ -137,7 +148,7 @@ def _index_body(catalog: dict) -> str:
 <p>The released CLI catalog reports {len(catalog["products"])} canonical product identities.
 Aliases remain bounded to each identity; see <a href="catalog.json">catalog.json</a> for the
 machine-readable routing contract.</p>
-<table><thead><tr><th>DCC type</th><th>Product</th><th>Family</th></tr></thead><tbody>
+<table><thead><tr><th>DCC type</th><th>Product</th><th>Family</th><th>Versioned capability notes</th></tr></thead><tbody>
 {products}
 </tbody></table>
 <h2>Current Core application routes</h2>
@@ -346,16 +357,22 @@ def _distribution_doc(catalog: dict) -> str:
             "dcc-types --output json`."
         ),
         "",
-        "| Canonical DCC type | Product | Bounded aliases | Family | Catalog install |",
-        "| --- | --- | --- | --- | --- |",
+        "| Canonical DCC type | Product | Bounded aliases | Family | Catalog install | Versioned capability notes |",
+        "| --- | --- | --- | --- | --- | --- |",
     ]
     for product in catalog["products"]:
         aliases = [*product.get("aliases", []), *product.get("contextual_aliases", [])]
         alias_text = ", ".join(f"`{alias}`" for alias in aliases) or "-"
         install = "yes" if product["catalog_install_available"] else "no"
+        notes = "<br>".join(
+            f'{capability["summary"]["en"]} Requires `{product["adapter"]} '
+            f'>={capability["minimum_adapter_version"]}`; the released Core install plan '
+            f'selects `{product["catalog_adapter_version"]}`. [Source PR]({capability["source_url"]}).'
+            for capability in product.get("versioned_capabilities", [])
+        ) or "-"
         lines.append(
             f"| `{product['id']}` | [{product['display_name']}]({product['repository']}) | "
-            f"{alias_text} | {product['family']} | {install} |"
+            f"{alias_text} | {product['family']} | {install} | {notes} |"
         )
     lines += [
         "",
