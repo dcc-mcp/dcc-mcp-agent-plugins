@@ -15,7 +15,7 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: Cross-platform routing contract. The current DCC-CUA host is installed and verified through the official dcc-mcp-cli component manifest; exact platform capabilities remain runtime-discovered.
-    version: "0.19.103"
+    version: "0.19.105"
     search-hint: "dcc-cua DCC CUA dcc cua our dcc-cua our dcc cua 我们的 dcc-cua 我们的 dcc cua project-owned UI control browser DOM exact PID HWND computer use automation"
     tags: "dcc-cua, dcc-ui-control, ui-control, browser-dom, exact-window, computer-use, infrastructure"
   openclaw:
@@ -94,6 +94,37 @@ Do not invent a profile ID. Runtime-advertised capabilities are authoritative.
 8. Stop the session on success, failure, interruption, or abandonment.
 
 An `input sent` acknowledgement is not completion evidence.
+
+## Continuity, batching, and token budgets
+
+For long-running visual tasks, keep task state in the Host rather than replaying
+the full history to the model. Preserve the exact target binding, latest frame,
+observation id, action-evidence epoch, last receipt, pending candidates, and
+completed targets.
+
+Batching is a bounded sequence, not a coordinate replay. Every mutating step
+must consume the preceding action receipt and newly published observation. The
+next observation must use the same PID/HWND and exactly `previous_epoch + 1`.
+Abort the batch on a stale observation, target change, missing receipt, failed
+effect verification, or epoch gap. If a client cannot supply this chain, batch
+only non-mutating discovery requests.
+
+Prefer semantic deltas and local candidate sets over repeating full screenshots:
+
+- capture a full frame only at task start, scene change, or recovery;
+- use semantic/region deltas after stable actions;
+- invalidate cached candidates after navigation, popups, resize, focus changes,
+  or any observation epoch change;
+- serialize mutating actions, while allowing safe discovery requests to run in
+  parallel;
+- report action count, observation count, model calls, input/output tokens,
+  stale rejections, and recovery attempts.
+
+Model output proposes candidates; the Host owns freshness, exact-target checks,
+effect verification, retry limits, and checkpoint/resume. A successful dispatch
+without a verified post-state is not task success. Keep the resulting trace
+compact: emit identifiers, deltas, counters, and failure reasons by default;
+attach full images only when grounding or recovery requires them.
 
 For native application menu bars, prefer the negotiated `native_menu_path`
 route through `ui_control__act(action="invoke_menu", menu_path=[...])` when a
