@@ -2,7 +2,7 @@
 
 # Distribution channels
 
-Released version: **0.19.104** &middot; Catalog: `https://dcc-mcp.github.io/dcc-mcp-agent-plugins/catalog.json`
+Released version: **0.19.105** &middot; Catalog: `https://dcc-mcp.github.io/dcc-mcp-agent-plugins/catalog.json`
 
 | Channel | Kind | Automation | Notes |
 | --- | --- | --- | --- |
@@ -28,9 +28,9 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp
 
 - **Name**: dcc-mcp
-- **Version**: 0.19.104
+- **Version**: 0.19.105
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.104/plugins/dcc-mcp/skills/dcc-mcp
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.105/plugins/dcc-mcp/skills/dcc-mcp
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp`
 - **Description**: Default DCC-MCP router for 37 released creative products and 1 current application routes. Use for a named supported app or explicit DCC-MCP request. Controls live apps, writes files, contacts gateways, and can install a CLI with setup authorization. Use typed DCC-MCP tools first. For application UI, including browsers and non-DCC apps, DCC-CUA and ui-control name the same project-owned route and explicit DCC-CUA requests never fall back to generic Computer Use providers.
 - **Tags**: dcc, dcc-mcp, typed-tools, dcc-cua, ui-control, 3dsmax, aftereffects, blender, c4d, comfyui, freecad, gimp, godot, houdini, illustrator, katana, krita, liquigen, mari, marmoset, material-maker, maya, mobu, nuke, obs, openscad, openusd, photoshop, powerpoint, premiere, renderdoc, shogun, shotgrid, sketchup, substance3d_designer, substance3d_painter, tiled, touchdesigner, unity, unreal, wwise, zbrush, office-suite
@@ -38,9 +38,9 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp-skills-creator
 
 - **Name**: dcc-mcp-skills-creator
-- **Version**: 0.19.104
+- **Version**: 0.19.105
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.104/plugins/dcc-mcp/skills/dcc-mcp-skills-creator
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.105/plugins/dcc-mcp/skills/dcc-mcp-skills-creator
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp-skills-creator`
 - **Description**: Infrastructure skill - create, validate, scaffold, and review DCC-MCP skills for the dcc-mcp-core ecosystem. Use when authoring SKILL.md, tools.yaml, scripts, groups, prompts, or skill taxonomy. Not for creating a full DCC-MCP adapter repository - use dcc-mcp-creator.
 - **Tags**: -
@@ -48,9 +48,9 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp-creator
 
 - **Name**: dcc-mcp-creator
-- **Version**: 0.19.104
+- **Version**: 0.19.105
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.104/plugins/dcc-mcp/skills/dcc-mcp-creator
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.105/plugins/dcc-mcp/skills/dcc-mcp-creator
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp-creator`
 - **Description**: Infrastructure skill - guide developers and agents through creating or modernizing a DCC-MCP adapter or standalone internal MCP service for Nuke, Blender, 3ds Max, Unreal, ZBrush, Houdini, Maya, and custom studio systems. Use when building server, dispatcher, gateway, packaging, and runtime integration. Not for authoring individual SKILL.md tool packages - use dcc-mcp-skills-creator.
 - **Tags**: adapter-development, internal-mcp-service, standalone, host-runtime, dispatcher, gateway, nuke, blender, 3dsmax, unreal, zbrush
@@ -58,9 +58,9 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-cua
 
 - **Name**: dcc-cua
-- **Version**: 0.19.104
+- **Version**: 0.19.105
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.104/plugins/dcc-mcp/skills/dcc-cua
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.105/plugins/dcc-mcp/skills/dcc-cua
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-cua`
 - **Description**: Project-owned DCC-CUA routing skill for bounded application UI automation. Use this skill whenever the user says dcc-cua, DCC CUA, our dcc-cua, or 我们的 dcc-cua, including browser and other non-DCC UI tasks. These phrases are a hard route to the dcc-mcp project UI Control stack and take precedence over generic Codex/OpenAI Computer Use, the computer-use Skill, @oai/sky, and Browser/Chrome plugins. If DCC-CUA is unavailable, repair or report the project route; never silently fall back to a generic computer-use provider.
 - **Tags**: dcc-cua, dcc-ui-control, ui-control, browser-dom, exact-window, computer-use, infrastructure

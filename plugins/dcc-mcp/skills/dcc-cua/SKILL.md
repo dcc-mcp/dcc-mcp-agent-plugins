@@ -15,7 +15,7 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: Cross-platform routing contract. The current DCC-CUA host is installed and verified through the official dcc-mcp-cli component manifest; exact platform capabilities remain runtime-discovered.
-    version: "0.19.104"
+    version: "0.19.105"
     search-hint: "dcc-cua DCC CUA dcc cua our dcc-cua our dcc cua 我们的 dcc-cua 我们的 dcc cua project-owned UI control browser DOM exact PID HWND computer use automation"
     tags: "dcc-cua, dcc-ui-control, ui-control, browser-dom, exact-window, computer-use, infrastructure"
   openclaw:
@@ -122,7 +122,9 @@ Prefer semantic deltas and local candidate sets over repeating full screenshots:
 
 Model output proposes candidates; the Host owns freshness, exact-target checks,
 effect verification, retry limits, and checkpoint/resume. A successful dispatch
-without a verified post-state is not task success.
+without a verified post-state is not task success. Keep the resulting trace
+compact: emit identifiers, deltas, counters, and failure reasons by default;
+attach full images only when grounding or recovery requires them.
 
 For native application menu bars, prefer the negotiated `native_menu_path`
 route through `ui_control__act(action="invoke_menu", menu_path=[...])` when a
