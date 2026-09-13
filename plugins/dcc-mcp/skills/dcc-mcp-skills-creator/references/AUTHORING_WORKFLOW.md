@@ -15,12 +15,29 @@ If the task is to create the adapter repository itself, switch to
 
 ## 2. Shape Discovery First
 
+Following [OpenAI's skill guidance](https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra),
+keep selection descriptions concise, load detail conditionally, and describe
+outcomes instead of prescribing unnecessary steps. Retain constraints that protect
+host state, tool schemas and authorization across models.
+
+For example, a Maya UV-editing skill should trigger on UV edits or inspection,
+not every Maya task. Keep aliases in `search-hint`. Link substantial conditional
+procedures with a concrete trigger such as "when changing async tool execution";
+"when this workflow applies" does not help an agent select a reference.
+
+When reviewing a substantial rewrite, compare realistic requests against the
+old and new instructions. Include a narrow edit, a normal operation, and a
+recovery case. Check which skill/references are selected, whether the requested
+postcondition is reached, and whether authorization and host binding survive.
+Length reduction alone is not evidence of better task performance.
+
+
 Agents find skills from `name`, `description`, and `metadata.dcc-mcp.search-hint`.
 Keep those fields concrete:
 
 - Say what the skill does.
 - Say when to use it.
-- Say when not to use it, and name the better skill when one exists.
+- Add an exclusion only to prevent a likely routing collision.
 
 The `metadata:` configuration block belongs in `SKILL.md` frontmatter. Put
 DCC-MCP extension pointers such as `tools`, `prompts`, `recipes`, `workflows`,

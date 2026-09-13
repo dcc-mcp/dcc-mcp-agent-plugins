@@ -1,13 +1,7 @@
 ---
 name: dcc-cua
 description: >-
-  Project-owned DCC-CUA routing skill for bounded application UI automation.
-  Use this skill whenever the user says dcc-cua, DCC CUA, our dcc-cua, or
-  我们的 dcc-cua, including browser and other non-DCC UI tasks. These phrases
-  are a hard route to the dcc-mcp project UI Control stack and take precedence
-  over generic Codex/OpenAI Computer Use, the computer-use Skill, @oai/sky,
-  and Browser/Chrome plugins. If DCC-CUA is unavailable, repair or report the
-  project route; never silently fall back to a generic computer-use provider.
+  Control application UI through project-owned DCC-CUA. Use for explicit DCC-CUA requests, including browsers and non-DCC apps, or DCC-MCP UI fallback.
 license: MIT-0
 allowed-tools: Bash Read
 metadata:
@@ -85,46 +79,17 @@ Do not invent a profile ID. Runtime-advertised capabilities are authoritative.
 
 1. Prefer a typed DCC-MCP host tool when it directly expresses the operation.
 2. Use DCC-CUA only for the UI behavior that typed host tools cannot expose.
-3. Bind one exact target with process ID and native window handle whenever the
-   surface supports them.
+3. Bind one exact target with process ID and native window handle. Missing
+   either identifier blocks observation and input.
 4. Open one scoped session with the minimum task grant required for the work.
 5. Take a fresh observation before each action that depends on UI state.
 6. Act using stable semantic control or DOM references when available.
 7. Wait for a typed state transition and verify the real final state.
 8. Stop the session on success, failure, interruption, or abandonment.
 
-An `input sent` acknowledgement is not completion evidence.
-
-## Continuity, batching, and token budgets
-
-For long-running visual tasks, keep task state in the Host rather than replaying
-the full history to the model. Preserve the exact target binding, latest frame,
-observation id, action-evidence epoch, last receipt, pending candidates, and
-completed targets.
-
-Batching is a bounded sequence, not a coordinate replay. Every mutating step
-must consume the preceding action receipt and newly published observation. The
-next observation must use the same PID/HWND and exactly `previous_epoch + 1`.
-Abort the batch on a stale observation, target change, missing receipt, failed
-effect verification, or epoch gap. If a client cannot supply this chain, batch
-only non-mutating discovery requests.
-
-Prefer semantic deltas and local candidate sets over repeating full screenshots:
-
-- capture a full frame only at task start, scene change, or recovery;
-- use semantic/region deltas after stable actions;
-- invalidate cached candidates after navigation, popups, resize, focus changes,
-  or any observation epoch change;
-- serialize mutating actions, while allowing safe discovery requests to run in
-  parallel;
-- report action count, observation count, model calls, input/output tokens,
-  stale rejections, and recovery attempts.
-
-Model output proposes candidates; the Host owns freshness, exact-target checks,
-effect verification, retry limits, and checkpoint/resume. A successful dispatch
-without a verified post-state is not task success. Keep the resulting trace
-compact: emit identifiers, deltas, counters, and failure reasons by default;
-attach full images only when grounding or recovery requires them.
+Continue within the existing task grant until the requested destination state
+is verified, or a concrete blocker requires user action. Do not ask again for
+authorized steps. An `input sent` acknowledgement is not completion evidence.
 
 For native application menu bars, prefer the negotiated `native_menu_path`
 route through `ui_control__act(action="invoke_menu", menu_path=[...])` when a
@@ -132,37 +97,20 @@ semantic menu click or Alt mnemonic cannot prove that a popup opened. A menu
 invocation invalidates the current observation; honor `verification_required`
 and verify the popup or resulting application state with a fresh snapshot.
 
+## Long-running tasks and batching
+
+For long-running visual tasks or batching, read
+[continuity and evidence epochs](references/CONTINUITY.md). Use Host-held state
+only when the running version advertises it; otherwise keep sequential verified
+steps. Discovery must not invalidate an active action chain.
+
 ## DCC-host route
 
-For a registered DCC instance, use the DCC-MCP UI Control tools or their CLI
-projection:
-
-```bash
-dcc-mcp-cli load-skill ui-control --instance-id <instance-id> --output toon
-dcc-mcp-cli ui-control snapshot --instance-id <instance-id> --json '{"session_id":"ui","process_id":1234,"window_handle":5678}'
-dcc-mcp-cli ui-control act --instance-id <instance-id> --json '{"session_id":"ui","control_id":"ok","action":"click","snapshot_id":"<snapshot-id>"}'
-dcc-mcp-cli ui-control act --instance-id <instance-id> --json '{"session_id":"ui","action":"invoke_menu","menu_path":["Window","Arrange","Left"]}'
-dcc-mcp-cli ui-control stop --instance-id <instance-id> --json '{"session_id":"ui"}'
-```
-
-Use the same exact instance and session throughout the action chain. Do not
-switch to another DCC process because it looks similar.
+For UI in a registered DCC instance, read [DCC host commands](references/DCC_HOST.md).
 
 ## Browser and non-DCC route
 
-Browser work remains inside DCC-CUA. Use the Host's typed browser surface and
-`browser_dom` capabilities, not an in-app Browser or Chrome plugin.
-
-- Bind the exact browser PID and window handle first.
-- Bind the exact tab/target returned by DCC-CUA; do not infer it from a title
-  alone when an exact target identifier exists.
-- Keep connection-scoped sessions and capabilities on one Host connection.
-- Use DOM/semantic references from the latest observation rather than stale
-  coordinates.
-- `browser_prepare` and existing-profile attachment require both the Host grant
-  and the session task grant advertised by the runtime contract.
-- Authentication challenges, CAPTCHAs, purchases, account/security changes,
-  and unexpected permission prompts remain trusted human boundaries.
+For browser or non-DCC application UI, read [browser and desktop binding](references/BROWSER_AND_DESKTOP.md).
 
 ## Target and evidence invariants
 
