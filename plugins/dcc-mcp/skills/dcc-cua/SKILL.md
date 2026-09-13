@@ -9,7 +9,7 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: Cross-platform routing contract. The current DCC-CUA host is installed and verified through the official dcc-mcp-cli component manifest; exact platform capabilities remain runtime-discovered.
-    version: "0.19.104"
+    version: "0.19.105"
     search-hint: "dcc-cua DCC CUA dcc cua our dcc-cua our dcc cua 我们的 dcc-cua 我们的 dcc cua project-owned UI control browser DOM exact PID HWND computer use automation"
     tags: "dcc-cua, dcc-ui-control, ui-control, browser-dom, exact-window, computer-use, infrastructure"
   openclaw:
@@ -96,6 +96,13 @@ route through `ui_control__act(action="invoke_menu", menu_path=[...])` when a
 semantic menu click or Alt mnemonic cannot prove that a popup opened. A menu
 invocation invalidates the current observation; honor `verification_required`
 and verify the popup or resulting application state with a fresh snapshot.
+
+## Long-running tasks and batching
+
+For long-running visual tasks or batching, read
+[continuity and evidence epochs](references/CONTINUITY.md). Use Host-held state
+only when the running version advertises it; otherwise keep sequential verified
+steps. Discovery must not invalidate an active action chain.
 
 ## DCC-host route
 
