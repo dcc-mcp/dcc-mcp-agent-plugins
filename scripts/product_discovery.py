@@ -1102,13 +1102,8 @@ def plugin_keywords(catalog: dict) -> list[str]:
 
 def skill_description(catalog: dict) -> str:
     return (
-        f"Default DCC-MCP router for {len(catalog['products'])} released creative products "
-        f"and {len(catalog.get('application_routes', []))} current application routes. "
-        "Use for a named supported app or explicit DCC-MCP request. Controls live apps, writes "
-        "files, contacts gateways, and can install a CLI with setup authorization. "
-        "Use typed DCC-MCP tools first. For application UI, including browsers and non-DCC "
-        "apps, DCC-CUA and ui-control name the same project-owned route and explicit DCC-CUA "
-        "requests never fall back to generic Computer Use providers."
+        "Operate named supported apps through DCC-MCP; discover tools and marketplace skills. "
+        "Use for app tasks or explicit DCC-MCP/DCC-CUA requests."
     )
 
 
