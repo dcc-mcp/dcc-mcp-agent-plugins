@@ -18,7 +18,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from gateway_endpoint import NoGatewayRedirect, validate_gateway_url
+from gateway_endpoint import NoGatewayRedirect, resolve_gateway_url, validate_gateway_url
 
 DEFAULT_BASE_URL = "http://127.0.0.1:9765"
 OFFICIAL_REPO = "dcc-mcp/dcc-mcp-core"
@@ -307,7 +307,7 @@ def python_fallback(command: str, args: argparse.Namespace) -> dict[str, Any]:
 def run_command(command: str, args: argparse.Namespace) -> dict[str, Any]:
     """Prefer dcc-mcp-cli, optionally install it, then fall back to Python REST."""
     try:
-        args.base_url = validate_gateway_url(args.base_url)
+        args.base_url = resolve_gateway_url(args.base_url)
     except ValueError as exc:
         return {"success": False, "error": "invalid-gateway-url", "detail": str(exc)}
     cli_path, cli_details = resolve_cli(args)
@@ -328,7 +328,14 @@ def run_command(command: str, args: argparse.Namespace) -> dict[str, Any]:
 def build_parser() -> argparse.ArgumentParser:
     """Create the helper CLI parser."""
     parser = argparse.ArgumentParser(description="DCC-MCP gateway helper with CLI-first execution.")
-    parser.add_argument("--base-url", default=os.environ.get("DCC_MCP_BASE_URL") or DEFAULT_BASE_URL)
+    parser.add_argument(
+        "--base-url",
+        default=None,
+        help=(
+            "Exact approved gateway origin. If omitted, DCC_MCP_BASE_URL may select "
+            "loopback only; inherited environment never authorizes a remote gateway."
+        ),
+    )
     parser.add_argument("--cli", default="dcc-mcp-cli")
     parser.add_argument(
         "--ensure-cli",

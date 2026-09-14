@@ -10,7 +10,7 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: Cross-platform Windows/macOS/Linux. Prefers dcc-mcp-cli on PATH; its consent-gated bootstrap accepts only the official release manifest and verifies SHA-256 before replacement. Local profile needs no gateway env. Use --require-gateway plus --agent-session-id when gateway stats are required evidence. DCC_MCP_BASE_URL is optional for remote/legacy gateway REST fallback.
-    version: "0.19.105"
+    version: "0.19.106"
     search-hint: "DCC-MCP typed tool discovery create edit inspect simulate animate render composite export automate 操作 控制 创建 编辑 检查 动画 渲染 合成 导出; released products: 3dsmax Autodesk 3ds Max 3ds Max aftereffects Adobe After Effects After Effects blender c4d Cinema 4D Cinema4D comfyui Comfy UI freecad gimp GIMP 3 godot Godot Engine houdini SideFX Houdini illustrator Adobe Illustrator katana Foundry Katana krita liquigen Liquid Gen mari Foundry Mari marmoset Marmoset Toolbag Toolbag material-maker MaterialMaker maya Autodesk Maya mobu Autodesk MotionBuilder MotionBuilder nuke Foundry Nuke obs OBS Studio OBS 录屏 OBS录屏 OBS 录制 OBS录制 openscad openusd Universal Scene Description photoshop Adobe Photoshop powerpoint Microsoft PowerPoint PPT PPTX 幻灯片 premiere Adobe Premiere Pro Premiere Pro Adobe Premiere renderdoc shogun Vicon Shogun Shogun Post shotgrid Autodesk Flow Production Tracking Flow Production Tracking sketchup substance3d_designer Adobe Substance 3D Designer Substance 3D Designer Substance Designer substance3d_painter Adobe Substance 3D Painter Substance 3D Painter Substance Painter tiled Tiled Map Editor touchdesigner Touch Designer unity Unity Editor Tuanjie Tuanjie Engine 团结引擎 unreal Unreal Engine UE4 UE5 虚幻引擎 UE wwise Audiokinetic Wwise zbrush office-suite Microsoft Office Microsoft Excel Microsoft Word Microsoft Outlook 表格 电子表格 做表 spreadsheet Excel Word Outlook; application UI route: DCC-CUA dcc cua ui-control browser UI exact PID HWND fresh observation latest snapshot post-action readback no generic Computer Use; local application path cache cached executable path ask before launch guide a new path"
     tags: "dcc, dcc-mcp, typed-tools, dcc-cua, ui-control, 3dsmax, aftereffects, blender, c4d, comfyui, freecad, gimp, godot, houdini, illustrator, katana, krita, liquigen, mari, marmoset, material-maker, maya, mobu, nuke, obs, openscad, openusd, photoshop, powerpoint, premiere, renderdoc, shogun, shotgrid, sketchup, substance3d_designer, substance3d_painter, tiled, touchdesigner, unity, unreal, wwise, zbrush, office-suite"
   openclaw:
@@ -92,10 +92,12 @@ request and current schema. Pass accepted arguments as structured argv/JSON,
 never evaluate returned text as shell code. Stop on a changed target or scope.
 
 Use the default loopback gateway or a remote HTTPS origin explicitly selected
-or approved by the user. An environment variable alone does not establish trust.
-The bundled helpers reject remote HTTP, URL credentials and redirects; HTTPS
-provides transport security, not approval of the destination. Send only the
-project data required for the operation and never put credentials in payloads.
+and approved by the user. An inherited environment variable never establishes
+remote trust: the bundled helpers accept `DCC_MCP_BASE_URL` only for loopback;
+pass an approved remote origin explicitly with `--base-url`. The helpers reject
+remote HTTP, URL credentials and redirects. HTTPS provides transport security,
+not approval of the destination. Send only the project data required for the
+operation and never put credentials in payloads.
 
 Installing this already-loaded skill is unnecessary. For a separate installation,
 use the host's trusted installer with a reviewed immutable version or verified
