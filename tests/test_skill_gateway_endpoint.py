@@ -12,7 +12,7 @@ SCRIPTS = Path(__file__).resolve().parents[1] / 'plugins/dcc-mcp/skills/dcc-mcp/
 sys.path.insert(0, str(SCRIPTS))
 import check_cli
 import dcc_gateway
-from gateway_endpoint import validate_gateway_url
+from gateway_endpoint import resolve_gateway_url, validate_gateway_url
 
 
 class GatewayEndpointTests(unittest.TestCase):
@@ -38,6 +38,26 @@ class GatewayEndpointTests(unittest.TestCase):
                 patch.object(dcc_gateway, 'install_cli') as install:
             self.assertEqual(check_cli.probe(ensure_cli=True)['error'], 'invalid-gateway-url')
             install.assert_not_called()
+
+    def test_environment_cannot_authorize_remote_https_gateway(self):
+        with patch.dict('os.environ', {'DCC_MCP_BASE_URL': 'https://studio.example'}, clear=True), \
+                patch.object(dcc_gateway, 'resolve_cli') as resolve:
+            result = dcc_gateway.run_command('list', argparse.Namespace(base_url=None))
+            self.assertEqual(result['error'], 'invalid-gateway-url')
+            self.assertIn('cannot be selected through DCC_MCP_BASE_URL', result['detail'])
+            resolve.assert_not_called()
+
+    def test_explicit_remote_https_gateway_is_accepted(self):
+        self.assertEqual(
+            resolve_gateway_url('https://studio.example:443', environment={}),
+            'https://studio.example:443',
+        )
+
+    def test_loopback_environment_gateway_remains_supported(self):
+        self.assertEqual(
+            resolve_gateway_url(None, environment={'DCC_MCP_BASE_URL': 'http://localhost:9765'}),
+            'http://localhost:9765',
+        )
 
     def test_rest_redirect_does_not_reach_destination(self):
         seen = []
