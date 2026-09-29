@@ -80,15 +80,16 @@ needs nested container control.
 
 ## 4. Play and Debug Locally
 
-Start on loopback and print the resolved MCP URL. Then run the official
-open-source [MCP Inspector](https://github.com/modelcontextprotocol/inspector):
+Start on loopback and print the resolved MCP URL. Use an already installed,
+project-approved MCP client to connect with Streamable HTTP to the printed
+`/mcp` URL. The open-source
+[MCP Inspector](https://github.com/modelcontextprotocol/inspector) is optional:
+if it is needed, install a reviewed exact version through the owning project's
+package manifest and lockfile, verify the package integrity, and run the local
+installation. Do not fetch and execute a floating npm version during debugging.
+Keep production credentials out of the client's environment.
 
-```bash
-npx @modelcontextprotocol/inspector@latest
-```
-
-Connect with Streamable HTTP to the printed `/mcp` URL. Verify this ladder in
-order:
+Verify this ladder in order:
 
 1. `tools/list` exposes only discovery/control tools before the Skill loads.
 2. List or search confirms the owning Skill and its exact slug.
@@ -99,7 +100,9 @@ order:
 
 Use `dcc-mcp-cli list`, `load-skill`, `describe`, and `call --wait` as
 the agent smoke once the local service is registered. Keep the returned slug
-and `request_id`; do not guess names or retry before diagnosis.
+and `request_id`; do not guess names or retry before diagnosis. If no approved
+direct MCP client is available, complete the CLI smoke and record direct MCP
+validation as pending instead of installing an unreviewed debug dependency.
 
 For a hosted multi-user teaching portal, Educates is the open-source upgrade
 path: it provides per-user isolated sessions, Markdown instructions, browser
@@ -124,7 +127,8 @@ catalog or GitHub repository.
 ## Acceptance
 
 - The service starts from the owner's documented command on a clean environment.
-- One typed read-only tool succeeds through MCP Inspector and the agent path.
+- One typed read-only tool succeeds through the agent path and, when direct MCP
+  validation is required, an approved MCP client.
 - Invalid input and unavailable dependency failures are structured and redacted.
 - The service is marked `standalone`, has no fake DCC PID, and shuts down cleanly.
 - Packaging uses the owner's private delivery channel with no accidental public publication.
