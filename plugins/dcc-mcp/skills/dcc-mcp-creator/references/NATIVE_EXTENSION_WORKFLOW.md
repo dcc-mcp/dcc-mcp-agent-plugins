@@ -59,4 +59,4 @@ ICNS container does not establish a released macOS integration.
 [core-host-pr]: https://github.com/dcc-mcp/dcc-mcp-core/pull/2652
 [core-cli]: https://github.com/dcc-mcp/dcc-mcp-core/blob/8228335cb25fb9acfa53a67078850b1727de131e/docs/guide/cli-reference.md
 [core-vector-pr]: https://github.com/dcc-mcp/dcc-mcp-core/pull/2651
-[core-vector-readme]: https://github.com/dcc-mcp/dcc-mcp-core/blob/5a2f886cab3bd8746bd17e9042ec1ccd490f57e7/examples/native-inkscape/README.md
+[core-vector-readme]: https://github.com/dcc-mcp/dcc-mcp-core/blob/5245d2586ff00438ef65ec7b2c264e545641c00f/examples/native-inkscape/README.md

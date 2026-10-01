@@ -102,6 +102,15 @@ Keep the output `sha256` and per-output evidence file. The controller validates
 invocation correlation and expected native structure before publication.
 These are local pipeline provenance checks, not cryptographic host attestation.
 
+On Windows, `native_effect.provenance_mode: windows-glib-helper` requires the
+exact three-process `windows_process_lineage`: native image identities, parent
+PIDs and ordered creation/exit times must match the controller-owned Inkscape
+process. A captured controller helper snapshot must cross-match that lineage.
+`controller_helper_observation: not-captured` still requires the complete
+native chain; it is not a substitute for missing process evidence. Unreadable
+or unknown chains are rejected. Failed builds/exports retain invocation
+`host.json` diagnostics even when the output is not published.
+
 Run the example's source tests and its opt-in real-host regression on the actual
 portable version. A mock extension response, a `--version` result or a PNG
 fixture is not native build evidence. Platform-specific process-parent behavior
@@ -134,4 +143,4 @@ Native application references: [Inkscape CLI](https://wiki.inkscape.org/wiki/Usi
 [inkex documentation](https://inkscape.gitlab.io/extensions/documentation/).
 
 [core-vector-pr]: https://github.com/dcc-mcp/dcc-mcp-core/pull/2651
-[core-vector-readme]: https://github.com/dcc-mcp/dcc-mcp-core/blob/5a2f886cab3bd8746bd17e9042ec1ccd490f57e7/examples/native-inkscape/README.md
+[core-vector-readme]: https://github.com/dcc-mcp/dcc-mcp-core/blob/5245d2586ff00438ef65ec7b2c264e545641c00f/examples/native-inkscape/README.md
