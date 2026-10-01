@@ -142,13 +142,16 @@ These are local pipeline provenance checks, not cryptographic host attestation.
 On Windows, `native_effect.provenance_mode: windows-glib-helper` requires the
 exact three-process `windows_process_lineage`: native image identities, parent
 PIDs and ordered creation/exit times must match the controller-owned Inkscape
-process. A captured controller helper snapshot must cross-match that lineage.
-The extension retains a read-only parent handle before loading inkex/lxml so a
-short-lived GLib helper remains queryable after it exits. This addresses the
-warm-start observation race; it does not relax the image, PID or timing checks.
-`controller_helper_observation: not-captured` still requires the complete
-native chain; it is not a substitute for missing process evidence. Unreadable
-or unknown chains are rejected. Failed builds/exports retain invocation
+process. The Windows controller launches only its fresh owned tree with
+`DEBUG_PROCESS` and retains query-only process handles at native birth events,
+before those processes execute. This covers helpers that can exit before the
+extension's Python entry point. The retained host, helper and Python birth
+identities must all cross-match the unchanged complete effect-reported chain;
+`controller_birth_observation: exact-match` records that check. The extension's
+early read-only parent handle is additional evidence, not a substitute for
+missing birth identities. No existing process is attached, no privileges or
+security settings change, and process memory/context is not read or changed.
+Unreadable or unknown chains are rejected. Failed builds/exports retain invocation
 `host.json` diagnostics even when the output is not published.
 
 Run the adapter's source tests and its opt-in real-host regression on the actual
@@ -157,12 +160,18 @@ fixture is not native build evidence. Platform-specific process-parent behavior
 must pass on the target host; report a failure rather than weakening the check
 to make the demonstration pass.
 
-The source review reports 320 local pure regressions. A real Windows native
-component regression and isolated five-tool gateway acceptance were recorded
-at the [validated runtime checkpoint][inkscape-runtime-checkpoint]. The pinned
-review revision changes only a cross-platform test mock and retains the same
-runtime source. GUI visual acceptance remains separate; preserve the actual
-live-call and visual evidence for each case.
+The [validated runtime checkpoint][inkscape-runtime-checkpoint] reports 374
+local pure regressions with one optional native test deselected, plus a separate
+actual Windows native component regression (`1 passed, 248 deselected`). Its
+installed wheel was tested with Core 0.20.36, CLI/gateway 0.20.38 and Inkscape
+1.4.4. Actual lifecycle verification returned directly usable with exit 0;
+six successful gateway calls covered all five tools and recorded gateway
+statistics. Native builds recorded exact birth-chain matches. Preserve the
+historical failed request from the prior helper-retention implementation and
+correlate any reconciled new request separately. This source revision changes
+the runtime; earlier test-only source-equivalence claims do not apply. GUI
+visual acceptance remains incomplete: `document_open` returned
+`accepted=false`. Keep each case's actual call and visual evidence.
 
 Reopen the saved master through `document_inspect`, then perform GUI acceptance
 through `document_open` and the existing exact-process DCC-CUA/app-ui contract.
@@ -191,7 +200,7 @@ Native application references: [Inkscape CLI](https://wiki.inkscape.org/wiki/Usi
 
 [inkscape-pr]: https://github.com/dcc-mcp/dcc-mcp-inkscape/pull/1
 
-[inkscape-readme]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/02a0fa6d47ce936f69e25c7a8bec5e6eebe4368a/README.md
-[inkscape-install]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/02a0fa6d47ce936f69e25c7a8bec5e6eebe4368a/install.md
-[inkscape-architecture]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/02a0fa6d47ce936f69e25c7a8bec5e6eebe4368a/docs/architecture.md
-[inkscape-runtime-checkpoint]: https://github.com/dcc-mcp/dcc-mcp-inkscape/commit/7657bafe78dad0c59c833e25da6f330067c2e64b
+[inkscape-readme]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/fd5a71d4a59349f34b044aeec6244523137c3453/README.md
+[inkscape-install]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/fd5a71d4a59349f34b044aeec6244523137c3453/install.md
+[inkscape-architecture]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/fd5a71d4a59349f34b044aeec6244523137c3453/docs/architecture.md
+[inkscape-runtime-checkpoint]: https://github.com/dcc-mcp/dcc-mcp-inkscape/commit/fd5a71d4a59349f34b044aeec6244523137c3453
