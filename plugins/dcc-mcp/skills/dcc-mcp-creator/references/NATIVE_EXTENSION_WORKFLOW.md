@@ -37,7 +37,9 @@ service readiness; a partial install is not proof of a native document effect.
 The initial lifecycle uses a read-only Windows PE/hash host probe; Linux/macOS
 lifecycle probing is unsupported. Actual software actions and native effects
 remain separate checks. Use public Core lifecycle and deployment APIs rather
-than private bindings.
+than private bindings. Preserve `readiness.version_source`; any legacy
+missing-version fallback must strictly correlate the ready publication with
+the live instance. Explicit registry-version conflicts remain failures.
 
 The [standard adapter draft][inkscape-pr] owns this integration review. A draft
 adapter package does not establish released product routing or official signed
@@ -84,6 +86,6 @@ macOS integration.
 [core-cli]: https://github.com/dcc-mcp/dcc-mcp-core/blob/8228335cb25fb9acfa53a67078850b1727de131e/docs/guide/cli-reference.md
 [inkscape-pr]: https://github.com/dcc-mcp/dcc-mcp-inkscape/pull/1
 
-[inkscape-readme]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/29b59c9534d04ea15036fa6fee9399df4b1a3f8d/README.md
-[inkscape-install]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/29b59c9534d04ea15036fa6fee9399df4b1a3f8d/install.md
-[inkscape-architecture]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/29b59c9534d04ea15036fa6fee9399df4b1a3f8d/docs/architecture.md
+[inkscape-readme]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/d6ec5ae29d8f09ea4e3e636215b3ec5424c81b1a/README.md
+[inkscape-install]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/d6ec5ae29d8f09ea4e3e636215b3ec5424c81b1a/install.md
+[inkscape-architecture]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/d6ec5ae29d8f09ea4e3e636215b3ec5424c81b1a/docs/architecture.md

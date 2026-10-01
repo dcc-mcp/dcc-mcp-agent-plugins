@@ -51,6 +51,13 @@ launching Inkscape; Linux/macOS lifecycle probing is reported as unsupported.
 Actual software actions and native effects still need the `capabilities` and
 document tools below.
 
+Retain `readiness.version_source` from verification. A legacy registry with no
+adapter version may use `adapter_ready_file` only after strict live UUID, PID,
+workspace, profile, backend URL, ready status and package-version correlation.
+An explicit conflicting registry version is rejected. A ready file alone is
+not live readiness, and this compatibility path does not invent a registry or
+Core version.
+
 Configure an explicit executable and task-owned workspace. Select an isolated
 registry and non-default gateway port, then use the adapter-owned foreground
 `serve` entry point. Start only the task-owned service and gateway; do not
@@ -174,6 +181,6 @@ Native application references: [Inkscape CLI](https://wiki.inkscape.org/wiki/Usi
 
 [inkscape-pr]: https://github.com/dcc-mcp/dcc-mcp-inkscape/pull/1
 
-[inkscape-readme]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/29b59c9534d04ea15036fa6fee9399df4b1a3f8d/README.md
-[inkscape-install]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/29b59c9534d04ea15036fa6fee9399df4b1a3f8d/install.md
-[inkscape-architecture]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/29b59c9534d04ea15036fa6fee9399df4b1a3f8d/docs/architecture.md
+[inkscape-readme]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/d6ec5ae29d8f09ea4e3e636215b3ec5424c81b1a/README.md
+[inkscape-install]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/d6ec5ae29d8f09ea4e3e636215b3ec5424c81b1a/install.md
+[inkscape-architecture]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/d6ec5ae29d8f09ea4e3e636215b3ec5424c81b1a/docs/architecture.md
