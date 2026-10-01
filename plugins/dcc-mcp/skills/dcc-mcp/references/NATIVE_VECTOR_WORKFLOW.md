@@ -143,6 +143,9 @@ On Windows, `native_effect.provenance_mode: windows-glib-helper` requires the
 exact three-process `windows_process_lineage`: native image identities, parent
 PIDs and ordered creation/exit times must match the controller-owned Inkscape
 process. A captured controller helper snapshot must cross-match that lineage.
+The extension retains a read-only parent handle before loading inkex/lxml so a
+short-lived GLib helper remains queryable after it exits. This addresses the
+warm-start observation race; it does not relax the image, PID or timing checks.
 `controller_helper_observation: not-captured` still requires the complete
 native chain; it is not a substitute for missing process evidence. Unreadable
 or unknown chains are rejected. Failed builds/exports retain invocation
@@ -153,6 +156,13 @@ portable version. A mock extension response, a `--version` result or a PNG
 fixture is not native build evidence. Platform-specific process-parent behavior
 must pass on the target host; report a failure rather than weakening the check
 to make the demonstration pass.
+
+The source review reports 320 local pure regressions. A real Windows native
+component regression and isolated five-tool gateway acceptance were recorded
+at the [validated runtime checkpoint][inkscape-runtime-checkpoint]. The pinned
+review revision changes only a cross-platform test mock and retains the same
+runtime source. GUI visual acceptance remains separate; preserve the actual
+live-call and visual evidence for each case.
 
 Reopen the saved master through `document_inspect`, then perform GUI acceptance
 through `document_open` and the existing exact-process DCC-CUA/app-ui contract.
@@ -181,6 +191,7 @@ Native application references: [Inkscape CLI](https://wiki.inkscape.org/wiki/Usi
 
 [inkscape-pr]: https://github.com/dcc-mcp/dcc-mcp-inkscape/pull/1
 
-[inkscape-readme]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/d6ec5ae29d8f09ea4e3e636215b3ec5424c81b1a/README.md
-[inkscape-install]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/d6ec5ae29d8f09ea4e3e636215b3ec5424c81b1a/install.md
-[inkscape-architecture]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/d6ec5ae29d8f09ea4e3e636215b3ec5424c81b1a/docs/architecture.md
+[inkscape-readme]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/02a0fa6d47ce936f69e25c7a8bec5e6eebe4368a/README.md
+[inkscape-install]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/02a0fa6d47ce936f69e25c7a8bec5e6eebe4368a/install.md
+[inkscape-architecture]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/02a0fa6d47ce936f69e25c7a8bec5e6eebe4368a/docs/architecture.md
+[inkscape-runtime-checkpoint]: https://github.com/dcc-mcp/dcc-mcp-inkscape/commit/7657bafe78dad0c59c833e25da6f330067c2e64b
