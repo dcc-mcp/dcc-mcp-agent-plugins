@@ -148,6 +148,12 @@ show that official HTTPS source. Keep this separate from
 not prove that the host application is installed. Never download, install, or
 launch the host from a missing path without the user's explicit consent.
 
+For a CLI-managed open-source or portable application, follow
+[host software deployment](HOST_SOFTWARE_DEPLOYMENT.md). Its software manifest,
+version probe and install receipt do not establish an adapter catalog entry,
+MCP registration, readiness or native document effect. Reuse existing explicit
+authorization when it already covers the same download, installation and launch.
+
 ## Plan and bootstrap
 
 Build the plan using the exact argv from the decision. For a legacy CLI, use:

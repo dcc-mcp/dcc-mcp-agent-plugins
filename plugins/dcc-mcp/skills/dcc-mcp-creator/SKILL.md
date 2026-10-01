@@ -9,7 +9,7 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: "dcc-mcp-core 0.17+, Python 3.7+"
-    version: "0.19.107"
+    version: "0.19.108"
     search-hint: >-
       create DCC MCP adapter, Nuke MCP, DccServerBase, HostExecutionBridge,
       dispatcher, readiness, resources, gateway, Blender, 3ds Max, Unreal,
@@ -53,6 +53,7 @@ never fall back to generic Computer Use without the user's explicit change of pr
 | Async/main-thread jobs, cancellation or reconnect | [Async recovery](references/ASYNC_RECOVERY.md) |
 | Runtime failure or issue ownership | [Failure routing](references/FAILURE_ROUTING.md) |
 | Nuke/standalone examples or cross-DCC file synchronization | [Integration examples](references/INTEGRATION_EXAMPLES.md) |
+| Portable host setup or a typed native vector extension | [Native extension workflow](references/NATIVE_EXTENSION_WORKFLOW.md); distinguish software deployment, experimental examples and released adapters |
 | Validation or release | [Testing and release](references/TESTING_AND_RELEASE.md) |
 
 Use the `dcc-mcp` route only when live validation is needed; source-only edits
