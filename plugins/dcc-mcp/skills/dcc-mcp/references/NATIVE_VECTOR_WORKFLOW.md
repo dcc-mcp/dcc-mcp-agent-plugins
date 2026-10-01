@@ -21,25 +21,47 @@ needed. If the user authorized fixing capability gaps, implement and test the
 smallest reusable typed extension in the owning repository and keep its review
 and release status explicit.
 
-The coordinated [Core native Inkscape PR][core-vector-pr] supplies an
-**unreleased example**, not a released product route. Its architecture is a
-standalone MCP controller with an Inkscape-hosted inkex effect, not an embedded
-GUI adapter. Do not add Inkscape to released product routing on the strength of
-this example or a successful software installation.
+The dedicated [Inkscape adapter][inkscape-readme] owns the Python package,
+bundled skill and native effect. Read its [installation runbook][inkscape-install]
+and [architecture contract][inkscape-architecture] at the reviewed source
+revision. Its planned package version is source evidence until a verified
+package release and catalog promotion exist. A standard package layout and a
+successful software installation do not establish a released product route.
+
+The [standard adapter draft][inkscape-pr] uses a standalone Core MCP controller
+with an Inkscape-hosted inkex effect. It does not embed the host interpreter or
+provide persistent GUI document binding. Follow the dedicated adapter's current
+contract for setup; a draft review is not a package release.
 
 ## Native creation through typed operations
 
-Read the example's [runtime contract][core-vector-readme] at the reviewed source
-revision. It requires an explicit executable, task-owned workspace, isolated
-registry and non-default gateway port. Start only the task-owned service and
-gateway; do not restart or reconfigure another session's shared gateway.
+Inspect the adapter's current CLI and install report before executing its
+runbook. Software deployment, Python package installation, private extension
+installation and live service startup are separate steps. A source Git clone
+verifies source files; it does not install or import the adapter package.
+
+The adapter's plan-first `install`, `status`, `verify`, `uninstall` and `upgrade`
+commands manage an explicit workspace's private profile and ownership receipt.
+They do not download Inkscape or start a service/gateway. Keep `installed`,
+`importable`, live readiness and `verify.directly_usable` independent. A partial
+installation or unavailable readiness result needs its emitted startup/verify
+steps, rather than repeated installation or a claim that native editing passed.
+The initial lifecycle's host probe reads Windows PE version/hash data without
+launching Inkscape; Linux/macOS lifecycle probing is reported as unsupported.
+Actual software actions and native effects still need the `capabilities` and
+document tools below.
+
+Configure an explicit executable and task-owned workspace. Select an isolated
+registry and non-default gateway port, then use the adapter-owned foreground
+`serve` entry point. Start only the task-owned service and gateway; do not
+restart or reconfigure another session's shared gateway.
 
 Inventory the task gateway, search for `native vector document`, and follow the
 returned load/describe step. Copy the exact instance-qualified slug and current
 schema. Keep `--require-gateway --agent-session-id <task-id>` on measured calls;
 direct instance calls do not establish gateway statistics coverage.
 
-The example exposes these local tool names. They are schema names, not slugs to
+The adapter exposes these local tool names. They are schema names, not slugs to
 construct manually:
 
 | Operation | Role |
@@ -66,13 +88,21 @@ Use layers, named groups and editable objects in the master. Preserve an
 editable text version where text exists, then use native `text_to_path` export
 for a release copy. Retain both documents and inspect the resulting paths;
 setting a filename suffix or declaring conversion intent is not conversion.
-The example rejects existing output destinations rather than overwriting them.
+The adapter rejects existing output destinations rather than overwriting them.
+
+Native text-to-path conversion can resolve live-text `currentColor` to a fixed
+paint. Inspect the actual path fill and stroke before claiming dynamic CSS
+color support. When CSS must control that token, read the software's
+outlined glyph paths and submit them with explicit `currentColor` paint in a
+new typed native plan, then export the new document through software. Keep the
+editable text master and conversion/readback evidence. Do not patch the saved
+SVG outside the native authoring route.
 
 ## Fonts and asset variants
 
 Identify actual font files and license terms before attributing or redistributing
 a font. An SVG `font_family` request alone does not prove which font rendered.
-Confirm the renderer or fontconfig match. The example can add task-private font
+Confirm the renderer or fontconfig match. The adapter can add task-private font
 directories through its optional configuration; it does not install system
 fonts. Include required font license and attribution with redistributed files.
 Keep software, font and artwork licenses distinct in the deliverable.
@@ -94,7 +124,7 @@ ICNS file does not prove a macOS adapter or a native macOS rendering run.
 ## Evidence and acceptance
 
 Preserve each discovery, load, describe and typed-call result plus its request,
-trace and session identifiers. For a native build, the example records
+trace and session identifiers. For a native build, the adapter records
 `native_effect` with a correlated nonce, `extension_pid`, `parent_pid`,
 `parent_executable`, `self_call`, `document_path` and `object_count`;
 `host_invocation` records exact argv, host PID, return code and diagnostics.
@@ -111,7 +141,7 @@ native chain; it is not a substitute for missing process evidence. Unreadable
 or unknown chains are rejected. Failed builds/exports retain invocation
 `host.json` diagnostics even when the output is not published.
 
-Run the example's source tests and its opt-in real-host regression on the actual
+Run the adapter's source tests and its opt-in real-host regression on the actual
 portable version. A mock extension response, a `--version` result or a PNG
 fixture is not native build evidence. Platform-specific process-parent behavior
 must pass on the target host; report a failure rather than weakening the check
@@ -124,7 +154,7 @@ light/dark rendering and each small icon at actual size. Headless reopen and a
 GUI launch PID do not establish visual acceptance. A locked or unavailable
 desktop leaves GUI QA incomplete even if native exports succeeded.
 
-The example currently has Windows/Linux process-provenance logic; native macOS
+The adapter currently has Windows/Linux process-provenance logic; native macOS
 execution is unvalidated. It has no persistent live GUI document binding.
 Native operations are monolithic, and Core cancellation does not automatically
 cancel the host; the operation timeout terminates only its owned process.
@@ -142,5 +172,8 @@ Native application references: [Inkscape CLI](https://wiki.inkscape.org/wiki/Usi
 [historical script extension protocol](https://wiki.inkscape.org/wiki/Script_extensions),
 [inkex documentation](https://inkscape.gitlab.io/extensions/documentation/).
 
-[core-vector-pr]: https://github.com/dcc-mcp/dcc-mcp-core/pull/2651
-[core-vector-readme]: https://github.com/dcc-mcp/dcc-mcp-core/blob/5245d2586ff00438ef65ec7b2c264e545641c00f/examples/native-inkscape/README.md
+[inkscape-pr]: https://github.com/dcc-mcp/dcc-mcp-inkscape/pull/1
+
+[inkscape-readme]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/29b59c9534d04ea15036fa6fee9399df4b1a3f8d/README.md
+[inkscape-install]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/29b59c9534d04ea15036fa6fee9399df4b1a3f8d/install.md
+[inkscape-architecture]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/29b59c9534d04ea15036fa6fee9399df4b1a3f8d/docs/architecture.md

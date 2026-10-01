@@ -21,10 +21,27 @@ never change security settings or persistent consent to make a case run.
 
 ## Implement the smallest typed boundary
 
-The coordinated [native Inkscape PR][core-vector-pr] is an unreleased example:
-a standalone MCP controller invokes an Inkscape-hosted inkex effect. Read its
-[pinned runtime contract][core-vector-readme] before reusing it. Its software
-setup channel does not make it a released catalog adapter.
+Place the maintained integration in its owning adapter package. The dedicated
+[Inkscape adapter][inkscape-readme] supplies a Core composition root, standard
+Python and CLI entry points, bundled declarative skill tools and native effect
+resources. Follow its [install runbook][inkscape-install] and
+[architecture contract][inkscape-architecture] at the exact reviewed commit.
+Its runtime is a standalone controller invoking an Inkscape-hosted inkex effect;
+a standard package does not imply persistent GUI document binding.
+
+Keep software installation, Python package import, private-profile extension
+installation, foreground service startup and real typed native effects separate.
+Core's pinned Git clone verifies files, not package import or startup. The
+adapter's plan-first lifecycle reports ownership, imports and already running
+service readiness; a partial install is not proof of a native document effect.
+The initial lifecycle uses a read-only Windows PE/hash host probe; Linux/macOS
+lifecycle probing is unsupported. Actual software actions and native effects
+remain separate checks. Use public Core lifecycle and deployment APIs rather
+than private bindings.
+
+The [standard adapter draft][inkscape-pr] owns this integration review. A draft
+adapter package does not establish released product routing or official signed
+install-catalog promotion.
 
 Represent geometry with a bounded typed plan and current schema. The controller
 may prepare JSON and extension configuration; native software must create,
@@ -51,12 +68,22 @@ layers/groups and a separate text-to-path release copy. Verify actual font
 resolution and redistribution terms. Export transparent PNGs through software;
 ICO/ICNS container packaging and size/hash checks may be separate scripts.
 
+Inspect paint after native text-to-path conversion: live-text `currentColor`
+can resolve to a fixed color. For a dynamic monochrome release, read the native
+outlined glyph path data and rebuild it with explicit `currentColor` through a
+new typed native plan and software export. Preserve the editable master and
+readback evidence; do not rewrite the software-generated SVG externally.
+
 Document missing persistent GUI binding, unvalidated platforms and cancellation
-limits. Keep examples out of released product routing until that support is
-reviewed through its owning catalog and release process. A draft PR or a valid
-ICNS container does not establish a released macOS integration.
+limits. Keep source-only examples and adapter drafts out of released product
+routing until that support is reviewed through its owning catalog and release
+process. A draft PR or a valid ICNS container does not establish a released
+macOS integration.
 
 [core-host-pr]: https://github.com/dcc-mcp/dcc-mcp-core/pull/2652
 [core-cli]: https://github.com/dcc-mcp/dcc-mcp-core/blob/8228335cb25fb9acfa53a67078850b1727de131e/docs/guide/cli-reference.md
-[core-vector-pr]: https://github.com/dcc-mcp/dcc-mcp-core/pull/2651
-[core-vector-readme]: https://github.com/dcc-mcp/dcc-mcp-core/blob/5245d2586ff00438ef65ec7b2c264e545641c00f/examples/native-inkscape/README.md
+[inkscape-pr]: https://github.com/dcc-mcp/dcc-mcp-inkscape/pull/1
+
+[inkscape-readme]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/29b59c9534d04ea15036fa6fee9399df4b1a3f8d/README.md
+[inkscape-install]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/29b59c9534d04ea15036fa6fee9399df4b1a3f8d/install.md
+[inkscape-architecture]: https://github.com/dcc-mcp/dcc-mcp-inkscape/blob/29b59c9534d04ea15036fa6fee9399df4b1a3f8d/docs/architecture.md

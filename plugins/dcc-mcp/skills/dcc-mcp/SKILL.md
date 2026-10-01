@@ -75,7 +75,7 @@ Read only the reference needed for the selected task:
 | Menus, dialogs, browser or other application UI | [UI workflows](references/UI_WORKFLOWS.md) and the bundled `dcc-cua` skill; keep its exact binding and interruption contract |
 | DCC-MCP marketplace discovery, package installation or binary update | [Marketplace maintenance](references/MARKETPLACE_MAINTENANCE.md); catalog discovery needs no live instance |
 | Installing or probing an open-source application, including a portable build | [Host software deployment](references/HOST_SOFTWARE_DEPLOYMENT.md); software availability and adapter support are separate facts |
-| Recreating vector artwork through a native application extension | [Native vector workflow](references/NATIVE_VECTOR_WORKFLOW.md); require real host creation, export and acceptance evidence |
+| Recreating vector artwork through a native adapter or extension | [Native vector workflow](references/NATIVE_VECTOR_WORKFLOW.md); require real host creation, export and acceptance evidence |
 | Failed call, readiness fault or bug report | [Failure reporting](references/FAILURE_REPORTING.md) |
 | Command syntax or recovery details | [CLI cheatsheet](references/CLI_CHEATSHEET.md) |
 

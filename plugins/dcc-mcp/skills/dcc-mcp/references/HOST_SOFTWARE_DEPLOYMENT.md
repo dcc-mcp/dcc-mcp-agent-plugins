@@ -7,7 +7,7 @@ catalog entry prove different things.
 
 ## Check the installed build
 
-Record `dcc-mcp-cli --version`, then run the documented read-only commands:
+Record `dcc-mcp-cli --version`, then run the documented diagnostic commands:
 
 ```powershell
 dcc-mcp-cli --output toon --no-auto-gateway host list
@@ -15,8 +15,12 @@ dcc-mcp-cli --output toon --no-auto-gateway host doctor <host-id>
 ```
 
 Use the exact host identifier returned by `host list`. `host doctor` locates the
-executable and invokes its version probe; it does not open a GUI project, load
-an adapter, register an MCP instance or prove an editing operation.
+executable and invokes its version probe; it does not load an adapter,
+register an MCP instance or prove an editing operation. A native version
+process can initialize preferences or caches. For Inkscape, select a task-owned
+`INKSCAPE_PROFILE_DIR` before that probe rather than using another workflow's
+profile. This diagnostic process is distinct from the adapter lifecycle's
+read-only Windows PE/hash probe.
 
 If this CLI rejects `host`, preserve that result and record the build version.
 Do not describe commands found only in newer source as installed capabilities.
@@ -58,6 +62,7 @@ For a reviewed CLI build containing the Windows Inkscape archive channel:
 ```powershell
 # Task-owned absolute destination; use a process-local environment value.
 $env:DCC_MCP_HOSTS_DIR = 'C:\vector-task\software'
+$env:INKSCAPE_PROFILE_DIR = 'C:\vector-task\host-probe-profile'
 dcc-mcp-cli --output toon --no-auto-gateway host doctor inkscape
 # Run only after installation is authorized.
 dcc-mcp-cli --output toon --no-auto-gateway host install inkscape --yes
@@ -81,7 +86,7 @@ checksum provenance is the reviewed Scoop manifest; do not call it an upstream
 signature or an independently published Inkscape checksum.
 
 On a failed install command, retain the exit code, structured result and
-redacted diagnostics, then use the read-only version probe to establish current
+redacted diagnostics, then use the scoped diagnostic version probe to establish current
 state. A download alone is not an installation; a newly managed archive also
 needs its successful receipt. Preserve an uncertain outcome rather than blindly
 replaying the mutation. Route shared CLI failures through
@@ -99,7 +104,7 @@ The portable Inkscape channel and Windows archive handling are development
 changes in the coordinated [Core host deployment PR][core-host-pr]. No release
 or product-catalog support is asserted by this reference. Review that revision's
 [CLI contract][core-cli] before using it. See [native vector workflow](NATIVE_VECTOR_WORKFLOW.md)
-for the separate extension example and its acceptance limits.
+for the separate adapter workflow and its acceptance limits.
 
 [core-host-pr]: https://github.com/dcc-mcp/dcc-mcp-core/pull/2652
 [core-cli]: https://github.com/dcc-mcp/dcc-mcp-core/blob/8228335cb25fb9acfa53a67078850b1727de131e/docs/guide/cli-reference.md
