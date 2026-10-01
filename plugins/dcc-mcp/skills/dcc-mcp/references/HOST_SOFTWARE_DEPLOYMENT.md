@@ -67,8 +67,9 @@ dcc-mcp-cli --output toon --no-auto-gateway host doctor inkscape==1.4.4
 These commands describe the coordinated development source, not a guarantee
 that every published CLI contains this channel. The selected manifest supplies
 the actual pin. `DCC_MCP_INKSCAPE_EXECUTABLE` is the host detector's explicit
-executable override. The native extension example uses the separate
-`DCC_MCP_INKSCAPE_EXE` variable; do not confuse them.
+executable override. The native vector runtime uses the separate
+`DCC_MCP_INKSCAPE_EXE` variable; check the selected adapter's runbook rather
+than assuming the two variables are interchangeable.
 
 The archive channel verifies SHA-256 before extraction, stages the files and
 rejects unsafe paths and links. ZIP uses the built-in extractor; 7z requires an
