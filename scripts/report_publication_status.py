@@ -11,6 +11,7 @@ import json
 import os
 import re
 import sys
+import time
 from dataclasses import dataclass
 from urllib.error import HTTPError, URLError
 from urllib.request import HTTPRedirectHandler, Request, build_opener
@@ -144,6 +145,57 @@ def github_api(token: str):
     return request
 
 
+def resolve_merge(event: Event, api, *, wait=time.sleep) -> str:
+    """Resolve only an omitted merge SHA against the unchanged event identity.
+
+    A supplied SHA remains immutable and is verified by the existing Git job.
+    The empty-payload path reads only GitHub metadata, never candidate code or
+    another credential, and still requires that job's exact parent check.
+    """
+    if valid_sha(event.merge_sha):
+        return event.merge_sha
+    if event.merge_sha != "":
+        raise ValueError("event merge SHA must be an exact commit SHA or empty")
+
+    reason = "GitHub has not supplied a merge commit for the event base/head"
+    for attempt in range(3):
+        live = api("GET", event.pr_path)
+        if drifted(event, live):
+            raise ValueError("PR event drift prevents merge resolution")
+        candidate = live.get("merge_commit_sha")
+        if candidate not in (None, ""):
+            if not isinstance(candidate, str) or not valid_sha(candidate):
+                raise ValueError("GitHub merge metadata is not an exact commit SHA")
+            commit = api("GET", f"/repos/{event.repository}/git/commits/{candidate}")
+            parents = commit.get("parents")
+            if (
+                commit.get("sha") != candidate
+                or not isinstance(parents, list)
+                or any(not isinstance(parent, dict) for parent in parents)
+            ):
+                raise ValueError("GitHub merge commit metadata is not verifiable")
+            if [parent.get("sha") for parent in parents] != [event.base_sha, event.head_sha]:
+                reason = "available merge commit does not have the event base/head parents"
+            else:
+                latest = api("GET", event.pr_path)
+                if drifted(event, latest):
+                    raise ValueError("PR event drift after merge resolution")
+                if latest.get("merge_commit_sha") == candidate:
+                    return candidate
+                reason = "GitHub merge metadata changed during resolution"
+        if attempt < 2:
+            wait(1)
+    raise ValueError(f"merge commit unavailable after bounded metadata checks: {reason}")
+
+
+def write_merge_output(merge_sha: str, path: str) -> None:
+    """Emit one validated scalar to the trusted Actions output file."""
+    if not valid_sha(merge_sha):
+        raise ValueError("merge output must be an exact commit SHA")
+    with open(path, "a", encoding="utf-8") as output:
+        output.write(f"merge-sha={merge_sha}\n")
+
+
 def desired_state(
     phase: str, validation_result: str, policy_enforced: bool, parents_verified: bool
 ) -> str:
@@ -227,6 +279,10 @@ def main() -> int:
     parser.add_argument("--run-id", type=int, required=True)
     parser.add_argument("--phase", choices=("start", "finish"), required=True)
     parser.add_argument(
+        "--resolve-merge", action="store_true",
+        help="resolve an empty merge SHA for the unchanged start event and emit an Actions output",
+    )
+    parser.add_argument(
         "--validation-result",
         choices=("success", "failure", "cancelled", "skipped"),
         default="skipped",
@@ -235,6 +291,8 @@ def main() -> int:
     parser.add_argument("--parents-verified", choices=("true", "false"), default="false")
     args = parser.parse_args()
     try:
+        if args.resolve_merge and args.phase != "start":
+            raise ValueError("merge resolution is only available in the start phase")
         event = Event(
             args.repository,
             args.pr_number,
@@ -247,14 +305,24 @@ def main() -> int:
         token = os.environ.get("GH_TOKEN")
         if not token:
             raise ValueError("missing isolated status-job token; no credential fallback")
+        api = github_api(token)
         outcome = report(
             event,
             args.phase,
             args.validation_result,
             args.policy_enforced == "true",
             args.parents_verified == "true",
-            github_api(token),
+            api,
         )
+        if args.resolve_merge:
+            if outcome["state"] != "pending":
+                raise ValueError("merge resolution requires the unchanged pending event")
+            output_path = os.environ.get("GITHUB_OUTPUT")
+            if not output_path:
+                raise ValueError("missing trusted Actions output file")
+            merge_sha = resolve_merge(event, api)
+            write_merge_output(merge_sha, output_path)
+            outcome["merge_sha"] = merge_sha
     except (ValueError, RuntimeError) as error:
         print(f"Publication HEAD status not verified: {error}", file=sys.stderr)
         return 1
