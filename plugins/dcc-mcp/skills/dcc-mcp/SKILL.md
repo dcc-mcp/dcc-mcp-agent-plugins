@@ -74,6 +74,7 @@ Read only the reference needed for the selected task:
 | Remote profile, local/gateway routing, or gateway stats | [Gateway profiles](references/GATEWAY_PROFILES.md); stats require `--require-gateway --agent-session-id <task-id>` from the first call |
 | Menus, dialogs, browser or other application UI | [UI workflows](references/UI_WORKFLOWS.md) and the bundled `dcc-cua` skill; keep its exact binding and interruption contract |
 | DCC-MCP marketplace discovery, package installation or binary update | [Marketplace maintenance](references/MARKETPLACE_MAINTENANCE.md); catalog discovery needs no live instance |
+| Explicit Figma, Penpot, Pencil / pen.dev, Sketch, or Framer component-library to page/frontend task | [Experimental design workflow](references/DESIGN_WORKFLOW.md); reuse an authorized official session, discover current capabilities, and retain native acceptance evidence |
 | Failed call, readiness fault or bug report | [Failure reporting](references/FAILURE_REPORTING.md) |
 | Command syntax or recovery details | [CLI cheatsheet](references/CLI_CHEATSHEET.md) |
 
