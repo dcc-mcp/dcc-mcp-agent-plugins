@@ -44,8 +44,9 @@ Before creating or materially revising DCC content, MUST read and execute the
 or the running gateway's `gateway://docs/agent-workflows` resource. A readable
 URI alone is insufficient: confirm the actual `Production reuse gate` section
 and `dcc-mcp-production-reuse/v1` contract, then read its substantive rules.
-Save the returned resource payload (or trusted source Markdown) to a task-local
-file and run `python scripts/check_production_guide.py <file>` to detect an old
+Save the decoded JSON payload from the resource's `contents[].text` (or trusted
+source Markdown) to a task-local file and run
+`python scripts/check_production_guide.py <file>` to detect an old
 or missing contract. This checks document shape, not source authenticity or task
 execution. For an old gateway, try the canonical Core source URL above; this
 allows the new guide to be used without an automatic runtime upgrade. If neither
