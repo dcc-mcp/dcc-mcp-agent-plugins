@@ -41,7 +41,20 @@ Discovery and packaging evidence do not claim licensed real-host validation.
 
 Before creating or materially revising DCC content, MUST read and execute the
 [production reuse gate](https://github.com/dcc-mcp/dcc-mcp-core/blob/main/crates/dcc-mcp-gateway/src/gateway/native_resources/agent_workflows.md#production-reuse-gate),
-or the running gateway's `gateway://docs/agent-workflows` resource. Do bounded
+or the running gateway's `gateway://docs/agent-workflows` resource. A readable
+URI alone is insufficient: confirm the actual `Production reuse gate` section
+and `dcc-mcp-production-reuse/v1` contract, then read its substantive rules.
+Save the returned resource payload (or trusted source Markdown) to a task-local
+file and run `python scripts/check_production_guide.py <file>` to detect an old
+or missing contract. This checks document shape, not source authenticity or task
+execution. For an old gateway, try the canonical Core source URL above; this
+allows the new guide to be used without an automatic runtime upgrade. If neither
+contains the contract (including when Core main has not received it yet), report
+the Core-first rollout dependency and stop dependent production; planning and
+read-only discovery may continue. Never silently skip the gate, install an update
+without authorization, or claim that an older deployed gateway enforces it.
+
+Do bounded
 initial discovery (about one minute) across existing skills/providers, our
 marketplace, the host's official plugin/asset market and trusted upstream sources.
 Evaluate free-first fit, rights, compatibility and callable interfaces; validate
