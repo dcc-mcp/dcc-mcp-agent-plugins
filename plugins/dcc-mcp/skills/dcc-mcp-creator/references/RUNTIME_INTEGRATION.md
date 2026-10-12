@@ -182,6 +182,35 @@ contents or load the entire Core documentation tree.
    `gateway://governance` for the effective policy boundary. Keep Admin memory
    deletion controls out of agent-readable resources.
 9. Use `dcc_mcp_core.deployment.build_sidecar_command(...)` / `launch_sidecar(...)` for library-driven sidecar startup and readiness. Installer subprocesses should use `dcc-mcp-install-lifecycle`; `dcc_mcp_core.install_lifecycle` and `python -m dcc_mcp_core.install_lifecycle` remain compatibility aliases. Read `docs/guide/adapter-install-lifecycle.md` before changing host RPC, dispatch readiness, launch stdio, `watch_pid`, or `instance_id` handling.
+   - Publish `AdapterReadinessBinder` before the embedded `McpHttpServer.start()`.
+     Mutating the installed probe is live; replacing the probe after startup
+     does not update the running listener. `published=True` is setter
+     acceptance, not HTTP or native-host verification. Check the exact runtime:
+     Core 0.20.42/0.20.43 wrappers incorrectly report success when the
+     underlying setter returns `False`; do not infer sidecar support from that
+     flag. A native setter returning `None` is the successful void-return case.
+   - The pure-Python `SidecarBackedSkillServer` cannot publish an in-process
+     readiness probe into its Rust child and returns `False`. Preserve that
+     rejection through wrappers; a green local probe does not prove the child
+     consumed it. An adapter outside the DCC that embeds `_core` is still the
+     embedded-server case, not this pure-Python sidecar facade.
+   - `dcc_ready_probe` is sampled during binding and explicit
+     `refresh_dcc_ready()` calls, not continuously. The adapter owns refresh
+     scheduling. Callback exceptions fail closed; refresh again from an
+     independent lifecycle path when the condition recovers.
+   - Pass the actual dispatcher to
+     `bind_queue_dispatcher(server, dispatcher, require_first_pump=True)`.
+     The binder neither attaches it nor pumps the queue. Do not wait on the
+     only thread that can drain the callback. Base admission uses `process`,
+     `dcc`, `skill_catalog`, and `dispatcher`; the execution-bridge and
+     main-thread-executor bits are additional evidence, not native-host proof.
+   - A red base probe blocks registered recovery handlers behind the same
+     REST `/v1/call` / MCP `tools/call` gate (HTTP 503 / MCP `-32002`). Keep an
+     independent, explicitly authorized recovery path; never mark an actually
+     blocked host ready to bypass admission. This adds no per-tool bypass and
+     no permission to auto-click dialogs or destructive confirmations. Verify
+     `ready → blocked → ready` with isolated real HTTP calls, and report native
+     DCC/GUI acceptance separately.
    - Adapter-owned lifecycle commands must follow `docs/guide/adapter-install-sop.md`. Consume `load_install_sop_schema()` and `INSTALL_EXIT_CODES` from `dcc_mcp_core.deployment`; do not invent adapter-local result shapes or exit-code mappings.
    - The sidecar MCP listener is dispatch-only. A py37-lite factory can expose local skill metadata, but it cannot advertise or activate declarative skills through the gateway. Require a native py37 wheel for that path, or provide a separate discovery MCP URL; never report lite `load_skill` success without an executable catalog.
    - Wrap the outer adapter import/start block with `capture_bootstrap_errors(...)`; it is stdlib-only, records pre-MCP failures, and re-raises for the DCC's native error UI. `DccServerBase` already captures Python error logs and uncaught exceptions into the shared log plus `output://` / `events://`. Forward host-native console callbacks with `server.report_host_error(...)`; do not replace global stdout/stderr or add an adapter-local error store.
