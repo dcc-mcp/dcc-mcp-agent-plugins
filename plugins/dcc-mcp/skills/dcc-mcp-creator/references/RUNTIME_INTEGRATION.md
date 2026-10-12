@@ -6,6 +6,7 @@ items are constraints by topic, not a required sequence for every adapter edit.
 - Ownership and threading: vocabulary and items 1-6.
 - Shared state, scene digest and UI binding: item 7.
 - Gateway, sidecar lifecycle and readiness: items 8-9.
+- Secondary-listener default migration: [source-stage contract](#source-stage-secondary-listener-migration).
 - Search, task metadata, recording and experiments: remaining items.
 
 Resolve `docs/guide/` references against the matching Core source checkout if
@@ -264,3 +265,27 @@ contents or load the entire Core documentation tree.
     Reuse `session_events`, workflow/recording identifiers, and artifact
     references; do not add adapter-local experiment storage or treat judge
     output as approval authority.
+
+## Source-stage secondary-listener migration
+
+The pending [Core #2699](https://github.com/dcc-mcp/dcc-mcp-core/issues/2699)
+implementation defines the following `DccServerBase` migration. This is a
+source-stage contract, not a guarantee about an installed release. Verify the
+matching Core/server release in the target host before relying on it.
+
+- Omitted secondary-listener options resolve to `gateway_remote_port=0` and
+  `gateway_remote_host="127.0.0.1"`; gateway registration and failover remain
+  enabled. A positive remote port opts into loopback. Intentional LAN use
+  requires an explicit non-loopback remote host and a positive port.
+- Explicit `from_env` arguments, including port `0`, take precedence over
+  `DCC_MCP_GATEWAY_REMOTE_HOST` / `DCC_MCP_GATEWAY_REMOTE_PORT`.
+- The resolved policy follows adapter-started daemon/retry/guardian paths and
+  embedded promotion. Adapter-managed sidecars delegate daemon management to
+  the Python owner while retaining native election.
+- Existing healthy daemons are reused, not silently reconfigured or
+  version-replaced when their listener policy is unverified.
+  `remote_listener` diagnostics describe configured intent with
+  `effective_state="unverified"`, not observed sockets.
+- Raw `McpHttpConfig` and directly launched CLI/sidecar defaults are separate
+  entrypoints. Source tests and loopback socket checks do not establish native
+  target-host acceptance or authorize opening a LAN listener.
