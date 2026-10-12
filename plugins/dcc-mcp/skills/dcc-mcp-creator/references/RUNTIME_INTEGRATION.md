@@ -268,8 +268,8 @@ contents or load the entire Core documentation tree.
 
 ## Source-stage secondary-listener migration
 
-The pending [Core #2699](https://github.com/dcc-mcp/dcc-mcp-core/issues/2699)
-implementation defines the following `DccServerBase` migration. This is a
+The pending [Core #2771](https://github.com/dcc-mcp/dcc-mcp-core/pull/2771)
+implementation for #2699 defines the following `DccServerBase` migration. This is a
 source-stage contract, not a guarantee about an installed release. Verify the
 matching Core/server release in the target host before relying on it.
 
