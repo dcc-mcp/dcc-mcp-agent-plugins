@@ -94,8 +94,8 @@ workflow when the selected CLI's entry point is safe. Preview explicitly chosen
 files with the inspection-capable binary:
 
 ```bash
-dcc-mcp-cli --output json feedback bundle --finding reviewed-finding.json
-dcc-mcp-cli --output json feedback file --finding reviewed-finding.json
+dcc-mcp-cli --output json feedback bundle reviewed-finding.json
+dcc-mcp-cli --output json feedback file reviewed-finding.json
 ```
 
 The bundle v2 is a minimal diagnostic summary, not a publishable Finding v1.
