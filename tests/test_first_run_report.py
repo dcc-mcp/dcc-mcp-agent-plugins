@@ -425,8 +425,8 @@ class FirstRunReportTests(unittest.TestCase):
 
     def test_first_run_guidance_routes_reuse_and_issue_consent(self):
         references = SCRIPTS.parent / "references"
-        first = (references / "FIRST_RUN.md").read_text()
-        issue = (references / "SOFTWARE_REQUEST.md").read_text()
+        first = (references / "FIRST_RUN.md").read_text(encoding="utf-8")
+        issue = (references / "SOFTWARE_REQUEST.md").read_text(encoding="utf-8")
         self.assertIn("host doctor", first)
         self.assertIn("host install", first)
         self.assertIn("startup can\nactivate", first)
