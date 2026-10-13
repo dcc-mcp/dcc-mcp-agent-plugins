@@ -7,8 +7,8 @@ server restart, or issue submission.
 
 ## Select a Safe Entry Point
 
-The new `dcc-mcp-cli update inspect` command requires a CLI build containing
-the read-only inspection entry point. Until that build is released, use the
+The new `update inspect`, `update discover`, and feedback preview paths require
+a CLI build containing the read-only inspection entry point. Until that build is released, use the
 explicitly selected candidate in an isolated test environment. Do not assume
 an arbitrary installed CLI supports it.
 
@@ -66,23 +66,45 @@ a rollback command when the installation owner provides no verified path.
 
 ## Discover the Ecosystem
 
-Reuse the official catalog and marketplace providers. On a CLI whose startup
-behavior has been verified safe for the requested operation, use `dcc-types`
-for supported applications/adapters and `marketplace search` / `inspect` for
-Skills and plugin packages. Catalog discovery does not require a live host.
+Use the read-only official catalog and Marketplace providers:
+
+```bash
+dcc-mcp-cli --output json update discover --query "animation" --limit 20
+dcc-mcp-cli --output json update discover --offline --provider official_install_catalog
+```
+
+The provider-qualified results include application targets, package metadata,
+requirements, policy, and source evidence. New catalog entries require no
+hardcoded software list. Catalog discovery does not require a live host.
 An empty live inventory is not evidence that the ecosystem has no matching
 adapter. A catalog entry is not proof that the component is installed, loaded,
 compatible, or newly published.
 
 Keep official source identity and freshness with each result. Respect the
-signed catalog's validity and withdrawal policy. Offline discovery may use only
-the existing supported cache/bundled path; report unavailable sources explicitly.
-Do not maintain a second hardcoded list of supported software in this workflow.
+signed catalog's validity and withdrawal policy. Installation discovery reuses
+the verified cache or bundled catalog; Marketplace discovery has no offline
+snapshot in this interface. Report partial/unavailable sources explicitly,
+including refresh errors. Online reads do not persist caches. A signature's log
+time is attestation evidence, not the component's publication time.
 
 ## Prepare an Issue Without Publishing It
 
 Reuse `feedback route`, `feedback bundle`, and the plan-only `feedback file`
-workflow when the selected CLI's entry point is safe. Collect only the fields
+workflow when the selected CLI's entry point is safe. Preview explicitly chosen
+files with the inspection-capable binary:
+
+```bash
+dcc-mcp-cli --output json feedback bundle --finding reviewed-finding.json
+dcc-mcp-cli --output json feedback file --finding reviewed-finding.json
+```
+
+The bundle v2 is a minimal diagnostic summary, not a publishable Finding v1.
+Default collection does not run doctor, query a gateway, or discover logs. An
+install report or log directory must be explicitly selected. Typed versions,
+loading categories, and error classes survive the allowlist; arbitrary text
+does not. Review the fixed omission categories/counts and retained fields.
+
+For the separately reviewed Finding and issue draft, collect only the fields
 needed to explain the failure: version observations, loading-origin category,
 bounded error classification/stack frames, minimal reproduction, and expected
 versus actual behavior. Prefer a small synthetic reproduction.
@@ -95,12 +117,16 @@ Pattern redaction and a `public_safe` flag do not guarantee that arbitrary text
 contains no secrets; inspect the retained fields and disclose that limitation.
 
 Search for duplicate issues only in the routed official repository, using a
-sanitized fingerprint or narrowly reviewed public terms. A failed lookup is
+fingerprint and fixed public categories. Do not send arbitrary tool slugs or
+error text as search terms before review. A failed lookup is
 unknown, not “no duplicates”. Present the candidate issues and the exact draft
 title/body before asking whether to create an issue or comment on one.
 
 Do not submit automatically. After explicit approval of the concrete content,
-reuse the existing `feedback file` authorization binding for the finding path
-and digest, fingerprint, repository, and catalog path/digest. If those values
-or the draft change, produce a fresh preview. Never upload the complete local
-diagnostic bundle or private source tree as an attachment by default.
+reuse the emitted `feedback file` authorization binding for the finding path
+and digest, fingerprint, repository, catalog path/digest, and
+`--expected-document-sha256`. The preview includes the exact title, issue body,
+and comment body; the document digest binds all three. If those values or the
+draft change, produce a fresh preview. The plan may contain local binding paths,
+so do not publish the whole plan. Never upload the complete local diagnostic
+bundle or private source tree as an attachment by default.
