@@ -102,6 +102,15 @@ class PackagedProductDiscoveryTests(unittest.TestCase):
                     archive.read("dcc-mcp/references/PRODUCTS.json").decode("utf-8")
                 )
             self.assertEqual(canonical, packaged)
+            for relative in (
+                "scripts/first_run_report.py",
+                "references/FIRST_RUN.md",
+                "references/SOFTWARE_REQUEST.md",
+            ):
+                expected = (ROOT / "plugins/dcc-mcp/skills/dcc-mcp" / relative).read_bytes()
+                self.assertEqual(expected, (npm / "skills/dcc-mcp" / relative).read_bytes())
+                with ZipFile(archives[0]) as archive:
+                    self.assertEqual(expected, archive.read(f"dcc-mcp/{relative}"))
 
     def test_unreal_chinese_identity_reaches_every_installable_projection(self) -> None:
         alias = "虚幻引擎"

@@ -143,3 +143,29 @@ and comment body; the document digest binds all three. If those values or the
 draft change, produce a fresh preview. The plan may contain local binding paths,
 so do not publish the whole plan. Never upload the complete local diagnostic
 bundle or private source tree as an attachment by default.
+
+
+## Quick, non-blocking update guidance
+
+Reuse Core's existing background refresh and cached `cli_update` evidence on
+normal invocations. Its current default CLI TTL is 24 hours, failed checks
+retry after one hour, and the cache lock prevents duplicate refresh workers.
+Do not add a synchronous network request, catalog scan, or updater before each
+command. An inspection-only entry point intentionally bypasses normal startup;
+it need not spawn a refresh just to satisfy an “every invocation” slogan.
+
+Deduplicate user-facing notices per component, source/target version and
+environment for the current task. Preserve the source freshness and failure
+reason; offline/unknown/stale is never “latest”. Do not keep asking about an
+unchanged declined update. New catalog support can be discovered with
+`update discover` even when the CLI's bundled product list is older. This is
+not proof of a feature change or of a newly published release: show the official
+release/changelog evidence and admit when no structured change diff exists.
+
+An upgrade is the user's choice. Explain what changes, retain operator pins,
+and use the existing installation owner. Do not update a different copy on
+PATH, treat a package receipt as the loaded adapter version, restart the host
+or gateway, or interrupt an active render/job to activate an update. Recheck
+the selected executable and the separately running process after an approved
+change. Exact-version requests must use a verified exact-version installation
+path; `update apply --yes` currently stages latest and cannot enforce a pin.
