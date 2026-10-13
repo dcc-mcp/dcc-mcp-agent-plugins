@@ -22,6 +22,19 @@ installation workflow first.
 
 For a verified inspection-capable binary:
 
+Confirm command support from reviewed source/build provenance for an isolated
+candidate, or from official release/capability metadata for a released artifact.
+Record the artifact identity and evidence; a version number alone does not prove
+support. Do not claim a minimum supported release until one is published.
+
+If support cannot be established, report "This CLI has not been confirmed to
+support the requested read-only command", keep runtime observations unknown,
+and provide the [official releases](https://github.com/dcc-mcp/dcc-mcp-core/releases)
+and [official source](https://github.com/dcc-mcp/dcc-mcp-core). Stop without invoking the
+command, automatically upgrading, or retrying another installed binary. If an
+already verified safe candidate rejects the subcommand, report it as unsupported
+and return to metadata inspection rather than treating it as an update check.
+
 ```bash
 dcc-mcp-cli --output json update inspect
 dcc-mcp-cli --output json update inspect --offline
