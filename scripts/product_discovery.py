@@ -38,6 +38,7 @@ RELEASED_CORE_WORKFLOW_COMMANDS = {
         "validate": RELEASED_CORE_CATALOG_SETUP_COMMAND,
     },
     ".github/workflows/clawhub.yml": {"sync-skills": RELEASED_CORE_CATALOG_SETUP_COMMAND},
+    ".github/workflows/skillhub.yml": {"sync": RELEASED_CORE_CATALOG_SETUP_COMMAND},
     ".github/workflows/release.yml": {
         "github-release": (
             f"{RELEASED_CORE_CATALOG_SETUP_COMMAND} "
@@ -51,6 +52,9 @@ RELEASED_CORE_WORKFLOW_JOBS = {
     relative: tuple(commands) for relative, commands in RELEASED_CORE_WORKFLOW_COMMANDS.items()
 }
 RELEASED_CORE_WORKFLOW_ENVIRONMENT = {
+    ".github/workflows/skillhub.yml": {'SKILLHUB_SKIP_SELF_UPGRADE': '1',
+     'SKILLHUB_SKIP_WORKSPACE_SKILLS': '1',
+     'SKILLHUB_CALLER': 'none'},
     ".github/workflows/ci.yml": None,
     ".github/workflows/clawhub.yml": {
         "CLAWHUB_CLI_PACKAGE": "clawhub@0.23.1",
@@ -60,6 +64,20 @@ RELEASED_CORE_WORKFLOW_ENVIRONMENT = {
     ".github/workflows/release.yml": None,
 }
 RELEASED_CORE_WORKFLOW_REQUIRED_TRIGGERS = {
+    ".github/workflows/skillhub.yml": {'workflow_call': {'inputs': {'publish': {'type': 'boolean', 'default': False}},
+                       'secrets': {'SKILLHUB_KEY': {'required': False}}},
+     'workflow_dispatch': {'inputs': {'publish': {'description': 'Publish instead of dry-running',
+                                                  'type': 'boolean',
+                                                  'default': False}}},
+     'pull_request': {'branches': ['main'],
+                      'paths': ['plugins/dcc-mcp/skills/**',
+                                '.github/clawhub-skills.json',
+                                '.github/workflows/skillhub.yml',
+                                'scripts/stage_skillhub.py',
+                                'scripts/package_openclaw_skill.py',
+                                'tests/test_skillhub.py',
+                                'scripts/setup_released_core.py',
+                                'scripts/product_discovery.py']}},
     ".github/workflows/ci.yml": {
         "push": {"branches": ["main"]},
         "pull_request": {"branches": ["main"]},
@@ -102,6 +120,7 @@ RELEASED_CORE_WORKFLOW_REQUIRED_TRIGGERS = {
 # and comments remain free, while every job, step, action, command, and execution
 # control is enumerated; an added job or changed executable surface fails closed.
 RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
+    ".github/workflows/skillhub.yml": {'sync': 'c92fc707d095201c2c11ca643aed8f969f751c52501b6ffa714245e42539ad58'},
     ".github/workflows/ci.yml": {
         "product-discovery": "f548c76c55d0a0901fcc29489d635ba1c0fc0d3c07ecc283ed3d102ceb918d49",
         "validate": "3d9ffa7bcb000cacb170786d81467beb18d63de758ce093bfc3a165a91381a89",
@@ -112,6 +131,7 @@ RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
     ".github/workflows/release.yml": {
         "github-release": "99356779fa49b277609f1a6575c274dff907e1edf914203a23c07ac209cfe006",
         "publish-clawhub": "c911a32259c3658a50b2f6c47ba2a80240a9e168c4bcfda483cb212640340330",
+        "publish-skillhub": "df0207d6cc3fc1c186caa82c8bb977e0f9293177af0f6a801a5e6d57e672123c",
         "publish-smithery": "2749e01e660ea0ed74c37d4e4f25c23f6848925055806bf91ca4634e67e75530",
         "publish-npm": "944cbdfc9bdfdcbf38a745c83f6a3c16ef20fbde965b3a9fd939f4a0070814e6",
         "publish-pages": "0e2635dfcc1358f8f5f02623a837d7e4434f18b5a023fe6f580c1463ae3644bd",
@@ -119,6 +139,9 @@ RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
     },
 }
 RELEASED_CORE_JOB_EXECUTION_CONTROLS = {
+    ".github/workflows/skillhub.yml": {'sync': {'runs-on': 'ubuntu-latest',
+              'timeout-minutes': 20,
+              'env': {'SKILLHUB_CONFIG_PATH': '${{ runner.temp }}/skillhub-config.json'}}},
     ".github/workflows/ci.yml": {
         "product-discovery": {
             "strategy": {

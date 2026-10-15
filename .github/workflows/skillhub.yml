@@ -24,6 +24,8 @@ on:
       - "scripts/stage_skillhub.py"
       - "scripts/package_openclaw_skill.py"
       - "tests/test_skillhub.py"
+      - "scripts/setup_released_core.py"
+      - "scripts/product_discovery.py"
 
 permissions:
   contents: read
