@@ -49,6 +49,13 @@ jobs:
       publish: true
     secrets: inherit
 
+  publish-skillhub:
+    needs: github-release
+    uses: ./.github/workflows/skillhub.yml
+    with:
+      publish: true
+    secrets: inherit
+
   publish-smithery:
     needs: github-release
     runs-on: ubuntu-latest

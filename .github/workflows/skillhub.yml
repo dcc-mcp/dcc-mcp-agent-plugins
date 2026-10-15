@@ -1,0 +1,83 @@
+name: Sync SkillHub Skills
+
+on:
+  workflow_call:
+    inputs:
+      publish:
+        type: boolean
+        default: false
+    secrets:
+      SKILLHUB_KEY:
+        required: false
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish instead of dry-running
+        type: boolean
+        default: false
+  pull_request:
+    branches: [main]
+    paths:
+      - "plugins/dcc-mcp/skills/**"
+      - ".github/clawhub-skills.json"
+      - ".github/workflows/skillhub.yml"
+      - "scripts/stage_skillhub.py"
+      - "scripts/package_openclaw_skill.py"
+      - "tests/test_skillhub.py"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: skillhub-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  SKILLHUB_SKIP_SELF_UPGRADE: "1"
+  SKILLHUB_SKIP_WORKSPACE_SKILLS: "1"
+  SKILLHUB_CALLER: none
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SKILLHUB_CONFIG_PATH: ${{ runner.temp }}/skillhub-config.json
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - run: python scripts/setup_released_core.py --with-catalog-dependencies
+      - run: python scripts/validate_repository.py
+      - run: python -m unittest discover -s tests -q
+      - name: Download verified SkillHub CLI 2026.8.5
+        run: |
+          curl --fail --silent --show-error --location https://skillhub-1388575217.cos.ap-guangzhou.myqcloud.com/install/skillhub-cli-2026.8.5.tar.gz -o "$RUNNER_TEMP/skillhub.tar.gz"
+          echo "3bbe2ba15ada2eb7a94a2b760fead83be5f4164ab28a6c8b0944dbc539f7e236  $RUNNER_TEMP/skillhub.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/skillhub.tar.gz" -C "$RUNNER_TEMP" cli/skills_store_cli.py cli/skills_upgrade.py cli/version.json cli/metadata.json
+      - name: Stage and preflight every Skill
+        run: |
+          staged=$(python scripts/stage_skillhub.py)
+          echo "SKILLHUB_STAGED=$staged" >> "$GITHUB_ENV"
+          for skill in "$staged"/*; do
+            python "$RUNNER_TEMP/cli/skills_store_cli.py" publish "$skill" --host https://api.skillhub.cn --dry-run
+          done
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: skillhub-staged-skills
+          path: ${{ env.SKILLHUB_STAGED }}
+          if-no-files-found: error
+      - name: Login and publish
+        if: inputs.publish && github.event_name != 'pull_request'
+        env:
+          SKILLHUB_KEY: ${{ secrets.SKILLHUB_KEY }}
+        run: |
+          test -n "$SKILLHUB_KEY" || { echo "Missing SKILLHUB_KEY repository secret" >&2; exit 1; }
+          python "$RUNNER_TEMP/cli/skills_store_cli.py" login --key "$SKILLHUB_KEY" --host https://api.skillhub.cn
+          for skill in "$SKILLHUB_STAGED"/*; do
+            python "$RUNNER_TEMP/cli/skills_store_cli.py" publish "$skill" --host https://api.skillhub.cn --changelog "Release $GITHUB_REF_NAME ($GITHUB_SHA)"
+          done
+      - name: Remove credentials
+        if: always()
+        run: rm -f -- "$SKILLHUB_CONFIG_PATH"
