@@ -120,7 +120,7 @@ RELEASED_CORE_WORKFLOW_REQUIRED_TRIGGERS = {
 # and comments remain free, while every job, step, action, command, and execution
 # control is enumerated; an added job or changed executable surface fails closed.
 RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
-    ".github/workflows/skillhub.yml": {'sync': 'c92fc707d095201c2c11ca643aed8f969f751c52501b6ffa714245e42539ad58'},
+    ".github/workflows/skillhub.yml": {'sync': 'aaa10d0269baa2f1ab1bfdb0c7e4f0a4b3e869e69f3c33ba873f0745adf9e5c8'},
     ".github/workflows/ci.yml": {
         "product-discovery": "f548c76c55d0a0901fcc29489d635ba1c0fc0d3c07ecc283ed3d102ceb918d49",
         "validate": "3d9ffa7bcb000cacb170786d81467beb18d63de758ce093bfc3a165a91381a89",
@@ -141,7 +141,7 @@ RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
 RELEASED_CORE_JOB_EXECUTION_CONTROLS = {
     ".github/workflows/skillhub.yml": {'sync': {'runs-on': 'ubuntu-latest',
               'timeout-minutes': 20,
-              'env': {'SKILLHUB_CONFIG_PATH': '${{ runner.temp }}/skillhub-config.json'}}},
+              'env': {'SKILLHUB_CONFIG_PATH': '.skillhub/config.json'}}},
     ".github/workflows/ci.yml": {
         "product-discovery": {
             "strategy": {
