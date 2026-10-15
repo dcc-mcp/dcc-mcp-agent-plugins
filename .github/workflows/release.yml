@@ -54,7 +54,8 @@ jobs:
     uses: ./.github/workflows/skillhub.yml
     with:
       publish: true
-    secrets: inherit
+    secrets:
+      SKILLHUB_KEY: ${{ secrets.SKILLHUB_KEY }}
 
   publish-smithery:
     needs: github-release

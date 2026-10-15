@@ -43,16 +43,18 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      SKILLHUB_CONFIG_PATH: .skillhub/config.json
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
       - run: python scripts/setup_released_core.py --with-catalog-dependencies
       - run: python scripts/validate_repository.py
       - run: python -m unittest discover -s tests -q
+      - name: Set SkillHub config path
+        run: echo "SKILLHUB_CONFIG_PATH=$RUNNER_TEMP/skillhub-config.json" >> "$GITHUB_ENV"
       - name: Download verified SkillHub CLI 2026.8.5
         run: |
           curl --fail --silent --show-error --location https://skillhub-1388575217.cos.ap-guangzhou.myqcloud.com/install/skillhub-cli-2026.8.5.tar.gz -o "$RUNNER_TEMP/skillhub.tar.gz"

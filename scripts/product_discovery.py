@@ -120,7 +120,7 @@ RELEASED_CORE_WORKFLOW_REQUIRED_TRIGGERS = {
 # and comments remain free, while every job, step, action, command, and execution
 # control is enumerated; an added job or changed executable surface fails closed.
 RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
-    ".github/workflows/skillhub.yml": {'sync': 'aaa10d0269baa2f1ab1bfdb0c7e4f0a4b3e869e69f3c33ba873f0745adf9e5c8'},
+    ".github/workflows/skillhub.yml": {'sync': 'cd937e37c9d738a75056903fcac10243121e00e7e9caa9126f8166452fb40877'},
     ".github/workflows/ci.yml": {
         "product-discovery": "f548c76c55d0a0901fcc29489d635ba1c0fc0d3c07ecc283ed3d102ceb918d49",
         "validate": "3d9ffa7bcb000cacb170786d81467beb18d63de758ce093bfc3a165a91381a89",
@@ -131,7 +131,7 @@ RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
     ".github/workflows/release.yml": {
         "github-release": "99356779fa49b277609f1a6575c274dff907e1edf914203a23c07ac209cfe006",
         "publish-clawhub": "c911a32259c3658a50b2f6c47ba2a80240a9e168c4bcfda483cb212640340330",
-        "publish-skillhub": "df0207d6cc3fc1c186caa82c8bb977e0f9293177af0f6a801a5e6d57e672123c",
+        "publish-skillhub": "c615caf60b1514b58e53c02ca2758e92c0bc0f836cb2f870e1c3c142152bb2a7",
         "publish-smithery": "2749e01e660ea0ed74c37d4e4f25c23f6848925055806bf91ca4634e67e75530",
         "publish-npm": "944cbdfc9bdfdcbf38a745c83f6a3c16ef20fbde965b3a9fd939f4a0070814e6",
         "publish-pages": "0e2635dfcc1358f8f5f02623a837d7e4434f18b5a023fe6f580c1463ae3644bd",
@@ -140,8 +140,7 @@ RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
 }
 RELEASED_CORE_JOB_EXECUTION_CONTROLS = {
     ".github/workflows/skillhub.yml": {'sync': {'runs-on': 'ubuntu-latest',
-              'timeout-minutes': 20,
-              'env': {'SKILLHUB_CONFIG_PATH': '.skillhub/config.json'}}},
+              'timeout-minutes': 20}},
     ".github/workflows/ci.yml": {
         "product-discovery": {
             "strategy": {

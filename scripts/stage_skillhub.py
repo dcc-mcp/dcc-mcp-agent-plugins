@@ -15,13 +15,14 @@ ROOT = Path(__file__).resolve().parent.parent
 def stage(repo_root: Path, output: Path) -> None:
     manifest = repo_root / ".github/clawhub-skills.json"
     releases = resolve_manifest_skills(manifest, repo_root.resolve())
-    entries = json.loads(manifest.read_text(encoding="utf-8"))["skills"]
+    data = json.loads(manifest.read_text(encoding="utf-8"))
+    entries = data.get("skills") if isinstance(data, dict) else data
     for entry, (source, version) in zip(entries, releases, strict=True):
         slug = entry["slug"]
         if not isinstance(slug, str) or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", slug):
             raise ValueError(f"invalid SkillHub slug: {slug!r}")
         raw = (source / "SKILL.md").read_text(encoding="utf-8")
-        parts = raw.split("---", 2)
+        parts = re.split(r"(?m)^---[ \t]*$", raw, maxsplit=2)
         if len(parts) != 3 or parts[0].strip():
             raise ValueError(f"missing frontmatter: {source}")
         metadata = yaml.safe_load(parts[1])
