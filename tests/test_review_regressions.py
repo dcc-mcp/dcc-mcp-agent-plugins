@@ -75,6 +75,7 @@ class IndependentReviewRegressionTests(unittest.TestCase):
             for relative in (
                 ".github/workflows/ci.yml",
                 ".github/workflows/clawhub.yml",
+                ".github/workflows/skillhub.yml",
                 ".github/workflows/release.yml",
             )
         }

@@ -304,7 +304,7 @@ codebuddy plugin validate ./plugins/dcc-mcp
 ```
 
 Tagging `v<version>` creates a GitHub Release with the plugin and standalone
-Skill archives, then fans out to every automated channel: ClawHub, Smithery,
+Skill archives, then fans out to every automated channel: ClawHub, SkillHub, Smithery,
 npm, and the GitHub Pages catalog. A final matrix job installs the released
 Skills from the public repository on Linux, macOS, and Windows and asserts the
 released version, so a broken public install fails the release.
@@ -312,8 +312,27 @@ released version, so a broken public install fails the release.
 | Secret | Channel |
 |---|---|
 | `CLAWHUB_TOKEN` | ClawHub |
+| `SKILLHUB_KEY` | SkillHub (`skillhub.cn`) |
 | `SMITHERY_API_KEY` | Smithery |
 | `NPM_TOKEN` | npm (`@dcc-mcp/skills`, published with provenance) |
+
+SkillHub uses the same four Skills and independent versions in
+`.github/clawhub-skills.json`. The `Sync SkillHub Skills` workflow runs CLI
+preflight on pull requests, supports manual dispatch (dry-run by default), and
+publishes after the GitHub Release succeeds. Add `SKILLHUB_KEY` from
+[SkillHub API keys](https://skillhub.cn/dashboard/keys) to repository secrets.
+The CLI is pinned to 2026.8.5 with SHA-256 verification and self-upgrade disabled.
+To upgrade it, update both the download URL and the verified archive digest.
+
+`scripts/stage_skillhub.py` copies packable files into a fresh directory under
+`dist/skillhub`, adding `slug`, `displayName`, `version`, and `summary` only to
+the staged frontmatter. Canonical Skill content and its MIT-0 license are preserved.
+The workflow retains staged files as an artifact; credentials are stored outside
+that directory and removed after the run. See the
+[official CLI publishing guide](https://skillhub.cn/tutorials#publish-via-cli).
+A successful upload can return `pending_review`; public visibility requires
+platform review. Existing-version or ownership errors fail the job; use a new
+manifest version for changed content and verify the publishing account owns the slug.
 
 GitHub Pages must be set to **Build and deployment > Source: GitHub Actions**.
 skills.sh has no publish API — it indexes public repositories and ranks them
