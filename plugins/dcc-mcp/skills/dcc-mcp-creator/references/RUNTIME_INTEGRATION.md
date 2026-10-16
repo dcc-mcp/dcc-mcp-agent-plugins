@@ -6,6 +6,7 @@ items are constraints by topic, not a required sequence for every adapter edit.
 - Ownership and threading: vocabulary and items 1-6.
 - Shared state, scene digest and UI binding: item 7.
 - Gateway, sidecar lifecycle and readiness: items 8-9.
+- Secondary-listener default migration: [source-stage contract](#source-stage-secondary-listener-migration).
 - Search, task metadata, recording and experiments: remaining items.
 
 Resolve `docs/guide/` references against the matching Core source checkout if
@@ -182,6 +183,39 @@ contents or load the entire Core documentation tree.
    `gateway://governance` for the effective policy boundary. Keep Admin memory
    deletion controls out of agent-readable resources.
 9. Use `dcc_mcp_core.deployment.build_sidecar_command(...)` / `launch_sidecar(...)` for library-driven sidecar startup and readiness. Installer subprocesses should use `dcc-mcp-install-lifecycle`; `dcc_mcp_core.install_lifecycle` and `python -m dcc_mcp_core.install_lifecycle` remain compatibility aliases. Read `docs/guide/adapter-install-lifecycle.md` before changing host RPC, dispatch readiness, launch stdio, `watch_pid`, or `instance_id` handling.
+   - Publish `AdapterReadinessBinder` before the embedded `McpHttpServer.start()`.
+     Mutating the installed probe is live; replacing the probe after startup
+     does not update the running listener. `published=True` is setter
+     acceptance, not HTTP or native-host verification. Check the exact runtime:
+     Core 0.20.42/0.20.43 wrappers incorrectly report success when the
+     underlying setter returns `False`; do not infer sidecar support from that
+     flag. A native setter returning `None` is the successful void-return case.
+     The wrapper rejection fix was merged in
+     [Core #2770](https://github.com/dcc-mcp/dcc-mcp-core/pull/2770), merge commit
+     `199147add08b04817b9cdabcc0fc57bb389a049a`. Verify that the installed package
+     includes this fix; merge status alone is not release or deployment evidence.
+   - The pure-Python `SidecarBackedSkillServer` cannot publish an in-process
+     readiness probe into its Rust child and returns `False`. Preserve that
+     rejection through wrappers; a green local probe does not prove the child
+     consumed it. An adapter outside the DCC that embeds `_core` is still the
+     embedded-server case, not this pure-Python sidecar facade.
+   - `dcc_ready_probe` is sampled during binding and explicit
+     `refresh_dcc_ready()` calls, not continuously. The adapter owns refresh
+     scheduling. Callback exceptions fail closed; refresh again from an
+     independent lifecycle path when the condition recovers.
+   - Pass the actual dispatcher to
+     `bind_queue_dispatcher(server, dispatcher, require_first_pump=True)`.
+     The binder neither attaches it nor pumps the queue. Do not wait on the
+     only thread that can drain the callback. Base admission uses `process`,
+     `dcc`, `skill_catalog`, and `dispatcher`; the execution-bridge and
+     main-thread-executor bits are additional evidence, not native-host proof.
+   - A red base probe blocks registered recovery handlers behind the same
+     REST `/v1/call` / MCP `tools/call` gate (HTTP 503 / MCP `-32002`). Keep an
+     independent, explicitly authorized recovery path; never mark an actually
+     blocked host ready to bypass admission. This adds no per-tool bypass and
+     no permission to auto-click dialogs or destructive confirmations. Verify
+     `ready → blocked → ready` with isolated real HTTP calls, and report native
+     DCC/GUI acceptance separately.
    - Adapter-owned lifecycle commands must follow `docs/guide/adapter-install-sop.md`. Consume `load_install_sop_schema()` and `INSTALL_EXIT_CODES` from `dcc_mcp_core.deployment`; do not invent adapter-local result shapes or exit-code mappings.
    - The sidecar MCP listener is dispatch-only. A py37-lite factory can expose local skill metadata, but it cannot advertise or activate declarative skills through the gateway. Require a native py37 wheel for that path, or provide a separate discovery MCP URL; never report lite `load_skill` success without an executable catalog.
    - Wrap the outer adapter import/start block with `capture_bootstrap_errors(...)`; it is stdlib-only, records pre-MCP failures, and re-raises for the DCC's native error UI. `DccServerBase` already captures Python error logs and uncaught exceptions into the shared log plus `output://` / `events://`. Forward host-native console callbacks with `server.report_host_error(...)`; do not replace global stdout/stderr or add an adapter-local error store.
@@ -235,3 +269,28 @@ contents or load the entire Core documentation tree.
     Reuse `session_events`, workflow/recording identifiers, and artifact
     references; do not add adapter-local experiment storage or treat judge
     output as approval authority.
+
+## Source-stage secondary-listener migration
+
+The draft [Core #2771](https://github.com/dcc-mcp/dcc-mcp-core/pull/2771), source
+checkpoint `997b2b435ac4a3ad0ffff8410f7f0636114efdb3`, defines the following
+`DccServerBase` migration for #2699. It remains unmerged. This is a source-stage
+contract, not a guarantee about Core main or an installed release. Verify the
+matching Core/server release in the target host before relying on it.
+
+- Omitted secondary-listener options resolve to `gateway_remote_port=0` and
+  `gateway_remote_host="127.0.0.1"`; gateway registration and failover remain
+  enabled. A positive remote port opts into loopback. Intentional LAN use
+  requires an explicit non-loopback remote host and a positive port.
+- Explicit `from_env` arguments, including port `0`, take precedence over
+  `DCC_MCP_GATEWAY_REMOTE_HOST` / `DCC_MCP_GATEWAY_REMOTE_PORT`.
+- The resolved policy follows adapter-started daemon/retry/guardian paths and
+  embedded promotion. Adapter-managed sidecars delegate daemon management to
+  the Python owner while retaining native election.
+- Existing healthy daemons are reused, not silently reconfigured or
+  version-replaced when their listener policy is unverified.
+  `remote_listener` diagnostics describe configured intent with
+  `effective_state="unverified"`, not observed sockets.
+- Raw `McpHttpConfig` and directly launched CLI/sidecar defaults are separate
+  entrypoints. Source tests and loopback socket checks do not establish native
+  target-host acceptance or authorize opening a LAN listener.
