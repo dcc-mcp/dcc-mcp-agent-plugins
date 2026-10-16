@@ -64,20 +64,32 @@ RELEASED_CORE_WORKFLOW_ENVIRONMENT = {
     ".github/workflows/release.yml": None,
 }
 RELEASED_CORE_WORKFLOW_REQUIRED_TRIGGERS = {
-    ".github/workflows/skillhub.yml": {'workflow_call': {'inputs': {'publish': {'type': 'boolean', 'default': False}},
-                       'secrets': {'SKILLHUB_KEY': {'required': False}}},
-     'workflow_dispatch': {'inputs': {'publish': {'description': 'Publish instead of dry-running',
-                                                  'type': 'boolean',
-                                                  'default': False}}},
-     'pull_request': {'branches': ['main'],
-                      'paths': ['plugins/dcc-mcp/skills/**',
-                                '.github/clawhub-skills.json',
-                                '.github/workflows/skillhub.yml',
-                                'scripts/stage_skillhub.py',
-                                'scripts/package_openclaw_skill.py',
-                                'tests/test_skillhub.py',
-                                'scripts/setup_released_core.py',
-                                'scripts/product_discovery.py']}},
+    ".github/workflows/skillhub.yml": {'workflow_call': {'inputs': {'slug': {'type': 'string', 'default': ''},
+                              'publish': {'type': 'boolean', 'default': False}},
+                   'secrets': {'SKILLHUB_KEY': {'required': False}}},
+ 'workflow_dispatch': {'inputs': {'slug': {'description': 'Only this confirmed-unpublished slug; '
+                                                          'blank publishes all (never use all to '
+                                                          'resume)',
+                                           'type': 'choice',
+                                           'default': '',
+                                           'options': ['',
+                                                       'dcc-cua',
+                                                       'dcc-mcp',
+                                                       'dcc-mcp-creator',
+                                                       'dcc-mcp-skills-creator']},
+                                  'publish': {'description': 'Publish instead of dry-running',
+                                              'type': 'boolean',
+                                              'default': False}}},
+ 'pull_request': {'branches': ['main'],
+                  'paths': ['plugins/dcc-mcp/skills/**',
+                            '.github/clawhub-skills.json',
+                            '.github/workflows/skillhub.yml',
+                            'scripts/stage_skillhub.py',
+                            'scripts/publish_skillhub.py',
+                            'scripts/package_openclaw_skill.py',
+                            'tests/test_skillhub.py',
+                            'scripts/setup_released_core.py',
+                            'scripts/product_discovery.py']}},
     ".github/workflows/ci.yml": {
         "push": {"branches": ["main"]},
         "pull_request": {"branches": ["main"]},
@@ -120,7 +132,7 @@ RELEASED_CORE_WORKFLOW_REQUIRED_TRIGGERS = {
 # and comments remain free, while every job, step, action, command, and execution
 # control is enumerated; an added job or changed executable surface fails closed.
 RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
-    ".github/workflows/skillhub.yml": {'sync': 'cd937e37c9d738a75056903fcac10243121e00e7e9caa9126f8166452fb40877'},
+    ".github/workflows/skillhub.yml": {'sync': 'ccf8ff8575cfd48c703850ca613134c6522203a77551c1788455894fb5924fc0'},
     ".github/workflows/ci.yml": {
         "product-discovery": "f548c76c55d0a0901fcc29489d635ba1c0fc0d3c07ecc283ed3d102ceb918d49",
         "validate": "3d9ffa7bcb000cacb170786d81467beb18d63de758ce093bfc3a165a91381a89",
@@ -1172,3 +1184,4 @@ def ui_route_prompt(catalog: dict) -> str:
         "installation separate from the DCC-MCP adapter command. Guide the user to provide a "
         "new absolute path or use the catalog install command; never launch automatically."
     )
+
