@@ -100,9 +100,10 @@ does not start or enable an adapter automatically.
 
 ## Coordinated source references
 
-The portable Inkscape channel and Windows archive handling are development
-changes in the coordinated [Core host deployment PR][core-host-pr]. No release
-or product-catalog support is asserted by this reference. Review that revision's
+The portable Inkscape channel and Windows archive handling are preserved at
+source commit `8228335cb25fb9acfa53a67078850b1727de131e` in the closed, unmerged
+[Core host deployment PR][core-host-pr]. They are historical development-source
+evidence, not delivered Core main, CLI release or product-catalog support. Review that revision's
 [CLI contract][core-cli] before using it. See [native vector workflow](NATIVE_VECTOR_WORKFLOW.md)
 for the separate adapter workflow and its acceptance limits.
 

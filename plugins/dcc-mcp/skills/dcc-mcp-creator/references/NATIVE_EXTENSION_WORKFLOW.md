@@ -13,8 +13,10 @@ or a native document effect.
 
 Inspect the actual CLI build before recommending `host` commands. If the
 installed release rejects them, record that fact; a reviewed development build
-is source evidence. The coordinated [host deployment PR][core-host-pr] adds
-Windows Inkscape portable archive handling. Read its [CLI contract][core-cli]
+is source evidence. The closed, unmerged [host deployment PR][core-host-pr] contains Windows
+Inkscape portable archive handling at source commit
+`8228335cb25fb9acfa53a67078850b1727de131e`; it does not establish availability
+in Core main or a published CLI. Read its [CLI contract][core-cli]
 for the selected manifest, required checksum, extraction dependencies and
 process-local destination. Reuse the user's existing setup authorization;
 never change security settings or persistent consent to make a case run.
@@ -41,9 +43,9 @@ than private bindings. Preserve `readiness.version_source`; any legacy
 missing-version fallback must strictly correlate the ready publication with
 the live instance. Explicit registry-version conflicts remain failures.
 
-The [standard adapter draft][inkscape-pr] owns this integration review. A draft
-adapter package does not establish released product routing or official signed
-install-catalog promotion.
+The [standard adapter PR][inkscape-pr] was merged, but version 0.1.0 remains
+source-only and unreleased. Merged adapter source does not establish released
+product routing or official signed install-catalog promotion.
 
 Represent geometry with a bounded typed plan and current schema. The controller
 may prepare JSON and extension configuration; native software must create,

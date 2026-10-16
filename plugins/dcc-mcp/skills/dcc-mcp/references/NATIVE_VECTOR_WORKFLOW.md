@@ -28,10 +28,10 @@ revision. Its planned package version is source evidence until a verified
 package release and catalog promotion exist. A standard package layout and a
 successful software installation do not establish a released product route.
 
-The [standard adapter draft][inkscape-pr] uses a standalone Core MCP controller
+The [merged standard adapter source][inkscape-pr] uses a standalone Core MCP controller
 with an Inkscape-hosted inkex effect. It does not embed the host interpreter or
-provide persistent GUI document binding. Follow the dedicated adapter's current
-contract for setup; a draft review is not a package release.
+provide persistent GUI document binding. Follow the dedicated adapter's pinned
+contract for setup; merging source does not publish a package release.
 
 ## Native creation through typed operations
 
