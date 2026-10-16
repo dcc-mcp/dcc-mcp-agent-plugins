@@ -138,6 +138,17 @@ belong in the source repository. An untracked directory copied into an agent's
 Skill folder must be reinstalled once through one of these managers before
 automatic updates can discover it.
 
+### First-run environment report
+
+The default Skill starts with a non-executing CLI availability check and then
+composes the existing host, adapter and update reports. Installed software,
+registered instances, readiness and a successful tool call stay separate. See
+[First run](plugins/dcc-mcp/skills/dcc-mcp/references/FIRST_RUN.md) for the report
+helper and safe legacy-CLI boundary, and
+[Software requests](plugins/dcc-mcp/skills/dcc-mcp/references/SOFTWARE_REQUEST.md)
+for a reviewed, deduplicated issue draft. Neither flow installs software or
+publishes an issue without the user's approval.
+
 ### Adapter connection troubleshooting
 
 After installing the Skill, start the DCC application and enable its DCC-MCP

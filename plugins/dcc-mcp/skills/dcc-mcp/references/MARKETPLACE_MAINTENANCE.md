@@ -22,7 +22,10 @@ Installing or updating changes local state. Inspect unfamiliar packages and obta
 `marketplace install` or `update`. For a known exact ID, install directly with `--reload`, then use
 `load-skill` only when needed. The Python REST fallback does not implement marketplace commands, so
 a missing CLI follows the consent-gated official CLI installation path below.
-Each CLI invocation performs a short read-only marketplace update check; report updates and ask confirmation before `marketplace update`.
+Normal CLI invocations reuse the existing cached update mechanism; do not add a
+synchronous ecosystem scan or call `update check` before every command. Follow
+the TTL, backoff and notification guidance in UPDATE_INSPECTION.md. Report
+observed updates and ask confirmation before `marketplace update`.
 `uninstall --reload` removes and refreshes; omit `--dcc` only for a package installed on one DCC.
 
 ## Updates and Marketplace Maintenance
