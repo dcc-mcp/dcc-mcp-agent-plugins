@@ -3,6 +3,9 @@ name: Sync SkillHub Skills
 on:
   workflow_call:
     inputs:
+      slug:
+        type: string
+        default: ""
       publish:
         type: boolean
         default: false
@@ -11,6 +14,16 @@ on:
         required: false
   workflow_dispatch:
     inputs:
+      slug:
+        description: "Only this confirmed-unpublished slug; blank publishes all (never use all to resume)"
+        type: choice
+        default: ""
+        options:
+          - ""
+          - dcc-cua
+          - dcc-mcp
+          - dcc-mcp-creator
+          - dcc-mcp-skills-creator
       publish:
         description: Publish instead of dry-running
         type: boolean
@@ -22,6 +35,7 @@ on:
       - ".github/clawhub-skills.json"
       - ".github/workflows/skillhub.yml"
       - "scripts/stage_skillhub.py"
+      - "scripts/publish_skillhub.py"
       - "scripts/package_openclaw_skill.py"
       - "tests/test_skillhub.py"
       - "scripts/setup_released_core.py"
@@ -60,28 +74,26 @@ jobs:
           curl --fail --silent --show-error --location https://skillhub-1388575217.cos.ap-guangzhou.myqcloud.com/install/skillhub-cli-2026.8.5.tar.gz -o "$RUNNER_TEMP/skillhub.tar.gz"
           echo "3bbe2ba15ada2eb7a94a2b760fead83be5f4164ab28a6c8b0944dbc539f7e236  $RUNNER_TEMP/skillhub.tar.gz" | sha256sum --check
           tar -xzf "$RUNNER_TEMP/skillhub.tar.gz" -C "$RUNNER_TEMP" cli/skills_store_cli.py cli/skills_upgrade.py cli/version.json cli/metadata.json
-      - name: Stage and preflight every Skill
+      - name: Stage and preflight selected Skills
+        env:
+          SELECTED_SLUG: ${{ inputs.slug }}
         run: |
           staged=$(python scripts/stage_skillhub.py)
           echo "SKILLHUB_STAGED=$staged" >> "$GITHUB_ENV"
-          for skill in "$staged"/*; do
-            python "$RUNNER_TEMP/cli/skills_store_cli.py" publish "$skill" --host https://api.skillhub.cn --dry-run
-          done
+          python scripts/publish_skillhub.py --cli "$RUNNER_TEMP/cli/skills_store_cli.py" --staged "$staged" --slug "$SELECTED_SLUG" --dry-run
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: skillhub-staged-skills
           path: ${{ env.SKILLHUB_STAGED }}
           if-no-files-found: error
-      - name: Login and publish
+      - name: Publish selected Skills
         if: inputs.publish && github.event_name != 'pull_request'
         env:
-          SKILLHUB_KEY: ${{ secrets.SKILLHUB_KEY }}
+          SKILLHUB_TOKEN: ${{ secrets.SKILLHUB_KEY }}
+          SELECTED_SLUG: ${{ inputs.slug }}
         run: |
-          test -n "$SKILLHUB_KEY" || { echo "Missing SKILLHUB_KEY repository secret" >&2; exit 1; }
-          python "$RUNNER_TEMP/cli/skills_store_cli.py" login --key "$SKILLHUB_KEY" --host https://api.skillhub.cn
-          for skill in "$SKILLHUB_STAGED"/*; do
-            python "$RUNNER_TEMP/cli/skills_store_cli.py" publish "$skill" --host https://api.skillhub.cn --changelog "Release $GITHUB_REF_NAME ($GITHUB_SHA)"
-          done
+          test -n "$SKILLHUB_TOKEN" || { echo "Missing SKILLHUB_KEY repository secret" >&2; exit 1; }
+          python scripts/publish_skillhub.py --cli "$RUNNER_TEMP/cli/skills_store_cli.py" --staged "$SKILLHUB_STAGED" --slug "$SELECTED_SLUG" --changelog "Release $GITHUB_REF_NAME ($GITHUB_SHA)"
       - name: Remove credentials
         if: always()
         run: rm -f -- "$SKILLHUB_CONFIG_PATH"
