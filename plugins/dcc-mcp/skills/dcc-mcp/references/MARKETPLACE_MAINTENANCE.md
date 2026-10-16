@@ -27,6 +27,12 @@ Each CLI invocation performs a short read-only marketplace update check; report 
 
 ## Updates and Marketplace Maintenance
 
+For version truth, compatibility/pin evidence, release notes, known fixes,
+offline status, and reviewed diagnostic drafts, follow
+[Version and Update Evidence](UPDATE_INSPECTION.md). Use its safe-entry-point
+check before invoking an older CLI: even a query can activate a staged update
+in builds that apply updates before argument parsing.
+
 Use the gateway release manifest for binary checks. An available binary must have a valid SHA-256; `update apply` verifies it during download, binds one component to the exact CLI installation, and re-verifies it before replacement and restart. Legacy unsigned staging is quarantined. A running server must be updated in its own environment. The Admin Instances panel is check-only for every binary because the gateway cannot prove an installation root. See the CLI cheatsheet for platform manifests, server updates, and the verified `dcc-cua` sibling contract.
 
 ```bash
