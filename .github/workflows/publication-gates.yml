@@ -23,6 +23,8 @@ jobs:
       contents: read
       pull-requests: read
       statuses: write
+    outputs:
+      merge-sha: ${{ steps.pending.outputs.merge-sha }}
     env:
       REPOSITORY: ${{ github.repository }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -51,6 +53,7 @@ jobs:
           persist-credentials: false
           submodules: false
       - name: Publish pending status on the event HEAD
+        id: pending
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -62,7 +65,7 @@ jobs:
           fi
           python3 -I "$publisher" --repository "$REPOSITORY" --pr-number "$PR_NUMBER" \
             --base-sha "$BASE_SHA" --head-sha "$HEAD_SHA" --head-repository "$HEAD_REPOSITORY" \
-            --merge-sha="$MERGE_SHA" --run-id "$RUN_ID" --phase start
+            --merge-sha="$MERGE_SHA" --run-id "$RUN_ID" --phase start --resolve-merge
 
   publication-gates:
     needs: status-start
@@ -82,7 +85,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          PR_MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          PR_MERGE_SHA: ${{ needs.status-start.outputs.merge-sha }}
           PUSH_BEFORE_SHA: ${{ github.event.before }}
           PUSH_AFTER_SHA: ${{ github.sha }}
         run: |
@@ -231,7 +234,7 @@ jobs:
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
-      MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+      MERGE_SHA: ${{ needs.status-start.outputs.merge-sha }}
       RUN_ID: ${{ github.run_id }}
       VALIDATION_RESULT: ${{ needs.publication-gates.result }}
       POLICY_ENFORCED: ${{ needs.publication-gates.outputs.policy-enforced || 'false' }}
