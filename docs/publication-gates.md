@@ -46,14 +46,21 @@ not persisted; submodules are disabled.
 
 | Event | Executed checker | Candidate read as Git objects |
 |---|---|---|
-| `pull_request_target` | Exact event `pull_request.base.sha` | Exact event `pull_request.merge_commit_sha`, with exactly the event base and head as its two parents |
+| `pull_request_target` | Exact event `pull_request.base.sha` | Event merge SHA, or a bounded API resolution when omitted, with exactly the event base and head as its two parents |
 | `push` to `main` | Exact event `before` | Exact `github.sha`, which must descend from `before` |
 
 Every revision must be a nonzero, lowercase 40-hex commit SHA before Git uses
-it. Missing or stale PR merge commits, mismatched parents, and non-ancestor
-pushes fail closed. The workflow never substitutes a moving PR ref or the
-current tip of `main`; rerunning an old event does not silently change its
-baseline. Update the PR to obtain a fresh event after its base or head changes.
+it. If the event omits its merge SHA, the trusted start publisher makes at most
+three metadata attempts using its existing read permissions. Each attempt binds
+the open PR, repository, target branch, base SHA, head SHA, and head repository
+to the event. A candidate must have exactly the ordered base/head parents in
+GitHub commit metadata, and a second PR read must retain the same identity and
+merge SHA. Only that validated scalar reaches the read-only gate, which fetches
+the immutable commit and repeats the exact-parent check using Git. An unavailable
+merge commit, identity drift, malformed metadata, or API error fails closed.
+There is no head-only check or candidate-code fallback. A supplied valid event
+merge SHA remains unchanged; rerunning an old event does not change its baseline.
+Update the PR to obtain a fresh event after its base or head changes.
 
 Only the trusted baseline is checked out. Fetching the candidate adds Git
 objects; it does not place candidate files in the working tree. The baseline
@@ -84,10 +91,13 @@ jobs and run the read-only validation directly.
 
 Status jobs require exact base and head SHAs, but an unavailable or malformed
 synthetic merge SHA does not prevent `pending` on that HEAD. The publisher
-normalizes unavailable merge metadata and forbids success without it. The
-read-only validation still rejects a missing or invalid merge SHA and never
-relaxes its exact-parent check; the final job then reports `failure` or `error`
-on the original event HEAD instead of leaving it without a new status.
+normalizes unavailable merge metadata and forbids success without it. After
+publishing pending, the start publisher resolves an omitted merge SHA against
+the unchanged event or fails without emitting an output. The read-only
+validation and terminal publisher consume that SHA; validation still rejects
+a missing or invalid SHA and never relaxes its exact-parent check. The final
+job reports `failure` or `error` on the original event HEAD when resolution or
+validation fails.
 
 The final status job uses `always()` after both the start and validation jobs,
 so failed candidate fetches and failed or skipped validation still reach the
@@ -118,6 +128,11 @@ an atomic write-and-recheck operation: persistent network failure or permission
 loss after an accepted positive write can prevent its correction. A failed
 status job therefore means unverified evidence even if the remote status could
 not be cleared; it is not new validation proof.
+
+The resolution change must itself be accepted into a trusted baseline before
+an event can execute it. A resolver present only in the proposed PR cannot fix
+that PR's old baseline workflow; its local contract tests are source-review
+evidence, not proof that the revised gate has run in GitHub Actions.
 
 ## Activation and changes to the gate
 
