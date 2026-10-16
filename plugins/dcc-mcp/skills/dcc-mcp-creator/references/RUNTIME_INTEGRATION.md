@@ -190,6 +190,10 @@ contents or load the entire Core documentation tree.
      Core 0.20.42/0.20.43 wrappers incorrectly report success when the
      underlying setter returns `False`; do not infer sidecar support from that
      flag. A native setter returning `None` is the successful void-return case.
+     The wrapper rejection fix was merged in
+     [Core #2770](https://github.com/dcc-mcp/dcc-mcp-core/pull/2770), merge commit
+     `199147add08b04817b9cdabcc0fc57bb389a049a`. Verify that the installed package
+     includes this fix; merge status alone is not release or deployment evidence.
    - The pure-Python `SidecarBackedSkillServer` cannot publish an in-process
      readiness probe into its Rust child and returns `False`. Preserve that
      rejection through wrappers; a green local probe does not prove the child
@@ -268,9 +272,10 @@ contents or load the entire Core documentation tree.
 
 ## Source-stage secondary-listener migration
 
-The pending [Core #2771](https://github.com/dcc-mcp/dcc-mcp-core/pull/2771)
-implementation for #2699 defines the following `DccServerBase` migration. This is a
-source-stage contract, not a guarantee about an installed release. Verify the
+The draft [Core #2771](https://github.com/dcc-mcp/dcc-mcp-core/pull/2771), source
+checkpoint `997b2b435ac4a3ad0ffff8410f7f0636114efdb3`, defines the following
+`DccServerBase` migration for #2699. It remains unmerged. This is a source-stage
+contract, not a guarantee about Core main or an installed release. Verify the
 matching Core/server release in the target host before relying on it.
 
 - Omitted secondary-listener options resolve to `gateway_remote_port=0` and

@@ -148,6 +148,28 @@ show that official HTTPS source. Keep this separate from
 not prove that the host application is installed. Never download, install, or
 launch the host from a missing path without the user's explicit consent.
 
+For a CLI-managed open-source or portable application, follow
+[host software deployment](HOST_SOFTWARE_DEPLOYMENT.md). Its software manifest,
+version probe and install receipt do not establish an adapter catalog entry,
+MCP registration, readiness or native document effect. Reuse existing explicit
+authorization when it already covers the same download, installation and launch.
+
+## Source-only adapter review
+
+A maintained adapter repository can precede a released installation route. If
+the requested work already authorizes source development and setup, inspect its
+exact reviewed commit and adapter-owned `install.md`; catalog absence still
+leaves released support unknown. Do not fabricate an installable catalog match
+or substitute an unpinned package-name install for a source checkout.
+
+An explicitly selected local catalog must keep its `explicit` provenance.
+Core's pinned Git install step verifies and checks out the full commit, then
+checks the resulting files. It does not install the Python package into a
+runtime, import its entry point, or start the adapter. Follow the owning runbook
+for those separate steps, then verify live registration, ready dispatch and the
+requested native effect. A successful source run does not update the released
+product snapshot or the official signed installation feed.
+
 ## Plan and bootstrap
 
 Build the plan using the exact argv from the decision. For a legacy CLI, use:

@@ -216,6 +216,38 @@ class PublicationGateWorkflowTests(unittest.TestCase):
                 ):
                     self.execute_inline(self.step("revisions"))
 
+    def test_resolved_merge_is_the_only_pr_candidate_and_terminal_merge_input(self) -> None:
+        start = self.jobs["status-start"]
+        self.assertEqual(
+            start["env"]["MERGE_SHA"], "${{ github.event.pull_request.merge_commit_sha }}"
+        )
+        self.assertEqual(
+            start["outputs"], {"merge-sha": "${{ steps.pending.outputs.merge-sha }}"}
+        )
+        pending = next(step for step in start["steps"] if step.get("id") == "pending")
+        self.assertIn("--phase start --resolve-merge", pending["run"])
+        self.assertEqual(
+            self.step("revisions")["env"]["PR_MERGE_SHA"],
+            "${{ needs.status-start.outputs.merge-sha }}",
+        )
+        self.assertEqual(
+            self.jobs["status-finish"]["env"]["MERGE_SHA"],
+            "${{ needs.status-start.outputs.merge-sha }}",
+        )
+        env = {
+            "EVENT_NAME": "pull_request_target",
+            "PR_BASE_SHA": "a" * 40,
+            "PR_HEAD_SHA": "b" * 40,
+            "PR_MERGE_SHA": "c" * 40,
+            "GITHUB_OUTPUT": "output",
+        }
+        output = mock_open()
+        with patch.dict(os.environ, env, clear=True), patch("builtins.open", output):
+            self.execute_inline(self.step("revisions"))
+        written = "".join(call.args[0] for call in output().write.call_args_list)
+        self.assertIn("candidate=" + "c" * 40 + "\n", written)
+        self.assertNotIn("candidate=" + "b" * 40, written)
+
     def test_status_jobs_reject_invalid_base_or_head_before_checkout(self) -> None:
         for name in ("status-start", "status-finish"):
             for key in ("BASE_SHA", "HEAD_SHA"):
