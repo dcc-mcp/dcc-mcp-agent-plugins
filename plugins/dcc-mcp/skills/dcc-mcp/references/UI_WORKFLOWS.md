@@ -29,6 +29,14 @@ the installed Core schema and pinned native runtime support it; read the
 runtime's [owned pixels contract](https://github.com/dcc-mcp/dcc-mcp-core/blob/main/python/dcc_mcp_core/skills/ui-control/references/OWNED_PIXELS_MCP.md).
 Semantic `find`, `control_id` actions and `invoke_menu` are unavailable in this mode.
 
+**Release gate:** secondary popup keyboard support is a source-stage contract
+proposed in [Core #2832](https://github.com/dcc-mcp/dcc-mcp-core/pull/2832) and
+[DCC-CUA #374](https://github.com/dcc-mcp/dcc-cua/pull/374). Do not use the popup
+arguments below on released installations until both changes ship and their
+exact compatible Core and DCC-CUA versions are recorded. The Skill suite version
+alone does not satisfy this gate. Report qualification of explicitly approved,
+integrity-pinned source candidates separately from released-install acceptance.
+
 Secondary popup capture is separately disabled by default. Only the owner may
 enable `allow_native_capture_popup_keyboard`; existing task authorization and
 physical-input grants still apply. When enabled and advertised, select one

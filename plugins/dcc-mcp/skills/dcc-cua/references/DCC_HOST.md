@@ -17,6 +17,7 @@ switch to another DCC process because it looks similar.
 If the adapter owner configured an integrity-pinned `pixels_only` runtime,
 follow the [owned pixels and secondary popup workflow](https://github.com/dcc-mcp/dcc-mcp-agent-plugins/blob/main/plugins/dcc-mcp/skills/dcc-mcp/references/UI_WORKFLOWS.md#owned-pixels-and-secondary-popup-observations)
 and the installed runtime schema instead of the semantic action examples above.
+Honor that workflow's release gate before using secondary popup fields.
 Secondary popup images require an independently enabled owner ceiling, grant
 no input authority, and never change the bound main window. Missing capability
 or native proof remains a refusal; do not switch input routes.
