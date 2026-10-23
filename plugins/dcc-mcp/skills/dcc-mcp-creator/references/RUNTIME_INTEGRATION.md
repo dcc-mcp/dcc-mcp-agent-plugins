@@ -127,6 +127,21 @@ contents or load the entire Core documentation tree.
      banner/border/cursor markers, Escape interruption, input serialization,
      and recording. `ui-control` remains `requires_in_process: true` with
      `affinity: any`; register `HostExecutionBridge` before skill loading.
+   - For an explicitly owned `pixels_only` runtime, construct the public
+     `UiControlRuntimeOptions` in trusted adapter/operator bootstrap and pass
+     it as `DccServerOptions.ui_control`. Pin the absolute executable, SHA-256,
+     expected runtime version, action ceiling and task lifetime. Never build
+     these options from tool arguments or ambient environment values, and do
+     not replace another consumer's shared Host. Preserve the normal route
+     when no owned runtime is configured.
+     The separate `allow_native_capture_popup_keyboard` ceiling defaults to
+     false and requires support in both installed Core and the pinned native
+     runtime. An explicit list of secondary HWNDs requests separately labeled
+     snapshot images; it cannot establish input authority or widen the main
+     root binding. Runtime-owned fresh native proof and existing input policy
+     still gate every action. Follow the
+     [secondary popup workflow](https://github.com/dcc-mcp/dcc-mcp-agent-plugins/blob/main/plugins/dcc-mcp/skills/dcc-mcp/references/UI_WORKFLOWS.md#owned-pixels-and-secondary-popup-observations)
+     for the one-use observation, five-second lifetime and effect readback.
    - Keep structured DCC skills, host APIs, and adapter scripts ahead of
      `ui-control`. Agents should make an explicit, agent-directed transition into the scoped
      `snapshot` → one `act` → `snapshot` loop only when an operation is

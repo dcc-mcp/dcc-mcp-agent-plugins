@@ -20,6 +20,36 @@ confirmations remain trusted human boundaries even with full agent access.
 The UI Control `session_id` identifies its scoped UI session, not stats
 attribution. Use `--agent-session-id <task-id>` for `_meta.agent_context.session_id`.
 
+### Owned pixels and secondary popup observations
+
+An adapter owner may select an integrity-pinned `pixels_only` runtime through
+`UiControlRuntimeOptions` in trusted server bootstrap. Tool arguments cannot
+select that executable, transport or action ceiling. Use this mode only when
+the installed Core schema and pinned native runtime support it; read the
+runtime's [owned pixels contract](https://github.com/dcc-mcp/dcc-mcp-core/blob/main/python/dcc_mcp_core/skills/ui-control/references/OWNED_PIXELS_MCP.md).
+Semantic `find`, `control_id` actions and `invoke_menu` are unavailable in this mode.
+
+Secondary popup capture is separately disabled by default. Only the owner may
+enable `allow_native_capture_popup_keyboard`; existing task authorization and
+physical-input grants still apply. When enabled and advertised, select one
+through eight unique exact HWNDs from the main root's fresh native capture
+inventory with `ui_control__snapshot(native_capture_popup_window_handles=[...])`.
+Keep the same main PID/HWND and logical session. The main PNG and its redactions
+remain unchanged; each selected popup has a separately labeled real PNG and
+native provenance under `native_capture_popup_overlays`. Do not composite these
+images, reuse popup coordinates for input, or rebind input to a popup.
+
+Neither those pixels nor `native_capture_popup_observation` grants input
+authority. The native runtime must independently prove the exact root and
+selected window instances, current foreground/focus/capture, and complete
+unredacted coverage at dispatch. A valid observation supports at most one
+unheld keyboard or text action to the main root within five seconds; every
+attempt consumes it, including refusals. Re-observe before another attempt.
+Missing support, a stale observation, or a new, foreign or unselected occluder
+fails closed. Preserve that refusal and the normal stop/interruption contract.
+After delivery, verify the actual application state; Enter closing a popup or
+an input acknowledgement alone does not prove the requested edit.
+
 For reusable demonstrations, start with the gateway call's `--agent-session-id`,
 use structured tools first, then `stop` and `review`. After inspecting the
 redacted timeline, `compile --reviewed` creates a local Skill and `WorkflowSpec`.
