@@ -134,15 +134,17 @@ contents or load the entire Core documentation tree.
      these options from tool arguments or ambient environment values, and do
      not replace another consumer's shared Host. Preserve the normal route
      when no owned runtime is configured.
-     The source-stage `allow_native_capture_popup_keyboard` ceiling defaults to
-     false and requires support in both installed Core and the pinned native
-     runtime. An explicit list of secondary HWNDs requests separately labeled
+     The `allow_native_capture_popup_keyboard` ceiling defaults to false. Its
+     published contract is introduced by Core 0.20.47 and DCC-CUA 1.14.0;
+     verify support in both installed Core and the pinned native runtime.
+     An explicit list of secondary HWNDs requests separately labeled
      snapshot images; it cannot establish input authority or widen the main
      root binding. Runtime-owned fresh native proof and existing input policy
      still gate every action. Follow the
      [secondary popup workflow](https://github.com/dcc-mcp/dcc-mcp-agent-plugins/blob/main/plugins/dcc-mcp/skills/dcc-mcp/references/UI_WORKFLOWS.md#owned-pixels-and-secondary-popup-observations)
-     for its release gate, one-use observation, five-second lifetime and effect
-     readback. Do not present pending runtime fields as released support.
+     for the published versions, fresh inventory before each composite snapshot,
+     one-use observation, five-second lifetime and effect readback. Runtime
+     version or package checks alone do not establish installed-host acceptance.
    - Keep structured DCC skills, host APIs, and adapter scripts ahead of
      `ui-control`. Agents should make an explicit, agent-directed transition into the scoped
      `snapshot` → one `act` → `snapshot` loop only when an operation is

@@ -165,7 +165,10 @@ only with the matching chunked runner or isolated status/cancel implementation.
 - For custom-drawn canvases, viewport manipulators, or face controls, use one
   `drag` path from the latest snapshot. `keys` may hold Ctrl, Shift, or Alt for
   pointer-modified drags; snapshot again immediately before deriving another
-  path.
+  path. In `pixels_only` mode, the path has exactly two endpoints and their `x`/`y`
+  values are physical screenshot pixels local to the latest main PNG. Do not
+  convert them to desktop coordinates, apply DPI scaling or use secondary
+  popup-image coordinates.
 - Never set `DCC_MCP_CUA_ALLOW_RAW_INPUT` from a skill script. Native input is
   enabled by default, and the operator-owned `false` setting disables it.
   Native input also requires the
