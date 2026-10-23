@@ -14,6 +14,10 @@ dcc-mcp-cli ui-control stop --instance-id <instance-id> --json '{"session_id":"u
 Use the same exact instance and session throughout the action chain. Do not
 switch to another DCC process because it looks similar.
 
+For occlusion or foreground recovery, follow the router's
+[scoped window recovery decision](https://github.com/dcc-mcp/dcc-mcp-agent-plugins/blob/main/plugins/dcc-mcp/skills/dcc-mcp/references/UI_WORKFLOWS.md#scoped-window-recovery).
+An independently authorized blocker task never widens the original DCC task.
+
 If the adapter owner configured an integrity-pinned `pixels_only` runtime,
 follow the [owned pixels and secondary popup workflow](https://github.com/dcc-mcp/dcc-mcp-agent-plugins/blob/main/plugins/dcc-mcp/skills/dcc-mcp/references/UI_WORKFLOWS.md#owned-pixels-and-secondary-popup-observations)
 and the installed runtime schema instead of the semantic action examples above.

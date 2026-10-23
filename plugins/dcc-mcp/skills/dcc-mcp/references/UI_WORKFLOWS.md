@@ -20,6 +20,26 @@ confirmations remain trusted human boundaries even with full agent access.
 The UI Control `session_id` identifies its scoped UI session, not stats
 attribution. Use `--agent-session-id <task-id>` for `_meta.agent_context.session_id`.
 
+### Scoped window recovery
+
+Use content-free native blocker facts to distinguish an independent application
+window from a transient belonging to the current target. Confirm the independent
+target's exact PID, full native instance and HWND; blocker metadata alone grants
+no permission. With a separate owner grant, use a separately bounded,
+project-owned `dcc-cua` task for that target: report provider/runtime/PID/HWND,
+take a fresh snapshot, perform only the granted native minimize operation,
+verify `get_window_state` reports minimized, then stop that task. Keep the
+original DCC task's target and scope; do not rebind it or grant desktop-wide input.
+
+For the original application, read fresh window state first. If it is already
+restored, prefer the independently granted `activate_window` operation. If it is
+minimized or maximized, restore only under the existing advertised
+`frame_recovery`/`restore_window` grant. Treat `restore_activate` as one advertised
+request, never an implicit retry or substitute action chain. Take fresh pixels
+before further input. Use this supported recovery route before requesting manual
+window rearrangement; ask the user to move windows only when the scoped route is
+unavailable or actually fails. Preserve policy, desktop and interruption refusals.
+
 ### Owned pixels and secondary popup observations
 
 An adapter owner may select an integrity-pinned `pixels_only` runtime through
