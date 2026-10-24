@@ -32,6 +32,27 @@ def guide_route(text: str) -> str:
     return uri.geturl()
 
 
+def assert_production_selection(test: unittest.TestCase, text: str) -> None:
+    workflow = text.split("## Live application workflow", 1)[1].split("## Conditional workflows", 1)[0]
+    workflow = " ".join(workflow.split())
+    for requirement in (
+        "select suitable mature tools,",
+        "license and attribution obligations",
+        "host/version compatibility",
+        "maintenance, visual quality, performance, security and actual integration cost",
+        "neither all-handwritten work nor",
+        "mandatory plugin use is an acceptance criterion",
+        "executing unreviewed software",
+        "original work, adapted work, external assets and generated content",
+        "verify the assembled result in the real target host",
+        "not a game art concept or visual design acceptance",
+        "hand off a concrete design brief",
+        "Keep functional fixes separate from asset selection and visual acceptance",
+    ):
+        with test.subTest(requirement=requirement):
+            test.assertIn(requirement, workflow)
+
+
 class ProductionReuseEntrypointTests(unittest.TestCase):
     def test_old_gateway_and_unmerged_source_do_not_satisfy_gate(self):
         document = "## Production reuse gate\n\n**Contract:** `dcc-mcp-production-reuse/v1`\n\nRead and execute the verified reuse rules.\n"
@@ -62,6 +83,7 @@ class ProductionReuseEntrypointTests(unittest.TestCase):
     def test_installation_formats_preserve_the_executable_entrypoint(self):
         original = (SKILL / "SKILL.md").read_bytes().decode("utf-8")
         expected = guide_route(original)
+        assert_production_selection(self, original)
         with TemporaryDirectory() as directory:
             output = Path(directory)
             archive = package_skill(SKILL, output, "0.0.1")
@@ -69,10 +91,12 @@ class ProductionReuseEntrypointTests(unittest.TestCase):
                 installed = zipped.read("dcc-mcp/SKILL.md").decode("utf-8")
             self.assertEqual(original, installed)
             self.assertEqual(expected, guide_route(installed))
+            assert_production_selection(self, installed)
             copy_skill(SKILL, output / "npm" / "dcc-mcp")
             copied = (output / "npm" / "dcc-mcp" / "SKILL.md").read_bytes().decode("utf-8")
             self.assertEqual(original, copied)
             self.assertEqual(expected, guide_route(copied))
+            assert_production_selection(self, copied)
 
     def test_missing_or_redirected_guidance_fails(self):
         for text in ("# Skill", "[production reuse gate](https://example.com/guide)"):
