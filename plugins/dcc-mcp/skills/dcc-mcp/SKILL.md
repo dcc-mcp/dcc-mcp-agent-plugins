@@ -80,6 +80,18 @@ Prefer quality free options when they fit; neither all-handwritten work nor
 mandatory plugin use is an acceptance criterion. Reuse does not authorize paid
 acquisition, wider permissions or executing unreviewed software.
 
+Use a suitable existing project/template as the default starting point before
+bespoke construction. First inspect the task-relevant entries in the bundled
+[template license catalog](references/TEMPLATE_CATALOG/README.md), then search
+trusted upstream sources for gaps. Catalog entries are candidates, not approved
+downloads or verified host integrations. Check the pinned version and licenses
+for code, assets and fonts separately, including attribution, modification,
+export and source/binary redistribution conditions. Unknown rights or host
+compatibility block adoption, not read-only evaluation. Do not install or run a
+template merely because it is listed. Record the selected template and remaining
+verification, or why no template fits, before choosing assets/plugins and the
+smallest necessary custom work. An explicit user choice takes precedence.
+
 In the existing task recipe/evidence report, identify the selected source and
 version, explain the selection or rejection, and distinguish original work,
 adapted work, external assets and generated content. Retain required notices
