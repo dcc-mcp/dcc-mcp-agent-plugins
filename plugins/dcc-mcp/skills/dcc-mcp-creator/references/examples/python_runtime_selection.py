@@ -10,6 +10,8 @@ def select_python_owner(python_required, native_bridge_ready, embedded_python, s
     if shared_runtime not in (
         "verified", "missing", "unknown", "manifest_mismatch", "version_mismatch",
         "abi_mismatch", "offline", "denied",
+        "handshake_only", "payload_unverified", "launch_unavailable",
+        "isolation_unverified", "probe_unverified",
     ):
         raise ValueError("invalid shared Runtime preflight state")
     if not python_required:

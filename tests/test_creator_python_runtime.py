@@ -30,7 +30,11 @@ class CreatorPythonRuntimeTests(unittest.TestCase):
         ]
         for state in ("missing", "unknown"):
             cases.append(((True, False, "absent", state), "preflight", "plan_and_obtain_install_authorization"))
-        for state in ("manifest_mismatch", "version_mismatch", "abi_mismatch", "offline", "denied"):
+        for state in (
+            "manifest_mismatch", "version_mismatch", "abi_mismatch", "offline", "denied",
+            "handshake_only", "payload_unverified", "launch_unavailable",
+            "isolation_unverified", "probe_unverified",
+        ):
             cases.append(((True, False, "absent", state), "blocked", "resolve_" + state))
         with patch("subprocess.run", side_effect=AssertionError("unexpected execution")), \
                 patch("subprocess.Popen", side_effect=AssertionError("unexpected spawn")), \
@@ -58,6 +62,30 @@ class CreatorPythonRuntimeTests(unittest.TestCase):
         for path in (SKILL / "SKILL.md", SKILL / "references/ADAPTER_WORKFLOW.md"):
             self.assertIn("PYTHON_RUNTIME_SELECTION.md", path.read_text(encoding="utf-8"))
         ast.parse(EXAMPLE.read_text(encoding="utf-8"), feature_version=(3, 7))
+
+    def test_figma_preflight_maps_to_planning_and_never_promotes_handshake_to_readiness(self):
+        """Apply Figma's documented blocked outcomes without importing its private adapter."""
+        choose = runpy.run_path(str(EXAMPLE))["select_python_owner"]
+        cases = (
+            ("runtime_package_unavailable", "missing", "preflight"),
+            ("runtime_handshake_accepted_launch_blocked", "handshake_only", "blocked"),
+        )
+        for reason, state, route in cases:
+            with self.subTest(reason=reason):
+                result = choose(True, False, "absent", state)
+                self.assertEqual(route, result["route"])
+                self.assertNotIn("ready_for_launch", result)
+                self.assertNotIn("success", result)
+        guide = " ".join(GUIDE.read_text(encoding="utf-8").split())
+        for requirement in (
+            "exit **2**", "runtime_package_unavailable", "runtime_handshake_accepted_launch_blocked",
+            "trusted_runtime_payload_contract_missing", "adapter_launch_contract_missing",
+            "dependency_isolation_unverified", "actual selected interpreter",
+            "do not widen Figma's actual requirement", "not new Runtime API names",
+            "No Figma preflight or host operation was rerun",
+        ):
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement, guide)
 
     def test_example_and_source_guidance_are_preserved_in_distribution(self):
         """Ship the same tested offline example and guidance through ZIP and npm."""
