@@ -19,6 +19,12 @@ When an external bridge uses the public Python `DccBridge` WebSocket server,
 declare `dcc-mcp-core[bridge]`; the base install intentionally does not pull in
 the optional `websockets` transport.
 
+Apply [Python runtime selection](PYTHON_RUNTIME_SELECTION.md) before composing
+an adapter. An embedded host retains its verified interpreter; a Python-free
+official bridge needs no Python payload. If the host lacks Python and the
+adapter needs it, default to the existing DCC-MCP Runtime contract, with an
+authorized installer and verified artifacts rather than an adapter-local bundle.
+
 ## 2. Build the Composition Root
 
 Adapter server modules should be composition roots, not utility bins. Keep them
