@@ -19,6 +19,7 @@ CATALOG = SKILL / "references/TEMPLATE_CATALOG"
 
 class TemplateCatalogTests(unittest.TestCase):
     def test_catalog_has_pinned_scoped_evidence_without_claiming_host_acceptance(self):
+        """Keep source evidence separate from unperformed host acceptance."""
         entries = sorted(CATALOG.glob("*.json"))
         self.assertTrue(entries)
         ids = set()
@@ -51,6 +52,7 @@ class TemplateCatalogTests(unittest.TestCase):
                     self.assertTrue(url.path.startswith(source.path + "/blob/" + entry["revision"] + "/"))
 
     def test_initial_candidate_keeps_font_and_asset_licenses_separate_from_code(self):
+        """Prevent the code license from hiding bundled font and asset obligations."""
         entry = json.loads((CATALOG / "kenney-3d-platformer.json").read_text(encoding="utf-8"))
         evidence = {item["license"]: item for item in entry["license_evidence"]}
         self.assertEqual({"MIT", "CC0-1.0", "OFL-1.1"}, set(evidence))
@@ -59,6 +61,7 @@ class TemplateCatalogTests(unittest.TestCase):
         self.assertIn("reserved name", evidence["OFL-1.1"]["conditions"])
 
     def test_default_route_and_license_records_survive_zip_and_npm_packaging(self):
+        """Ensure installed Skills retain the default route and its license evidence."""
         text = (SKILL / "SKILL.md").read_text(encoding="utf-8")
         workflow = " ".join(text.split())
         self.assertLess(workflow.index("Use a suitable existing project/template"), workflow.index("In the existing task recipe/evidence report"))
