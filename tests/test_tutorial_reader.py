@@ -198,7 +198,13 @@ class TutorialReaderTests(unittest.TestCase):
             self.assertRaisesRegex(ValueError, "FFmpeg"),
         ):
             READER.collect(URL, Path(directory) / "missing", ["en"], [1])
-        with TemporaryDirectory() as directory:
+        with (
+            TemporaryDirectory() as directory,
+            patch.object(READER.shutil, "which", return_value="fixture-tool"),
+            patch.object(
+                READER, "runtime_receipt", return_value={"version": "fixture"}
+            ),
+        ):
             result = READER.collect(URL, Path(directory) / "range", ["en"], [21])
             self.assertFalse(result["success"])
             self.assertEqual([], result["frames"])
@@ -410,28 +416,36 @@ class TutorialReaderTests(unittest.TestCase):
         with TemporaryDirectory() as directory:
             child_marker = Path(directory) / "owned-child"
             sibling_marker = Path(directory) / "unrelated-sibling"
-            code = "import time,pathlib;time.sleep(.8);pathlib.Path(__import__('sys').argv[1]).write_text('alive')"
+            code = "import time,pathlib;time.sleep(2);pathlib.Path(__import__('sys').argv[1]).write_text('alive')"
             sibling = subprocess.Popen(
                 [sys.executable, "-c", code, str(sibling_marker)]
             )
             worker = (
-                "import json,sys,subprocess,time;json.load(sys.stdin);"
+                "import json,sys,subprocess,time,pathlib;p=json.load(sys.stdin);"
+                "(pathlib.Path(p['output'])/'source.en.vtt.part').write_text('x'*11);"
                 "subprocess.Popen([sys.executable,'-c',sys.argv[1],sys.argv[2]]);time.sleep(10)"
             )
             self.worker_patch.stop()
-            with patch.object(
-                READER,
-                "_run_worker",
-                side_effect=lambda payload, output: READER._supervise(
-                    [sys.executable, "-c", worker, code, str(child_marker)],
-                    payload,
-                    0.25,
+            with (
+                patch.object(READER, "MAX_CAPTION_BYTES", 10),
+                patch.object(
+                    READER,
+                    "_run_worker",
+                    side_effect=lambda payload, output: READER._supervise(
+                        [sys.executable, "-c", worker, code, str(child_marker)],
+                        payload,
+                        1.0,
+                    ),
                 ),
             ):
                 result = READER.collect(URL, Path(directory) / "timed-out", ["en"], [])
             sibling.wait(timeout=5)
             self.assertFalse(result["success"])
             self.assertEqual("wall_clock", result["error"]["stage"])
+            self.assertEqual(11, result["discarded_oversize_captions"][0]["bytes"])
+            self.assertFalse(
+                (Path(directory) / "timed-out/source.en.vtt.part").exists()
+            )
             self.assertTrue((Path(directory) / "timed-out/evidence.json").is_file())
             self.assertTrue(sibling_marker.is_file())
             self.assertFalse(child_marker.exists())
