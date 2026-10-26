@@ -137,6 +137,20 @@ def caption_paths(info: dict, output: Path, languages: list[str]) -> list[tuple]
     return tracks
 
 
+def discard_oversize_captions(output: Path) -> list[dict]:
+    """Only our fresh directory's subtitle prefix; preserve the rejected sizes."""
+    discarded = []
+    for path in output.glob("source.*"):
+        if (
+            path.is_file()
+            and not path.is_symlink()
+            and path.stat().st_size > MAX_CAPTION_BYTES
+        ):
+            discarded.append({"path": path.name, "bytes": path.stat().st_size})
+            path.unlink()
+    return discarded
+
+
 def run_tool(command: list[str], timeout: float = 60) -> str:
     """Bound tool output and lifetime; terminate only this held Popen on failure."""
     process = subprocess.Popen(
@@ -476,15 +490,7 @@ def _collect_owned(
         except Exception as error:  # noqa: BLE001 - preserve arbitrary provider failures as evidence
             # Downloader hooks run after a write, so discard oversized owned partials.
             # An incomplete or oversized track is never accepted as raw evidence.
-            discarded = []
-            for path in output.glob("source.*"):
-                if (
-                    path.is_file()
-                    and not path.is_symlink()
-                    and path.stat().st_size > MAX_CAPTION_BYTES
-                ):
-                    discarded.append({"path": path.name, "bytes": path.stat().st_size})
-                    path.unlink()
+            discarded = discard_oversize_captions(output)
             if discarded:
                 receipt["discarded_oversize_captions"] = discarded
                 receipt["captions"] = [
@@ -660,6 +666,10 @@ def collect(url: str, output: Path, languages: list[str], frames: list[float]) -
         )
         return json.loads(evidence.read_text(encoding="utf-8"))
     except (OSError, RuntimeError, ValueError) as error:
+        # The worker may have been interrupted between a download write and hook.
+        discarded = discard_oversize_captions(output)
+        if discarded:
+            fallback["discarded_oversize_captions"] = discarded
         fallback.update(
             finishedAt=utc_now(),
             error={
