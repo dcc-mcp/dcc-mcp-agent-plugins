@@ -98,6 +98,34 @@ effects remain independent. Follow its read-only `next_action` exactly. A
 custom catalog is not labeled as the released public catalog, and its
 installation URL is not copied into the public decision.
 
+### Result views (pending Core release)
+
+The CLI result-view change is not available in every installed release. Check
+`dcc-mcp-cli --help` before using `--raw-result`, `--select` or
+`--show-maintenance`; do not install or update a CLI without authorization.
+
+On builds with these flags, `call` prints structured results once by omitting
+only unannotated JSON text blocks equal to `result.structuredContent`. Distinct
+text, media, errors and artifact references remain. Use `--raw-result` for a
+legacy consumer that needs the text mirror. MCP wire and SDK results retain
+both compatibility representations: prefer `structuredContent`, with text
+decoding only as a fallback. Do not save both as separate copies.
+
+Use `--output json` for programs or `--output toon` for agents. Both use the
+same result view. Repeat `--select /result/structuredContent/context/result`
+or another RFC 6901 pointer to query fields or artifact references. Output has
+a `selected` map keyed by the pointers; absent fields are null. Keep stdout
+and stderr separate and check the exit code even when selecting fields.
+Call/list/search/describe maintenance metadata is opt-in through
+`--show-maintenance`; `--quiet` aliases `--no-update-maintenance`.
+
+Keep run/checkpoint/acceptance records and original errors. Refer to an
+existing metrics artifact instead of copying its payload into each response.
+Do not infer failed acceptance from an unevaluated default false: retain the
+original field plus any explicit `not_evaluated`, `pass` or `fail` state.
+CLI projection does not establish fresh native acceptance or change a
+physical result. Adapter/caller save policy remains adapter-owned.
+
 ### Job strategy and recovery
 
 Read `metadata.dcc.jobStrategy` from `search` or `describe`; do not infer it
