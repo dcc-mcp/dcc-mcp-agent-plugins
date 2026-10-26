@@ -8,8 +8,13 @@ particular DCC. Network extraction does not run on the host's UI thread.
 ## Read the source
 
 Reuse the upstream [yt-dlp](https://github.com/yt-dlp/yt-dlp) extractor for public
-YouTube and other supported sites. Its Python source is Unlicense; invoke the
-dependency rather than copying its extractors. Site support, captions and access
+YouTube, Bilibili and Vimeo videos. The helper accepts only the explicit public
+HTTPS video routes: YouTube watch/shorts/youtu.be, Bilibili `/video/BV…` or
+`/video/av…` (including `?p=12`), and numeric Vimeo video URLs. It selects the
+matching extractor explicitly; playlists, Generic extraction, arbitrary HTTP
+URLs, IP literals, local/private hosts and embedded credentials are rejected.
+yt-dlp’s Python source is Unlicense; invoke the dependency rather than copying
+its extractors. Site support, captions and access
 remain provider-dependent. The helper uses no LLM service, browser session,
 cookie store, paid provider or automatic authentication fallback.
 
@@ -39,8 +44,9 @@ directory for each attempt. Default caption languages are
 tracks take precedence where available; automatic captions are labeled.
 Preserve original caption timing and raw text. YouTube's extractor may also
 require a supported JavaScript runtime. The helper chooses the first available
-Deno, Node or Bun in that order and records its choice. It does not install a
-runtime or enable remote challenge components automatically.
+Deno, Node or Bun in that order and records the resolved executable and actual
+version. It also records the actual FFmpeg/ffprobe versions when present. It
+does not install a runtime or enable remote challenge components automatically.
 
 When visual node graphs or parameters are essential, request a few relevant
 frames after inspecting the chapter/caption times:
@@ -49,12 +55,39 @@ frames after inspecting the chapter/caption times:
 vx --with node --with ffmpeg uv run scripts/read_tutorial.py 'https://www.youtube.com/watch?v=w3yHqQQ1ODQ' --out /absolute/private/tutorial-02 --frame 188 --frame 333
 ```
 
-This explicitly downloads one video stream up to 720p / 512 MiB, requires FFmpeg,
-and samples at most twelve requested times. Known duration must be within two
-hours. Inspect the actual PNGs using the agent's image reader; extraction alone
+This explicitly downloads one MP4/WebM video stream up to 720p / 512 MiB,
+requires FFmpeg and ffprobe, and samples at most twelve requested times. Known
+duration must be within two hours. `requested_seconds` is the requested seek position relative to media
+start. Each frame separately records FFmpeg's actual `decoded_pts`,
+`decoded_time_base`, absolute `decoded_pts_seconds` and relative
+`decoded_media_seconds`, plus ffprobe's stream time base and media start.
+Seeking may select a later decoded frame; never relabel the requested time as
+the actual PTS. `crop` is null because the helper performs no crop.
+`retrievedAt` records UTC metadata retrieval, alongside UTC start/finish times.
+Inspect the actual PNGs using the agent's image reader; extraction alone
 does not prove that text in a frame was read correctly. These are media file
 operations, not application UI control. Application UI remains under the
 project-owned DCC-CUA/ui-control route.
+
+Fixed limits are 300 seconds for the entire collection, 60 seconds and 64 KiB
+of captured output per media operation (10 seconds for version inventory),
+2 MiB per caption track, 6 MiB across captions, and 1 MiB for the UTF-8 provider
+log. The existing download hook checks bytes even without Content-Length;
+inline subtitles are checked before writing and completed tracks are checked
+again. A downloader can write a chunk before its progress hook runs: oversized
+owned subtitle partials are discarded and recorded as failed, not accepted as
+complete captions. Log writes retain at most the declared byte cap. A deadline
+or output overflow leaves an explicit failure receipt; earlier partial files
+are not a successful collection or a reliable cache.
+
+The wall-clock supervisor owns one worker and its descendants. Windows uses a
+job assigned before the worker receives its task; POSIX uses its own process
+session. It never kills by process name or touches an existing daemon. Local
+FFmpeg/ffprobe operations allow only the `file` protocol and MP4/Matroska/WebM
+demuxers; they do not receive a provider URL. The top-level allowlist is not a
+network sandbox: yt-dlp still contacts provider APIs/CDNs and follows their
+network behavior. It does not eliminate DNS rebinding or constrain every
+redirect/CDN address, and it is not a general SSRF or filesystem sandbox.
 
 Read `evidence.json` before interpreting content. `metadata_only` is not a
 transcript; `sampled_frames_only` does not establish spoken instructions.
