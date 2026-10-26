@@ -13,26 +13,40 @@ dependency rather than copying its extractors. Site support, captions and access
 remain provider-dependent. The helper uses no LLM service, browser session,
 cookie store, paid provider or automatic authentication fallback.
 
-From the installed Skill directory, collect captions and metadata:
+Prefer VX runtime composition from the installed Skill directory. It exposes
+the required runtimes through PATH while `uv` reads the script's pinned Python
+dependency:
 
 ```bash
-uv run scripts/read_tutorial.py 'https://www.youtube.com/watch?v=w3yHqQQ1ODQ' --out /absolute/private/tutorial-01
+vx --with node --with ffmpeg uv run scripts/read_tutorial.py 'https://www.youtube.com/watch?v=w3yHqQQ1ODQ' --out /absolute/private/tutorial-01
 ```
 
-`uv` reads the script's pinned Python dependency. With yt-dlp already installed,
-Python 3.10+ can run the helper directly. Choose a new output directory for each
-attempt. Default caption languages are `en,zh-Hans,zh-Hant`; use `--languages`
-with up to three exact codes. Manual tracks take precedence where available;
-automatic captions are labeled. Preserve original caption timing and raw text.
-YouTube's extractor may also require a supported JavaScript runtime. The helper
-selects an already installed Deno, Node or Bun and records that choice; it does
-not install a runtime or enable remote challenge components automatically.
+Keep runtime composition outside the helper: it discovers executables on PATH
+and needs no VX Python SDK or embedded provider catalog. Use the current VX
+configuration and runtime discovery as its ecosystem expands; record the actual
+resolved paths and versions rather than assuming every runtime is managed or
+available. For an isolated extractor diagnostic matching the current script pin:
+
+```bash
+vx uvx:yt-dlp@2026.10.21 --version
+```
+
+When VX is unavailable, use `uv run scripts/read_tutorial.py ...` with the
+required executables already on PATH. With the matching yt-dlp dependency
+already installed, Python 3.10+ can run the helper directly. Choose a new output
+directory for each attempt. Default caption languages are
+`en,zh-Hans,zh-Hant`; use `--languages` with up to three exact codes. Manual
+tracks take precedence where available; automatic captions are labeled.
+Preserve original caption timing and raw text. YouTube's extractor may also
+require a supported JavaScript runtime. The helper chooses the first available
+Deno, Node or Bun in that order and records its choice. It does not install a
+runtime or enable remote challenge components automatically.
 
 When visual node graphs or parameters are essential, request a few relevant
 frames after inspecting the chapter/caption times:
 
 ```bash
-uv run scripts/read_tutorial.py 'https://www.youtube.com/watch?v=w3yHqQQ1ODQ' --out /absolute/private/tutorial-02 --frame 188 --frame 333
+vx --with node --with ffmpeg uv run scripts/read_tutorial.py 'https://www.youtube.com/watch?v=w3yHqQQ1ODQ' --out /absolute/private/tutorial-02 --frame 188 --frame 333
 ```
 
 This explicitly downloads one video stream up to 720p / 512 MiB, requires FFmpeg,
