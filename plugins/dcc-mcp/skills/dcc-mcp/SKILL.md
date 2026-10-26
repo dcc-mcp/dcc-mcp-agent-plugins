@@ -138,6 +138,7 @@ Read only the reference needed for the selected task:
 | Task | Reference |
 |---|---|
 | Remote profile, local/gateway routing, or gateway stats | [Gateway profiles](references/GATEWAY_PROFILES.md); stats require `--require-gateway --agent-session-id <task-id>` from the first call |
+| Read a YouTube/other video tutorial or reproduce its DCC technique | [Tutorial reading and native replay](references/TUTORIAL_REPLAY.md); retain timestamped captions/frames and validate a bounded native result |
 | Menus, dialogs, browser or other application UI | [UI workflows](references/UI_WORKFLOWS.md) and the bundled `dcc-cua` skill; keep its exact binding and interruption contract |
 | DCC-MCP marketplace discovery, package installation or binary update | [Marketplace maintenance](references/MARKETPLACE_MAINTENANCE.md); catalog discovery needs no live instance |
 | Installing or probing an open-source application, including a portable build | [Host software deployment](references/HOST_SOFTWARE_DEPLOYMENT.md); software availability and adapter support are separate facts |
