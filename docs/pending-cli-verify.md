@@ -1,7 +1,8 @@
 # Pending standalone CLI verification contract
 
 This coordinates the next Install SOP acceptance slice with Core issue
-[#2252](https://github.com/dcc-mcp/dcc-mcp-core/issues/2252). It is not released
+[#2252](https://github.com/dcc-mcp/dcc-mcp-core/issues/2252) and implementation
+[#2862](https://github.com/dcc-mcp/dcc-mcp-core/pull/2862). It is not released
 Skill guidance, and it must not be copied into published Skills until the
 matching Core implementation and its supported CLI version are verified.
 
@@ -28,5 +29,8 @@ original `not_evaluated`/pass/fail distinctions in downstream evidence.
 
 This does not complete artifact-byte verification, target Core compatibility,
 receipt-backed prior-version restoration, host enablement or native readiness.
-The install tracker stays open. No package/version bump or publication is part
-of this documentation change.
+The install tracker stays open. The companion suite metadata increment repairs
+the already-merged output guidance's version collision; it does not promote
+this pending verification contract into published Skills. Keep the PR draft
+while publication is on hold: merging a suite bump currently triggers the
+repository's automatic ClawHub publisher.
