@@ -17,6 +17,15 @@ def workflow(relative: str) -> dict:
 
 
 class SkillPublicationWorkflowTests(unittest.TestCase):
+    def test_clawhub_pin_has_an_explicit_supported_node_runtime(self) -> None:
+        document = workflow(".github/workflows/clawhub.yml")
+        self.assertEqual("clawhub@0.24.1", document["env"]["CLAWHUB_CLI_PACKAGE"])
+        steps = document["jobs"]["sync-skills"]["steps"]
+        node = next(step for step in steps if step.get("uses", "").startswith("actions/setup-node@"))
+        self.assertEqual("24", node["with"]["node-version"])
+        self.assertLess(steps.index(node), next(i for i, step in enumerate(steps)
+                                             if step.get("name") == "Login to ClawHub"))
+
     def test_main_publish_wrapper_is_exact_head_and_publish_enabled(self) -> None:
         document = workflow(".github/workflows/publish-clawhub.yml")
         self.assertEqual({"main"}, set(document["on"]["push"]["branches"]))
