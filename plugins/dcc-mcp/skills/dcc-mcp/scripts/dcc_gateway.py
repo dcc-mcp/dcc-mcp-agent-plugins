@@ -25,6 +25,12 @@ OFFICIAL_REPO = "dcc-mcp/dcc-mcp-core"
 DEFAULT_VERSION = "latest"
 MAX_MANIFEST_BYTES = 64 * 1024
 MAX_CLI_BYTES = 256 * 1024 * 1024
+# Core ServiceErrorKind values only; never echo arbitrary output as a diagnostic.
+CLI_ERROR_KINDS = frozenset({
+    "unknown-slug", "ambiguous", "skill-not-loaded", "invalid-params",
+    "unauthorized", "policy-denied", "bad-request", "backend-error", "host-busy",
+    "affinity-violation", "thread-affinity-violation", "not-ready", "not-found", "internal",
+})
 _VERSION_RE = re.compile(r"^(?:v)?([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)$")
 _SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
@@ -34,26 +40,43 @@ def _json_dumps(payload: Any, *, pretty: bool = False) -> str:
 
 
 def _run_json(argv: list[str]) -> tuple[bool, dict[str, Any]]:
+    """Distinguish failure to spawn from an attempted command with unknown outcome."""
     try:
-        proc = subprocess.run(
-            argv,
-            capture_output=True,
-            text=True,
-            timeout=60,
-            check=False,
-        )
-    except OSError as exc:
-        return False, {"error": str(exc)}
-    except subprocess.TimeoutExpired:
-        return False, {"error": "command timed out"}
+        proc = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+    except OSError:
+        return False, {"error": "cli-start-failed", "execution_status": "not_started"}
+
+    with proc:
+        try:
+            stdout, _ = proc.communicate(timeout=60)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            return False, {"error": "cli-timeout", "execution_status": "unknown"}
+        except (OSError, UnicodeError):
+            proc.kill()
+            return False, {"error": "cli-invalid-output", "execution_status": "unknown"}
 
     if proc.returncode != 0:
-        return False, {"returncode": proc.returncode, "stderr": proc.stderr.strip()}
+        details = {"error": "cli-exit-error", "returncode": proc.returncode, "execution_status": "unknown"}
+        # Supported CLI call rejections are JSON on stdout before the nonzero exit.
+        if len(stdout) <= 8192:
+            try:
+                rejection = json.loads(stdout)
+            except (json.JSONDecodeError, RecursionError):
+                rejection = None
+            if isinstance(rejection, dict):
+                error = rejection.get("error", rejection)
+                kind = error.get("kind") if isinstance(error, dict) else None
+                if isinstance(kind, str) and kind in CLI_ERROR_KINDS:
+                    details["cli_error_kind"] = kind
+        return False, details
 
     try:
-        payload = json.loads(proc.stdout or "{}")
-    except json.JSONDecodeError as exc:
-        return False, {"error": f"invalid JSON output: {exc}", "stdout": proc.stdout}
+        payload = json.loads(stdout)
+    except (json.JSONDecodeError, RecursionError):
+        return False, {"error": "cli-invalid-output", "execution_status": "unknown"}
+    if not isinstance(payload, dict):
+        return False, {"error": "cli-invalid-output", "execution_status": "unknown"}
     return True, payload
 
 
@@ -305,7 +328,7 @@ def python_fallback(command: str, args: argparse.Namespace) -> dict[str, Any]:
 
 
 def run_command(command: str, args: argparse.Namespace) -> dict[str, Any]:
-    """Prefer dcc-mcp-cli, optionally install it, then fall back to Python REST."""
+    """Prefer the CLI; never replay an attempted tool call with an unknown outcome."""
     try:
         args.base_url = resolve_gateway_url(args.base_url)
     except ValueError as exc:
@@ -316,6 +339,18 @@ def run_command(command: str, args: argparse.Namespace) -> dict[str, Any]:
         ok, payload = _run_json(cli_args_for(command, args))
         if ok:
             return payload
+        # Tool hints and exit codes cannot prove an attempted call did not commit.
+        if command == "call" and payload["execution_status"] != "not_started":
+            result = {
+                "success": False,
+                "error": "cli-call-outcome-unknown",
+                "execution_status": "unknown",
+                "reason": payload["error"],
+                "_transport": "dcc-mcp-cli",
+            }
+            if "cli_error_kind" in payload:
+                result["cli_error_kind"] = payload["cli_error_kind"]
+            return result
         cli_details["cli_error"] = payload
 
     fallback_payload = python_fallback(command, args)
@@ -373,7 +408,7 @@ def main() -> int:
     args = build_parser().parse_args()
     payload = run_command(args.command, args)
     print(_json_dumps(payload, pretty=args.pretty))
-    return 0
+    return 1 if payload.get("success") is False else 0
 
 
 if __name__ == "__main__":

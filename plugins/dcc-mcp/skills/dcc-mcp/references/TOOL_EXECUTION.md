@@ -118,3 +118,17 @@ off the process command line, which is especially important on Windows.
 
 See [`references/CLI_CHEATSHEET.md`](CLI_CHEATSHEET.md) for command
 patterns and common errors.
+
+### Python helper transport fallback
+
+`scripts/dcc_gateway.py` may use REST when the CLI is absent or cannot start.
+After a `call` has been attempted, a timeout, nonzero exit or invalid response
+means the operation may already have committed. Nonzero-exit JSON on stdout may
+retain an allowlisted Core `ServiceErrorKind` as `cli_error_kind`; messages,
+stdout/stderr and unknown codes are not echoed. This code does not authorize retry.
+The helper returns
+`cli-call-outcome-unknown` with `execution_status=unknown` without repeating it
+through REST. Inspect the original operation, job or resulting document before
+deciding what to do next. Tool names and read-only/idempotency hints do not prove
+that a retry is safe. A parse-looking exit code alone is not proof of no dispatch.
+The fixed `health`, `list`, `search` and `describe` query commands retain fallback.
