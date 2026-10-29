@@ -96,13 +96,14 @@ openclaw skills install @loonghao/dcc-mcp-creator
 openclaw skills install @loonghao/dcc-cua
 ```
 
-Direct ClawHub installs are also supported:
+Direct ClawHub installs are also supported (ClawHub 0.24.1 requires Node.js
+22.13+ on the 22.x line, or Node.js 24+; CI selects Node.js 24):
 
 ```bash
-npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp
-npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp-skills-creator
-npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp-creator
-npx --yes clawhub@0.23.1 install @loonghao/dcc-cua
+npx --yes clawhub@0.24.1 install @loonghao/dcc-mcp
+npx --yes clawhub@0.24.1 install @loonghao/dcc-mcp-skills-creator
+npx --yes clawhub@0.24.1 install @loonghao/dcc-mcp-creator
+npx --yes clawhub@0.24.1 install @loonghao/dcc-cua
 ```
 
 #### Keep installed Skills current

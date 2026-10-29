@@ -24,7 +24,7 @@ import dcc_mcp_core
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = REPO_ROOT / ".github" / "clawhub-skills.json"
-DEFAULT_CLI = os.environ.get("CLAWHUB_CLI_PACKAGE", "clawhub@0.23.1")
+DEFAULT_CLI = os.environ.get("CLAWHUB_CLI_PACKAGE", "clawhub@0.24.1")
 CLAWHUB_API_BASE = "https://clawhub.ai/api/v1"
 CLAWHUB_LICENSE = "MIT-0"
 MAX_RETRIES = 3
@@ -44,7 +44,7 @@ REQUIRED_PUBLIC_FILES = ("SKILL.md", "agents/openai.yaml")
 # ClawHub creates this asynchronously and excludes it from the source bundle fingerprint.
 GENERATED_PUBLIC_FILES = {"skill-card.md"}
 STABLE_SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
-# Mirrors clawhub@0.23.1 packages/clawhub/src/skills.ts::buildSkillFingerprint.
+# Mirrors clawhub@0.24.1 packages/clawhub/src/skills.ts::buildSkillFingerprint.
 NODE_FINGERPRINT_SCRIPT = r"""
 const crypto = require("node:crypto");
 const fs = require("node:fs");
@@ -75,7 +75,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--cli",
         default=DEFAULT_CLI,
-        help="npm package for clawhub CLI (default: clawhub@0.23.1)",
+        help="npm package for clawhub CLI (default: clawhub@0.24.1)",
     )
     return parser.parse_args()
 
@@ -171,7 +171,7 @@ def file_sha256(path: Path) -> str:
 
 
 def clawhub_file_fingerprint(file_hashes: dict[str, str]) -> str:
-    """Reproduce ClawHub 0.23.1's locale-aware buildSkillFingerprint."""
+    """Reproduce ClawHub 0.24.1's locale-aware buildSkillFingerprint."""
     requested = os.environ.get("NODE", "node").strip() or "node"
     node = shutil.which(requested) or requested
     files = [{"path": path, "sha256": digest} for path, digest in file_hashes.items()]
@@ -398,8 +398,16 @@ def validate_publish_receipt(
 ) -> str:
     """Validate one authenticated ClawHub publish acknowledgement."""
     payload = parse_publish_response(raw)
-    if payload.get("status") != "published":
+    if payload.get("status") not in ("published", "pending-publication", "submitted"):
         raise ValueError(f"publish receipt has unexpected status: {payload.get('status')!r}")
+    status = payload["status"]
+    publication_status = payload.get("publicationStatus")
+    if (
+        (status == "pending-publication" and publication_status != "pending")
+        or (status == "submitted" and publication_status is not None)
+        or (status == "published" and publication_status not in (None, "published"))
+    ):
+        raise ValueError("publish receipt status/publicationStatus mismatch")
     if payload.get("slug") != slug or payload.get("version") != version:
         raise ValueError(
             f"publish receipt identity mismatch: slug={payload.get('slug')!r}, version={payload.get('version')!r}"
@@ -586,6 +594,58 @@ def parse_owner_release(
     return parse_owner_release_payload(payload, slug=slug, owner=owner, version=version)
 
 
+def owner_publication_diagnostic(
+    payload: dict[str, Any], *, slug: str, owner: str, version: str
+) -> dict[str, Any] | None:
+    """Read held-version diagnostics, never file, fingerprint or ownership proof.
+
+    ClawHub 0.24.1 emits this JSON even with exit 1 for ``inspect --files``.
+    The authenticated command is owner-qualified; upstream may omit owner in
+    this response, so the requested owner is context, not an attested identity.
+    """
+    publication = payload.get("publication")
+    if publication is None:
+        return None
+    if not isinstance(publication, dict):
+        raise ValueError("owner publication is not an object")
+    # Upstream printOwnerPublication emits null version/versions/file. Reject
+    # mixed responses rather than hiding mismatched or blocked file evidence.
+    if any(key not in payload or payload[key] is not None for key in ("version", "versions", "file")):
+        raise ValueError("owner publication must not contain version or file evidence")
+    if payload.get("files") is not None:
+        raise ValueError("owner publication must not contain files")
+    skill = payload.get("skill")
+    if not isinstance(skill, dict) or skill.get("slug") != slug:
+        raise ValueError("owner publication slug mismatch")
+    publisher = payload.get("owner")
+    if publisher is not None and (
+        not isinstance(publisher, dict) or publisher.get("handle") != owner
+    ):
+        raise ValueError("owner publication owner mismatch")
+    if publication.get("version") != version:
+        raise ValueError("owner publication version mismatch")
+    stage = publication.get("stage")
+    if not isinstance(stage, str) or stage not in {
+        "pending_checks", "checks_failed", "checks_incomplete", "ready_to_finalize",
+        "finalizing", "failed", "blocked", "expired", "unavailable", "published",
+    }:
+        raise ValueError("unknown owner publication stage")
+    retrying = publication.get("retrying")
+    if not isinstance(retrying, bool):
+        raise ValueError("owner publication retrying must be boolean")
+    checks = publication.get("checks")
+    if checks is not None and (
+        not isinstance(checks, dict)
+        or set(checks) != {"trufflehog", "clawscan"}
+        or any(not isinstance(value, str) or value not in {"pending", "clean", "blocked", "failed"}
+               for value in checks.values())
+    ):
+        raise ValueError("invalid owner publication checks")
+    # Do not echo upstream nextSteps, free-form text or unrelated public-version
+    # moderation as if it described this held exact version.
+    return {"stage": stage, "retrying": retrying, "checks": checks}
+
+
 def verify_owner_version(
     cli: str,
     slug: str,
@@ -600,6 +660,37 @@ def verify_owner_version(
     last_error = "owner-visible version was not checked"
     for attempt in range(1, MAX_RETRIES + 1):
         proc = subprocess.run(cmd, check=False, capture_output=True, text=True)
+        if proc.returncode in (0, 1):
+            try:
+                diagnostic_payload = json.loads(proc.stdout)
+            except json.JSONDecodeError:
+                diagnostic_payload = None
+            if isinstance(diagnostic_payload, dict) and "publication" in diagnostic_payload:
+                try:
+                    diagnostic = owner_publication_diagnostic(
+                        diagnostic_payload, slug=slug, owner=owner, version=expected_version,
+                    )
+                except ValueError as exc:
+                    print(f"ClawHub publication diagnostic rejected: {exc}", file=sys.stderr)
+                    return False
+                if diagnostic is not None:
+                    print(
+                        f"Publication diagnostic for requested @{owner}/{slug}@{expected_version}: "
+                        f"{json.dumps(diagnostic, sort_keys=True)}. "
+                        "This is not owner-file, fingerprint, public visibility or installability evidence."
+                    )
+                    if diagnostic["retrying"]:
+                        print("The existing upload is retrying its checks; do not re-upload it.")
+                    if diagnostic["stage"] == "checks_failed":
+                        print("Required checks failed to complete; this alone is not a malware verdict.")
+                    if (
+                        diagnostic["stage"] in {"blocked", "failed", "expired", "unavailable", "published"}
+                        or "blocked" in (diagnostic["checks"] or {}).values()
+                    ):
+                        # Even 'published' without readable exact-version files
+                        # cannot satisfy this verification stage.
+                        return False
+                    return None
         if proc.returncode == 0:
             try:
                 payload = json.loads(proc.stdout)
@@ -754,7 +845,7 @@ def verify_uploaded_version(
     if publish_receipt is not None:
         try:
             status = parse_publish_response(publish_receipt).get("status")
-            if status == "published":
+            if status in ("published", "pending-publication", "submitted"):
                 version_id = validate_publish_receipt(
                     publish_receipt,
                     slug=slug,
@@ -775,7 +866,11 @@ def verify_uploaded_version(
             )
             return False
         if version_id is not None:
-            print(f"Verified authenticated publish receipt for @{owner}/{slug}@{expected_version} ({version_id}).")
+            print(
+                f"Verified authenticated upload receipt for @{owner}/{slug}@{expected_version} "
+                f"({version_id}; status: {status}). "
+                "This does not establish owner-readable files or public installability."
+            )
     if requires_fingerprint_resolution and not verify_resolved_fingerprint(
         cli,
         slug,
