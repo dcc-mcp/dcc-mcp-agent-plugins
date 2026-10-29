@@ -408,7 +408,7 @@ def main() -> int:
     args = build_parser().parse_args()
     payload = run_command(args.command, args)
     print(_json_dumps(payload, pretty=args.pretty))
-    return 1 if payload.get("success") is False else 0
+    return 1 if isinstance(payload, dict) and payload.get("success") is False else 0
 
 
 if __name__ == "__main__":

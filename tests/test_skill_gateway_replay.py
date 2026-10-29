@@ -155,6 +155,16 @@ class GatewayReplayTests(unittest.TestCase):
                 self.assertEqual(result["execution_status"], "unknown")
                 self.assertNotIn("credential-fixture", json.dumps(result))
 
+    def test_main_preserves_non_object_rest_query_output(self):
+        """Legacy REST query JSON may be a list or null, not a CLI result object."""
+        for payload in ([], None):
+            with self.subTest(payload=payload), \
+                    patch.object(sys, "argv", ["dcc_gateway.py", "list"]), \
+                    patch.object(dcc_gateway, "run_command", return_value=payload), \
+                    patch("builtins.print") as output:
+                self.assertEqual(dcc_gateway.main(), 0)
+                self.assertEqual(json.loads(output.call_args.args[0]), payload)
+
     def test_unknown_call_makes_helper_exit_nonzero(self):
         """Shell callers must observe failure as well as the JSON diagnostic."""
         with patch.object(sys, "argv", ["dcc_gateway.py", "call", "tool"]), \
