@@ -19,6 +19,19 @@ When an external bridge uses the public Python `DccBridge` WebSocket server,
 declare `dcc-mcp-core[bridge]`; the base install intentionally does not pull in
 the optional `websockets` transport.
 
+When adopting the request-outcome contract in
+[Core #2838](https://github.com/dcc-mcp/dcc-mcp-core/pull/2838), treat an
+unclassified bridge failure as `unknown`; do not replay the operation on any
+transport. Permit operation replay only with request-level evidence that this
+request never reached dispatch (`not_dispatched`); only then report
+`BridgeConnectionError(..., outcome="not_dispatched")`. Connection recovery does
+not authorize operation replay. Send/disconnect/timeout failures after possible
+execution need state inspection. A pre-dispatch failure does not authorize replay
+of earlier workflow steps. Preserve adapter authorization/fence metadata. Prove
+this with a host-free side-effect counter and a response-loss test before
+migration; verify that the deployed Core version actually includes the contract.
+Capacity negotiation and UTF-8 message budgets remain separate work under Core #2821.
+
 Apply [Python runtime selection](PYTHON_RUNTIME_SELECTION.md) before composing
 an adapter. An embedded host retains its verified interpreter; a Python-free
 official bridge needs no Python payload. If the host lacks Python and the
