@@ -57,7 +57,7 @@ RELEASED_CORE_WORKFLOW_ENVIRONMENT = {
      'SKILLHUB_CALLER': 'none'},
     ".github/workflows/ci.yml": None,
     ".github/workflows/clawhub.yml": {
-        "CLAWHUB_CLI_PACKAGE": "clawhub@0.23.1",
+        "CLAWHUB_CLI_PACKAGE": "clawhub@0.24.1",
         "CLAWHUB_CONFIG_PATH": ".clawhub/config.json",
         "CLAWHUB_DISABLE_TELEMETRY": "1",
     },
@@ -138,7 +138,7 @@ RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
         "validate": "3d9ffa7bcb000cacb170786d81467beb18d63de758ce093bfc3a165a91381a89",
     },
     ".github/workflows/clawhub.yml": {
-        "sync-skills": "aa75c5fe311d8edad7fdaf0122c44f71a2a7f9debfea9639b59b3937e6924e4b",
+        "sync-skills": "09adf490a6df55f5ebbf3e8e040b0b14baa0115cf2241b521d54c1604f9c45d9",
     },
     ".github/workflows/release.yml": {
         "github-release": "99356779fa49b277609f1a6575c274dff907e1edf914203a23c07ac209cfe006",
