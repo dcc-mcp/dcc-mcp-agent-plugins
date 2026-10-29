@@ -31,6 +31,6 @@ This does not complete artifact-byte verification, target Core compatibility,
 receipt-backed prior-version restoration, host enablement or native readiness.
 The install tracker stays open. The companion suite metadata increment repairs
 the already-merged output guidance's version collision; it does not promote
-this pending verification contract into published Skills. Keep the PR draft
-while publication is on hold: merging a suite bump currently triggers the
-repository's automatic ClawHub publisher.
+this pending verification contract into published Skills. ClawHub publication
+requires a separate manual workflow dispatch with publishing enabled; merging
+this source change does not publish or enable the pending contract.
