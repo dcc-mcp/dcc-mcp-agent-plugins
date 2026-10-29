@@ -26,7 +26,7 @@ class SkillPublicationWorkflowTests(unittest.TestCase):
         self.assertLess(steps.index(node), next(i for i, step in enumerate(steps)
                                              if step.get("name") == "Login to ClawHub"))
 
-    def test_main_publish_wrapper_is_exact_head_and_publish_enabled(self) -> None:
+    def test_main_publish_wrapper_requires_explicit_manual_opt_in(self) -> None:
         document = workflow(".github/workflows/publish-clawhub.yml")
         self.assertEqual({"main"}, set(document["on"]["push"]["branches"]))
         self.assertNotIn("pull_request", document["on"])
@@ -35,6 +35,35 @@ class SkillPublicationWorkflowTests(unittest.TestCase):
         self.assertEqual("${{ github.sha }}", publish["with"]["checkout-ref"])
         self.assertIs(True, publish["with"]["publish"])
         self.assertEqual("inherit", publish["secrets"])
+        self.assertEqual(
+            "${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}",
+            publish["if"],
+        )
+        switch = document["on"]["workflow_dispatch"]["inputs"]["publish"]
+        self.assertEqual("boolean", switch["type"])
+        self.assertIs(False, switch["default"])
+        self.assertIs(False, switch["required"])
+
+    def test_manual_publication_defaults_off_on_all_entry_points(self) -> None:
+        document = workflow(".github/workflows/clawhub.yml")
+        for trigger in ("workflow_call", "workflow_dispatch"):
+            switch = document["on"][trigger]["inputs"]["publish"]
+            self.assertEqual("boolean", switch["type"])
+            self.assertIs(False, switch["default"])
+        wrapper = workflow(".github/workflows/publish-clawhub.yml")
+        condition = wrapper["jobs"]["publish"]["if"]
+        # Evaluate the constrained expression after the exact-shape assertion
+        # above, covering malicious/stale true input on a push as well.
+        expression = condition.removeprefix("${{ ").removesuffix(" }}")
+        expression = expression.replace("github.event_name", "event").replace("inputs.publish", "publish")
+        expression = expression.replace("&&", "and").replace("true", "True")
+        for event, publish, expected in (
+            ("push", False, False), ("push", True, False),
+            ("workflow_dispatch", False, False), ("workflow_dispatch", True, True),
+            ("pull_request", True, False),
+        ):
+            with self.subTest(event=event, publish=publish):
+                self.assertIs(expected, eval(expression, {"__builtins__": {}}, {"event": event, "publish": publish}))
 
     def test_reusable_workflow_honors_explicit_publish_input(self) -> None:
         document = workflow(".github/workflows/clawhub.yml")

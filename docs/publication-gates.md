@@ -282,3 +282,16 @@ version ID validation. None alone proves owner-readable bytes or public
 installability, and a held receipt is not a reason to upload again. Mixed
 publication diagnostics carrying version/file evidence are rejected rather than
 allowed to hide a version mismatch or security block.
+
+## Manual ClawHub publication gate
+
+`Publish merged ClawHub Skills` retains its main-push trigger for an auditable
+skipped run, but its real-publication job runs **only** on `workflow_dispatch`
+with the boolean `publish` explicitly set to `true`. The switch defaults to
+`false`; a matching main push cannot enable it. The reusable ClawHub workflow
+and its direct manual entry also default to preview (`publish: false`).
+
+An authorized maintainer may manually select the intended ref and opt in only
+after publication is separately approved. Adding this gate or merging its code
+is not authorization to publish: the existing publication pause and Draft #42
+remain unchanged. No repository variable, token, or permission change is needed.
