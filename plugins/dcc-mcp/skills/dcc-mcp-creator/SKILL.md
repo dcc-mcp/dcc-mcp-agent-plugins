@@ -9,7 +9,7 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: "dcc-mcp-core 0.17+, Python 3.7+"
-    version: "0.19.116"
+    version: "0.19.120"
     search-hint: >-
       create DCC MCP adapter, Nuke MCP, DccServerBase, HostExecutionBridge,
       dispatcher, readiness, resources, gateway, Blender, 3ds Max, Unreal,
@@ -36,6 +36,12 @@ through `HostExecutionBridge`. Embedded, sidecar and standalone services have
 different owner/host lifetimes; resolve that contract before wiring the runtime.
 Reuse Core's public lifecycle, discovery and state owners rather than parallel
 adapter implementations. Keep identity and host configuration data-driven.
+
+For Python adapters, first verify the host's interpreter, ABI and dependencies.
+When the host has no Python and Python is needed, prefer the existing shared
+DCC-MCP Runtime; keep official JS/native bridges available without Python.
+Follow [Python runtime selection](references/PYTHON_RUNTIME_SELECTION.md) before
+choosing a payload or installer. Do not bundle or download Python per adapter.
 
 Application UI uses project-owned `dcc-cua` / `ui-control`. Before observation
 or input report `provider=dcc-cua runtime=<version> pid=<exact-pid> hwnd=<exact-native-hwnd>`.

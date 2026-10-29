@@ -240,3 +240,58 @@ obtain a fresh PR event after correcting
 the cause. Blindly rerunning the old event does not refresh its revisions.
 This readback verifies one event's evidence; it neither configures nor proves
 an active ruleset or required-status rule.
+
+## ClawHub 0.24.1 held-version diagnostics
+
+The publisher pins `clawhub@0.24.1` and its workflow selects Node.js 24. Upstream
+requires Node.js `^22.13.0 || >=24`; a runner's incidental default is not the
+runtime contract. This change does not authorize a publish or release any
+paused version bump.
+
+Authenticated `inspect @owner/slug --version VERSION --files --json` can return
+exit code 1 with a `publication` object when the submitted version is held.
+The helper retains the bounded `stage`, `checks`, and `retrying` diagnostic
+rather than discarding stdout. It matches the requested slug/version and any
+returned owner; upstream can omit the owner, so the owner-qualified command is
+request context, not an additional ownership attestation. Unknown/mismatched
+responses fail closed. Upstream `nextSteps` and free-form messages are not
+executed or treated as instructions.
+
+A `checks_failed` stage means required checks could not complete, not proof of
+malware. `retrying: true` describes the existing upload's check retry; it never
+requests another upload. Blocked/failed/expired/unavailable stages fail
+verification. A `published` label without readable exact-version files is not
+file verification either.
+
+Keep evidence levels separate: authenticated upload receipt or immutable
+fingerprint, owner-readable matching files, and public matching files. Held
+publication diagnostics establish none of these. The existing upload-verifier
+may report receipt/fingerprint-backed upload evidence with visibility pending;
+that is **not** public availability or installability. An owner/public 404 alone
+remains unconfirmed visibility, never proof that the version is absent or safe
+to re-upload. No live Skill queries are needed for the mocked regressions.
+
+Upstream contract reviewed:
+[inspect.ts](https://github.com/openclaw/clawhub/blob/5f3b6e9855c2f8378245c35e3b4d4183893f4fb1/packages/clawhub/src/cli/commands/inspect.ts)
+and [publication schema](https://github.com/openclaw/clawhub/blob/5f3b6e9855c2f8378245c35e3b4d4183893f4fb1/packages/clawhub/src/schema/schemas.ts).
+
+ClawHub 0.24.1 upload receipts may say `pending-publication` (with
+`publicationStatus: pending`), `submitted` (status not reported), or `published`.
+All require the same exact slug/version, file count, folder, fingerprint and
+version ID validation. None alone proves owner-readable bytes or public
+installability, and a held receipt is not a reason to upload again. Mixed
+publication diagnostics carrying version/file evidence are rejected rather than
+allowed to hide a version mismatch or security block.
+
+## Manual ClawHub publication gate
+
+`Publish merged ClawHub Skills` retains its main-push trigger for an auditable
+skipped run, but its real-publication job runs **only** on `workflow_dispatch`
+with the boolean `publish` explicitly set to `true`. The switch defaults to
+`false`; a matching main push cannot enable it. The reusable ClawHub workflow
+and its direct manual entry also default to preview (`publish: false`).
+
+An authorized maintainer may manually select the intended ref and opt in only
+after publication is separately approved. Adding this gate or merging its code
+is not authorization to publish: the existing publication pause and Draft #42
+remain unchanged. No repository variable, token, or permission change is needed.

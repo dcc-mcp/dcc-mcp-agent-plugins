@@ -10,7 +10,7 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: Cross-platform Windows/macOS/Linux. Prefers dcc-mcp-cli on PATH; its consent-gated bootstrap accepts only the official release manifest and verifies SHA-256 before replacement. Local profile needs no gateway env. Use --require-gateway plus --agent-session-id when gateway stats are required evidence. DCC_MCP_BASE_URL is optional for remote/legacy gateway REST fallback.
-    version: "0.19.116"
+    version: "0.19.120"
     search-hint: "DCC-MCP typed tool discovery create edit inspect simulate animate render composite export automate 操作 控制 创建 编辑 检查 动画 渲染 合成 导出; released products: 3dsmax Autodesk 3ds Max 3ds Max aftereffects Adobe After Effects After Effects blender c4d Cinema 4D Cinema4D comfyui Comfy UI freecad gimp GIMP 3 godot Godot Engine houdini SideFX Houdini illustrator Adobe Illustrator katana Foundry Katana krita liquigen Liquid Gen mari Foundry Mari marmoset Marmoset Toolbag Toolbag material-maker MaterialMaker maya Autodesk Maya mobu Autodesk MotionBuilder MotionBuilder nuke Foundry Nuke obs OBS Studio OBS 录屏 OBS录屏 OBS 录制 OBS录制 openscad openusd Universal Scene Description photoshop Adobe Photoshop powerpoint Microsoft PowerPoint PPT PPTX 幻灯片 premiere Adobe Premiere Pro Premiere Pro Adobe Premiere renderdoc shogun Vicon Shogun Shogun Post shotgrid Autodesk Flow Production Tracking Flow Production Tracking sketchup substance3d_designer Adobe Substance 3D Designer Substance 3D Designer Substance Designer substance3d_painter Adobe Substance 3D Painter Substance 3D Painter Substance Painter tiled Tiled Map Editor touchdesigner Touch Designer unity Unity Editor Tuanjie Tuanjie Engine 团结引擎 unreal Unreal Engine UE4 UE5 虚幻引擎 UE wwise Audiokinetic Wwise zbrush office-suite Microsoft Office Microsoft Excel Microsoft Word Microsoft Outlook 表格 电子表格 做表 spreadsheet Excel Word Outlook; application UI route: DCC-CUA dcc cua ui-control browser UI exact PID HWND fresh observation latest snapshot post-action readback no generic Computer Use; local application path cache cached executable path ask before launch guide a new path"
     tags: "dcc, dcc-mcp, typed-tools, dcc-cua, ui-control, 3dsmax, aftereffects, blender, c4d, comfyui, freecad, gimp, godot, houdini, illustrator, katana, krita, liquigen, mari, marmoset, material-maker, maya, mobu, nuke, obs, openscad, openusd, photoshop, powerpoint, premiere, renderdoc, shogun, shotgrid, sketchup, substance3d_designer, substance3d_painter, tiled, touchdesigner, unity, unreal, wwise, zbrush, office-suite"
   openclaw:
@@ -80,6 +80,18 @@ Prefer quality free options when they fit; neither all-handwritten work nor
 mandatory plugin use is an acceptance criterion. Reuse does not authorize paid
 acquisition, wider permissions or executing unreviewed software.
 
+Use a suitable existing project/template as the default starting point before
+bespoke construction. First inspect the task-relevant entries in the bundled
+[template license catalog](references/TEMPLATE_CATALOG/README.md), then search
+trusted upstream sources for gaps. Catalog entries are candidates, not approved
+downloads or verified host integrations. Check the pinned version and licenses
+for code, assets and fonts separately, including attribution, modification,
+export and source/binary redistribution conditions. Unknown rights or host
+compatibility block adoption, not read-only evaluation. Do not install or run a
+template merely because it is listed. Record the selected template and remaining
+verification, or why no template fits, before choosing assets/plugins and the
+smallest necessary custom work. An explicit user choice takes precedence.
+
 In the existing task recipe/evidence report, identify the selected source and
 version, explain the selection or rejection, and distinguish original work,
 adapted work, external assets and generated content. Retain required notices
@@ -126,6 +138,7 @@ Read only the reference needed for the selected task:
 | Task | Reference |
 |---|---|
 | Remote profile, local/gateway routing, or gateway stats | [Gateway profiles](references/GATEWAY_PROFILES.md); stats require `--require-gateway --agent-session-id <task-id>` from the first call |
+| Read a YouTube/other video tutorial or reproduce its DCC technique | [Tutorial reading and native replay](references/TUTORIAL_REPLAY.md); prefer VX runtime composition, retain timestamped captions/frames and validate a bounded native result |
 | Menus, dialogs, browser or other application UI | [UI workflows](references/UI_WORKFLOWS.md) and the bundled `dcc-cua` skill; keep its exact binding and interruption contract |
 | DCC-MCP marketplace discovery, package installation or binary update | [Marketplace maintenance](references/MARKETPLACE_MAINTENANCE.md); catalog discovery needs no live instance |
 | Installing or probing an open-source application, including a portable build | [Host software deployment](references/HOST_SOFTWARE_DEPLOYMENT.md); software availability and adapter support are separate facts |

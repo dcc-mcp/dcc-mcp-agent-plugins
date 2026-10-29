@@ -1,6 +1,13 @@
 name: Publish merged ClawHub Skills
 
 on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Explicitly authorize real ClawHub publication (leave off while paused)
+        required: false
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths:
@@ -17,6 +24,8 @@ permissions:
 
 jobs:
   publish:
+    # A merge/push must never publish. Only an explicit manual opt-in can.
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
     uses: ./.github/workflows/clawhub.yml
     with:
       checkout-ref: ${{ github.sha }}
