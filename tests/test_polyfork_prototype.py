@@ -8,13 +8,14 @@ import subprocess
 import sys
 from tempfile import TemporaryDirectory
 import unittest
+import yaml
 from zipfile import ZipFile
 
 from scripts.package_openclaw_skill import package_skill
 from scripts.publication_manifest import load_canonical_manifest
 
 ROOT = Path(__file__).resolve().parents[1]
-SKILL = ROOT / "prototypes/polyfork-scene-planning"
+SKILL = ROOT / "skills/polyfork-assets"
 SCRIPT = SKILL / "scripts/check_readback.py"
 spec = importlib.util.spec_from_file_location("polyfork_readback", SCRIPT)
 checker = importlib.util.module_from_spec(spec)
@@ -130,18 +131,21 @@ class PolyforkPrototypeTests(unittest.TestCase):
         self.assertEqual(json.loads(result.stdout)["status"], "invalid_or_mismatched_readback")
         self.assertNotIn("credential-fixture", result.stdout + result.stderr)
 
-    def test_optional_original_skill_is_not_a_fifth_release_target(self):
+    def test_optional_skill_is_separate_from_the_four_skill_release_suite(self):
         """Prototype code/instructions may be packaged locally without shipping vendor files."""
+        metadata = yaml.safe_load((SKILL / "SKILL.md").read_text(encoding="utf-8").split("---", 2)[1])
+        self.assertEqual(metadata["name"], "polyfork-assets")
+        self.assertEqual(SKILL.parent, ROOT / "skills")
         entries = load_canonical_manifest(ROOT)
         self.assertEqual(4, len(entries))
-        self.assertNotIn("polyfork-scene-planning", {entry["slug"] for entry in entries})
+        self.assertNotIn("polyfork-assets", {entry["slug"] for entry in entries})
         self.assertEqual((SKILL / "LICENSE").read_text(encoding="utf-8").split(),
                          (ROOT / "LICENSE").read_text(encoding="utf-8").split())
         with TemporaryDirectory() as temporary:
             archive = package_skill(SKILL, Path(temporary), "0.0.0")
             with ZipFile(archive) as zipped:
-                self.assertEqual((SKILL / "SKILL.md").read_bytes(), zipped.read("polyfork-scene-planning/SKILL.md"))
-                self.assertFalse(any(name.endswith((".glb", ".mjs", ".fbx", ".png")) for name in zipped.namelist()))
+                self.assertEqual((SKILL / "SKILL.md").read_bytes(), zipped.read("polyfork-assets/SKILL.md"))
+                self.assertFalse(any(name.endswith((".glb", ".mjs", ".fbx", ".png", ".blend")) for name in zipped.namelist()))
         self.assertEqual(self.plan["status"], "plan_only")
         self.assertEqual(self.plan["catalog_candidate"]["adoption"], "not_run")
         self.assertEqual(self.plan["catalog_candidate"]["parameter_overrides"], {})
