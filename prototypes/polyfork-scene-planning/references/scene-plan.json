@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "status": "plan_only",
+  "scene": {
+    "name": "Rainy-night repair bay",
+    "units": "m",
+    "up_axis": "Y",
+    "handedness": "right",
+    "front": "+Z"
+  },
+  "target": {
+    "dcc": "blender",
+    "meters_per_unit": 1.0,
+    "up_axis": "Z",
+    "handedness": "right"
+  },
+  "catalog_candidate": {
+    "id": "camper-van-8d10e2",
+    "metadata_url": "https://polyfork.dev/api/assets/camper-van-8d10e2",
+    "checked_at": "2026-10-30",
+    "edition": "free-low-poly",
+    "size_m": [
+      2.2,
+      2.22,
+      4.68
+    ],
+    "triangles": 3971,
+    "origin_y": 0,
+    "parameter_overrides": {},
+    "adoption": "not_run"
+  },
+  "materials": {
+    "CanopyPaint": [
+      0.06,
+      0.08,
+      0.1,
+      1.0
+    ],
+    "WetAsphalt": [
+      0.025,
+      0.035,
+      0.045,
+      1.0
+    ],
+    "BenchPaint": [
+      0.25,
+      0.16,
+      0.08,
+      1.0
+    ],
+    "PlaceholderPaint": [
+      0.3,
+      0.3,
+      0.3,
+      1.0
+    ]
+  },
+  "objects": [
+    {
+      "name": "ServiceCanopy",
+      "parent": "SceneRoot",
+      "provenance": "original_blockout",
+      "size_m": [
+        6,
+        0.2,
+        5
+      ],
+      "position_m": [
+        0,
+        3.6,
+        0
+      ],
+      "material": "CanopyPaint"
+    },
+    {
+      "name": "WetRoad",
+      "parent": "SceneRoot",
+      "provenance": "original_blockout",
+      "size_m": [
+        12,
+        0.1,
+        14
+      ],
+      "position_m": [
+        0,
+        -0.05,
+        0
+      ],
+      "material": "WetAsphalt"
+    },
+    {
+      "name": "ServiceBench",
+      "parent": "SceneRoot",
+      "provenance": "original_blockout",
+      "size_m": [
+        1.8,
+        0.9,
+        0.7
+      ],
+      "position_m": [
+        2.1,
+        0.45,
+        0
+      ],
+      "material": "BenchPaint"
+    },
+    {
+      "name": "CamperSlot",
+      "parent": "SceneRoot",
+      "provenance": "original_placeholder",
+      "size_m": [
+        2.2,
+        2.22,
+        4.68
+      ],
+      "position_m": [
+        -1,
+        1.11,
+        0
+      ],
+      "material": "PlaceholderPaint"
+    }
+  ],
+  "intent": {
+    "weather": "rainy night, original lighting/effects to be authored",
+    "camera": "three-quarter view from the open side",
+    "lighting": "warm task lights beneath a cool overcast environment"
+  },
+  "acceptance": {
+    "dimension_tolerance_m": 0.01,
+    "export_format": "glb",
+    "import": "not_run",
+    "export": "not_run",
+    "reopen": "not_run",
+    "native_acceptance": "not_run"
+  }
+}

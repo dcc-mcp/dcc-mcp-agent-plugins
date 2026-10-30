@@ -355,6 +355,13 @@ OpenAI and Claude public directories require human review; CI builds and
 validates their submission artifacts but does not bypass those review portals.
 See [`SUBMISSION.md`](SUBMISSION.md).
 
+## Source prototypes
+
+[Polyfork scene planning](prototypes/polyfork-scene-planning/SKILL.md) is an
+optional source prototype with original scene planning and offline readback
+checks. It is outside the canonical four-Skill catalog and release packages;
+no Polyfork assets, modules or hosted guide text are included.
+
 ## Security boundary
 
 The plugin ships no public MCP server. It connects to the user's local DCC-MCP
