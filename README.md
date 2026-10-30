@@ -355,12 +355,28 @@ OpenAI and Claude public directories require human review; CI builds and
 validates their submission artifacts but does not bypass those review portals.
 See [`SUBMISSION.md`](SUBMISSION.md).
 
-## Source prototypes
+## Optional standalone Skills
 
-[Polyfork scene planning](prototypes/polyfork-scene-planning/SKILL.md) is an
-optional source prototype with original scene planning and offline readback
-checks. It is outside the canonical four-Skill catalog and release packages;
-no Polyfork assets, modules or hosted guide text are included.
+[`polyfork-assets`](skills/polyfork-assets/SKILL.md) adds public single-asset
+selection/download, private project caching and reuse, and DCC readback guidance.
+It is separate from the canonical four-Skill suite and has no persistent MCP
+configuration. No Polyfork models, modules or hosted guide text are bundled.
+
+After reviewing/checking out the desired source revision, optionally install
+just this Skill from the repository root:
+
+```bash
+npx --yes skills@1.5.22 add ./skills/polyfork-assets --skill polyfork-assets
+```
+
+Then request `$polyfork-assets` to find and reuse one asset in a named private
+project. The draft PR does not run this installation or publish the Skill.
+
+Repository-wide Skills CLI discovery can list this additional root-level Skill;
+use `--skill polyfork-assets` to select it explicitly. The four-Skill release
+catalog, archives/npm packages and tagged install matrix still select only
+`.github/clawhub-skills.json` / `plugins/dcc-mcp/skills`; discovery count is not
+the release-suite count.
 
 ## Security boundary
 
