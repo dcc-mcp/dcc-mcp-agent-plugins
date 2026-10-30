@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "evidence_source": "synthetic_fixture",
+  "stage": "export_reopen",
+  "format": "glb",
+  "meters_per_unit": 1.0,
+  "up_axis": "Z",
+  "handedness": "right",
+  "materials": {
+    "CanopyPaint": [
+      0.06,
+      0.08,
+      0.1,
+      1.0
+    ],
+    "WetAsphalt": [
+      0.025,
+      0.035,
+      0.045,
+      1.0
+    ],
+    "BenchPaint": [
+      0.25,
+      0.16,
+      0.08,
+      1.0
+    ],
+    "PlaceholderPaint": [
+      0.3,
+      0.3,
+      0.3,
+      1.0
+    ]
+  },
+  "objects": [
+    {
+      "name": "ServiceCanopy",
+      "parent": "SceneRoot",
+      "size": [
+        6,
+        5,
+        0.2
+      ],
+      "position": [
+        0,
+        0,
+        3.6
+      ],
+      "material": "CanopyPaint"
+    },
+    {
+      "name": "WetRoad",
+      "parent": "SceneRoot",
+      "size": [
+        12,
+        14,
+        0.1
+      ],
+      "position": [
+        0,
+        0,
+        -0.05
+      ],
+      "material": "WetAsphalt"
+    },
+    {
+      "name": "ServiceBench",
+      "parent": "SceneRoot",
+      "size": [
+        1.8,
+        0.7,
+        0.9
+      ],
+      "position": [
+        2.1,
+        0,
+        0.45
+      ],
+      "material": "BenchPaint"
+    },
+    {
+      "name": "CamperSlot",
+      "parent": "SceneRoot",
+      "size": [
+        2.2,
+        4.68,
+        2.22
+      ],
+      "position": [
+        -1,
+        0,
+        1.11
+      ],
+      "material": "PlaceholderPaint"
+    }
+  ]
+}
