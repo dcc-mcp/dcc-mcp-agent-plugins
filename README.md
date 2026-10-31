@@ -355,6 +355,18 @@ OpenAI and Claude public directories require human review; CI builds and
 validates their submission artifacts but does not bypass those review portals.
 See [`SUBMISSION.md`](SUBMISSION.md).
 
+## Optional standalone Skills
+
+[`polyfork-assets`](https://github.com/dcc-mcp/dcc-asset-polyfork) is maintained
+in its independent source repository. It provides rights-aware public single-GLB
+acquisition, private project caching/reuse and DCC readback guidance. Review its
+Skill and current provider terms before use. No implementation, Polyfork asset,
+module, hosted guide or persistent MCP configuration is bundled here.
+
+For compatibility, request `$polyfork-assets` after separately selecting/installing
+the Skill from that reviewed repository. This marketplace entry is a reference,
+not an installer or a fifth target in the canonical four-Skill release suite.
+
 ## Security boundary
 
 The plugin ships no public MCP server. It connects to the user's local DCC-MCP
