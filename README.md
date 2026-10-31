@@ -357,26 +357,15 @@ See [`SUBMISSION.md`](SUBMISSION.md).
 
 ## Optional standalone Skills
 
-[`polyfork-assets`](skills/polyfork-assets/SKILL.md) adds public single-asset
-selection/download, private project caching and reuse, and DCC readback guidance.
-It is separate from the canonical four-Skill suite and has no persistent MCP
-configuration. No Polyfork models, modules or hosted guide text are bundled.
+[`polyfork-assets`](https://github.com/dcc-mcp/dcc-asset-polyfork) is maintained
+in its independent source repository. It provides rights-aware public single-GLB
+acquisition, private project caching/reuse and DCC readback guidance. Review its
+Skill and current provider terms before use. No implementation, Polyfork asset,
+module, hosted guide or persistent MCP configuration is bundled here.
 
-After reviewing/checking out the desired source revision, optionally install
-just this Skill from the repository root:
-
-```bash
-npx --yes skills@1.5.22 add ./skills/polyfork-assets --skill polyfork-assets
-```
-
-Then request `$polyfork-assets` to find and reuse one asset in a named private
-project. The draft PR does not run this installation or publish the Skill.
-
-Repository-wide Skills CLI discovery can list this additional root-level Skill;
-use `--skill polyfork-assets` to select it explicitly. The four-Skill release
-catalog, archives/npm packages and tagged install matrix still select only
-`.github/clawhub-skills.json` / `plugins/dcc-mcp/skills`; discovery count is not
-the release-suite count.
+For compatibility, request `$polyfork-assets` after separately selecting/installing
+the Skill from that reviewed repository. This marketplace entry is a reference,
+not an installer or a fifth target in the canonical four-Skill release suite.
 
 ## Security boundary
 
