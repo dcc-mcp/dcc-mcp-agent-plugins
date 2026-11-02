@@ -81,24 +81,65 @@ class TestOfficialSchemaNegative(ContractFixture):
         self.assertTrue(vm.check_official_schema(bad, self.schema))
 
 
-class TestSourceRefNegative(ContractFixture):
-    def test_moving_branch_ref_is_rejected(self):
-        bad = copy.deepcopy(self.contract)
-        bad["manifest"]["source_ref"] = "main"
-        self.assertTrue(vm.check_source_ref(bad))
+class TestActivationStateNegative(ContractFixture):
+    """The proposal must stay an honest UNACTIVATED draft (reviewer finding #1)."""
 
-    def test_short_sha_is_rejected(self):
-        bad = copy.deepcopy(self.contract)
-        bad["manifest"]["source_ref"] = "1c24132"
-        self.assertTrue(vm.check_source_ref(bad))
+    def test_clean_unactivated_contract_passes(self):
+        self.assertEqual(vm.check_activation_state(self.contract), [])
 
-    def test_tag_ref_is_rejected(self):
+    def test_phase_1_activated_flag_is_rejected(self):
         bad = copy.deepcopy(self.contract)
-        bad["manifest"]["source_ref"] = "v0.19.120"
-        self.assertTrue(vm.check_source_ref(bad))
+        bad["activation"]["phase_1_is_activated"] = True
+        self.assertTrue(any("phase_1_is_activated" in e for e in vm.check_activation_state(bad)))
 
-    def test_full_sha_is_accepted(self):
-        self.assertEqual(vm.check_source_ref(self.contract), [])
+    def test_live_consumer_wired_flag_is_rejected(self):
+        bad = copy.deepcopy(self.contract)
+        bad["activation"]["live_consumer_or_publisher_wired"] = True
+        self.assertTrue(any("live_consumer_or_publisher_wired" in e for e in vm.check_activation_state(bad)))
+
+    def test_enforceable_gate_flag_is_rejected(self):
+        bad = copy.deepcopy(self.contract)
+        bad["activation"]["enforceable_publish_gate"] = True
+        self.assertTrue(any("enforceable_publish_gate" in e for e in vm.check_activation_state(bad)))
+
+    def test_non_draft_status_is_rejected(self):
+        bad = copy.deepcopy(self.contract)
+        bad["status"] = "active"
+        self.assertTrue(any("status" in e for e in vm.check_activation_state(bad)))
+
+    def test_reintroduced_source_ref_pin_is_rejected(self):
+        bad = copy.deepcopy(self.contract)
+        bad["manifest"]["source_ref"] = "1c24132488612eb4fba8d78bf3183ac73a71e829"
+        self.assertTrue(any("source_ref" in e for e in vm.check_activation_state(bad)))
+
+
+class TestVersionAuthoringSourceNegative(ContractFixture):
+    """PyPI version must come from the contract, not a hardcoded literal (reviewer finding #3)."""
+
+    def test_pypi_value_is_read_from_contract(self):
+        self.assertEqual(
+            vm.pypi_authoring_version(self.contract),
+            self.contract["version_domains"]["pypi_package"]["value_at_authoring"],
+        )
+
+    def test_pypi_value_tracks_contract_change(self):
+        bad = copy.deepcopy(self.contract)
+        bad["version_domains"]["pypi_package"]["value_at_authoring"] = "9.9.9"
+        self.assertEqual(vm.pypi_authoring_version(bad), "9.9.9")
+
+    def test_missing_pypi_authoring_value_raises(self):
+        bad = copy.deepcopy(self.contract)
+        del bad["version_domains"]["pypi_package"]["value_at_authoring"]
+        with self.assertRaises(KeyError):
+            vm.pypi_authoring_version(bad)
+
+    def test_manifest_version_drift_from_contract_is_rejected(self):
+        # Static self-consistency: a manifest whose version drifts from the
+        # recorded authoring value is rejected (offline, not a live lookup).
+        bad = copy.deepcopy(self.contract)
+        bad["version_domains"]["registry_metadata"]["value_in_source_manifest"] = "9.9.9"
+        errs = vm.check_version_domains(self.manifest, bad, self.suite_version)
+        self.assertTrue(any("self-consistency" in e for e in errs))
 
 
 class TestIntegrityNegative(ContractFixture):
