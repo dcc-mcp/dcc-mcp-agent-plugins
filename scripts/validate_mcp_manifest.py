@@ -44,8 +44,16 @@ ROOT = Path(__file__).resolve().parent.parent
 MCP = ROOT / "mcp_registry"
 
 NAME_RE = re.compile(r"^[a-zA-Z0-9.-]+/[a-zA-Z0-9._-]+$")
-# Version ranges are rejected by the official schema; reject them here too.
-VERSION_RANGE_RE = re.compile(r"(\^|~=|>=|<=|[*xX]|\|\||\s-\s)")
+# The official schema's version fields reject ranges only DESCRIPTIVELY (their
+# descriptions list '^1.2.3', '~1.2.3', '>=1.2.3', '1.x', '1.*' as rejected;
+# there is NO `pattern` keyword enforcing it). Mirror that intent offline:
+# reject leading comparators/operators, OR-joined and hyphen ranges, and whole
+# wildcard SEGMENTS (1.x / 1.* / x / *). Do NOT flag a bare x/X/* that is
+# merely part of a prerelease or build identifier (the x in "next"/"linux" in
+# 1.0.0-next.1 / 1.0.0+linux), which are valid, specific semver strings.
+VERSION_RANGE_RE = re.compile(
+    r"(?:^|[\s,])[<>=~^!]|\|\||\s-\s|(?:^|\.)\s*[*xX]\s*(?:\.|$)"
+)
 SKILLS_REPO_FRAGMENTS = ("dcc-mcp-agent-plugins",)
 
 
