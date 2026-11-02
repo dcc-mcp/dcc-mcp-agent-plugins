@@ -1,6 +1,6 @@
 # ADR 0004: Centralize the MCP Registry manifest in Agent Plugins
 
-- Status: **Proposed (Phase 1, draft — not activated)**
+- Status: **Proposed (Phase 1, UNACTIVATED draft — no live consumer, no publish gate)**
 - Date: 2026-11-02
 - Builds on: [ADR 0003](0003-agent-plugins-source-of-truth.md)
 - Supersedes: nothing (this is additive; it does not change Skill ownership)
@@ -47,27 +47,38 @@ Two hard constraints shape the design:
   (`dcc-mcp-server`), `registryType`, `registryBaseUrl`, `transport`, and
   `environmentVariables`. `repository` stays pointed at the real server source,
   `dcc-mcp/dcc-mcp-core` — never the skills repo.
-- `dcc-mcp/dcc-mcp-core` remains the **sole publisher** in Phase 1. Its existing
-  `publish-mcp-registry.yml` is the only thing that mints the OIDC token the
-  Registry accepts for the `io.github.dcc-mcp/*` namespace; that capability does
-  not move in this phase.
-- The publisher consumes the manifest from a **pinned full 40-hex commit SHA**
-  (never a moving branch/tag) and verifies a **sha256 integrity digest** before
-  use. `mcp_registry/publish-contract.json` records the pin, the digests, the
-  immutable-field expectations, the version-domain rules, and the single active
-  publisher.
-- `scripts/validate_mcp_manifest.py` is a **read-only, stdlib-only fail-stop
-  gate**, run as a dry-run before any publish. It validates:
+- In the intended design `dcc-mcp/dcc-mcp-core` remains the **sole publisher**
+  in Phase 1. Its `publish-mcp-registry.yml` is the only thing that mints the
+  OIDC token the Registry accepts for the `io.github.dcc-mcp/*` namespace; that
+  capability does not move in this phase. **This is a design declaration only —
+  no consumer is wired. The live Core workflow currently publishes Core's own
+  `server.json` and does NOT read this repo's manifest or run this validator.**
+- Integrity of the proposal's own artifacts is anchored to a **sha256 digest of
+  the committed `mcp_registry/server.json` in this repo** (verified offline).
+  `mcp_registry/publish-contract.json` records the digests, immutable-field
+  expectations, static version-domain rules, single-publisher declaration, and
+  explicit activation flags. An earlier draft pinned a `source_ref` to the PR
+  base `1c24132` and claimed the publisher fetched the manifest there; that was
+  false (`mcp_registry/` did not exist at that commit) and has been removed.
+- `scripts/validate_mcp_manifest.py` is a **read-only, stdlib-only, offline
+  dry-run validator**. It is NOT wired into any publish workflow and its exit
+  code does NOT gate any live publish. It validates:
   - conformance to the **vendored official schema** (`2025-12-11`, offline, so a
     moving upstream URL cannot change validation semantics),
-  - pinned-SHA + sha256 integrity of manifest / schema / Core baseline,
+  - that the contract stays **UNACTIVATED** (activation flags false, no false
+    `source_ref` pin, draft status),
+  - sha256 integrity of the committed manifest / schema / Core baseline,
   - backward compatibility of every immutable field against a verbatim Core
     `server.json` snapshot,
   - that `repository` still points at Core,
-  - the three **version domains separately** (rejects ranges,
-    `version != packages[0].version`, and any plugin-suite-version conflation),
-  - that there is **exactly one** active publisher.
-  If any check fails it exits non-zero and publishing must not proceed.
+  - the three **version domains separately as STATIC authoring values** (rejects
+    ranges, manifest-vs-package mismatch, drift from the recorded authoring
+    value, and any plugin-suite-version conflation; it does NOT check live
+    PyPI/Registry state),
+  - the **single-publisher design declaration** (exactly one, checked over this
+    repo's contract data only — not enforced on any live publish).
+  If any check fails the dry-run exits non-zero; this signals inconsistent
+  proposal artifacts, NOT a blocked live publish.
 - No change is made to `.github/distribution.json` channel automation, no
   registry write, no OAuth, no new publish workflow, no trigger, and no change
   to credentials or security settings. This ADR and the Draft PR are the
@@ -97,11 +108,16 @@ own review, its own exact-head approval, and must not be bundled with the Core
 ## Consequences
 
 - One owner and one review path for MCP registration metadata (brand fields),
-  consistent with ADR 0003.
-- A moving upstream schema or a mutable source ref cannot silently change what
-  gets published: both are pinned and hash-verified offline.
+  consistent with ADR 0003 — *when Phase 2 activates a consumer*.
+- A moving upstream schema cannot silently change validation semantics: the
+  schema is vendored and hash-verified offline. The manifest's own integrity is
+  anchored to the sha256 of its committed bytes, not to a fetchable `source_ref`
+  pin. All of this validates the proposal's artifacts only; it does not affect
+  any live publish until Phase 2 wires a consumer.
 - The Core server source remains the authoritative `repository`; centralization
   is about *registration metadata*, not relocating runtime code.
-- Until Phase 2, the Core repo still publishes; this repo only prepares and
-  validates the manifest. Phase 2 needs a coordinated cutover because
-  cross-repo concurrency cannot prevent a double-write.
+- Until Phase 2, the Core repo still publishes its own `server.json`; this repo
+  only prepares and offline-validates a proposed manifest that nothing yet
+  consumes. Phase 2 needs a coordinated cutover plus an end-to-end test proving
+  the consumer reads the pinned content and verifies sha256, because cross-repo
+  concurrency cannot prevent a double-write.

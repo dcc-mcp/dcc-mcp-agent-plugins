@@ -1,15 +1,21 @@
 {
-  "$comment": "Phase-1 publication contract for the centralized MCP Registry manifest. This file is DATA, not an executable workflow. Nothing here publishes, registers, authenticates, or writes to any external service. The sole publisher (dcc-mcp/dcc-mcp-core) reads the manifest at a pinned full commit SHA and runs scripts/validate_mcp_manifest.py as a fail-stop gate before its existing publish-mcp-registry.yml acts.",
+  "$comment": "UNACTIVATED Phase-1 design proposal for a future centralized MCP Registry manifest. This file is DATA plus an offline, read-only validator; it is NOT an executable workflow and is NOT wired into any publish pipeline. Nothing here publishes, registers, authenticates, or writes to any external service. There is currently NO live consumer: dcc-mcp/dcc-mcp-core's live publish-mcp-registry.yml does NOT fetch this repo's manifest and does NOT run scripts/validate_mcp_manifest.py. The sha256 / version-domain / single-publisher rules below are offline integrity checks over this repo's own committed artifacts and a design contract for a future reviewed Phase-2 integration - they are NOT an enforceable gate on any live publish.",
   "contract_version": "1.0.0",
   "phase": 1,
   "status": "draft-do-not-activate",
 
+  "activation": {
+    "phase_1_is_activated": false,
+    "live_consumer_or_publisher_wired": false,
+    "enforceable_publish_gate": false,
+    "$comment": "All flags MUST remain false for this proposal. Wiring a consumer (e.g. having Core fetch mcp_registry/server.json at a pinned SHA, verify sha256, and run the validator before publishing) is a SEPARATE Phase-2 change: it needs hallong's explicit activation decision, its own independent review, and an end-to-end test proving the consumer reads the pinned content and verifies the sha256. This PR does not implement, enable, or authorize any of that."
+  },
+
   "manifest": {
     "path": "mcp_registry/server.json",
     "source_repo": "dcc-mcp/dcc-mcp-agent-plugins",
-    "source_ref": "1c24132488612eb4fba8d78bf3183ac73a71e829",
-    "$comment_ref": "Full 40-hex commit SHA on agent-plugins main at authoring time. The publisher must fetch server.json at THIS immutable ref, never at a moving branch/tag. Bumping the pin requires a reviewed contract change.",
-    "sha256": "b47a3df33c9fe562e1f3d796f69c3a43333af6e3c4f60126199f9c2a23d6551d"
+    "sha256": "b47a3df33c9fe562e1f3d796f69c3a43333af6e3c4f60126199f9c2a23d6551d",
+    "$comment_integrity": "Integrity is anchored to the sha256 of the committed mcp_registry/server.json in THIS repo, verified offline by check_integrity. There is deliberately NO source_ref pin claiming a publisher fetches this file: an earlier version pinned the PR base 1c24132, where mcp_registry/ did not exist, and no consumer has ever been wired. Do not add a consumer/fetch/source_ref claim without a reviewed Phase-2 change plus an end-to-end test."
   },
 
   "official_schema": {
@@ -30,7 +36,7 @@
     "phase_1_sole_publisher": "dcc-mcp/dcc-mcp-core",
     "workflow": "publish-mcp-registry.yml",
     "active_publishers": ["dcc-mcp/dcc-mcp-core"],
-    "$comment_publisher": "Exactly ONE active publisher in Phase 1. A second active publisher (e.g. an agent-plugins publish workflow) is a double-write hazard and must fail the build. Cross-repo GitHub Actions `concurrency` groups do NOT serialize across repositories, so they cannot be relied on to prevent two publishers from writing the same registry name.",
+    "$comment_publisher": "DESIGN DECLARATION (offline, NOT enforced on any live publish): the intended Phase-1 architecture has exactly ONE publisher. A second active publisher (e.g. an agent-plugins publish workflow) is a double-write hazard. check_single_publisher validates this invariant over this repo's own contract data only; it does NOT enforce who can actually publish, because no consumer is wired (see activation). Cross-repo GitHub Actions concurrency groups do NOT serialize across repositories, so they cannot be relied on to prevent two publishers from writing the same registry name.",
     "max_active_publishers": 1
   },
 
@@ -46,36 +52,37 @@
     "packages[0].environmentVariables[0].name": "DCC_MCP_GATEWAY_PORT",
     "repository.url": "https://github.com/dcc-mcp/dcc-mcp-core",
     "repository.source": "github",
-    "$comment_repository": "Per the official schema, `repository` is metadata about the SERVER SOURCE CODE. It MUST continue to point at dcc-mcp-core (the actual server source), NOT at the skills/agent-plugins repo. Repointing it to the skills repo is a schema/semantic violation and fails backward-compat."
+    "$comment_repository": "Per the official schema, repository is metadata about the SERVER SOURCE CODE. It MUST continue to point at dcc-mcp-core (the actual server source), NOT at the skills/agent-plugins repo. Repointing it to the skills repo is a schema/semantic violation and fails backward-compat."
   },
 
   "brand_fields_owned_here": ["title", "description", "icons", "websiteUrl"],
 
   "version_domains": {
-    "$comment_versions": "Three independent version domains. They must be validated SEPARATELY and never overwrite/conflate one another. A change in one domain is not evidence for a change in another.",
+    "$comment_versions": "STATIC AUTHORING-TIME values, NOT live-verified. Three independent version domains are validated SEPARATELY and never conflated. The offline validator checks self-consistency against these recorded values; it does NOT (and cannot, being stdlib-only and offline) query live PyPI wheels or the live Registry. 'Validation passed' here means static data integrity only - NOT dynamic/live version consistency. A change in one domain is not evidence for a change in another.",
     "registry_metadata": {
-      "$comment": "server.json `version` + `packages[0].version`. Stamped at publish time by the Core release; the value in this source manifest is the last known published Core version.",
+      "$comment": "STATIC authoring-time snapshot of server.json version + packages[0].version. In a live publish these are stamped by the Core release. value_in_source_manifest records the authoring value so check_version_domains can verify the source manifest has not drifted from the contract. The validator does NOT query the live Registry.",
       "manifest_fields": ["version", "packages[0].version"],
       "value_in_source_manifest": "0.20.53",
       "live_registry_isLatest_at_authoring": "0.20.51",
       "must_be_equal_to_each_other": true
     },
     "pypi_package": {
-      "$comment": "The PyPI wheel `dcc-mcp-server`. Ownership proven by the mcp-name marker in its published README.",
+      "$comment": "STATIC authoring-time value, NOT live-verified. The PyPI wheel dcc-mcp-server; ownership would be proven by the mcp-name marker in its published README. pypi_authoring_version(contract) reads value_at_authoring as the single source of truth for reporting and negative tests; the validator does NOT query live PyPI state.",
       "package": "dcc-mcp-server",
       "value_at_authoring": "0.20.53",
       "ownership_marker": "mcp-name: io.github.dcc-mcp/dcc-mcp-core"
     },
     "plugin_suite": {
-      "$comment": "The Agent Plugins Skills suite version, from plugins/dcc-mcp/plugin.json. Independent product line; NOT tied to the MCP server version.",
+      "$comment": "STATIC authoring-time value. The Agent Plugins Skills suite version, from plugins/dcc-mcp/plugin.json. Independent product line; NOT tied to the MCP server version.",
       "source": "plugins/dcc-mcp/plugin.json:version",
       "value_at_authoring": "0.19.120"
     },
     "rules": [
       "registry_metadata.version MUST equal registry_metadata.packages[0].version (they are stamped together at publish).",
-      "A version mismatch between the manifest `version` and `packages[0].version` is a fail-stop error.",
+      "The source manifest version MUST equal registry_metadata.value_in_source_manifest (static authoring self-consistency, offline only).",
+      "A version mismatch between the manifest version and packages[0].version is a fail-stop error.",
       "The plugin_suite version MUST NOT be written into server.json.version or packages[0].version (version-domain conflation is a fail-stop error).",
-      "The live Registry version (0.20.51) and the PyPI package version (0.20.53) are allowed to differ; this gap is the separate Core 0.20.53 re-release, explicitly OUT OF SCOPE for this change."
+      "The live Registry version (0.20.51) and the PyPI package version (0.20.53) are allowed to differ; this gap is the separate Core 0.20.53 re-release, explicitly OUT OF SCOPE for this change. The validator does NOT verify either live value."
     ]
   },
 
@@ -85,12 +92,13 @@
     "goal": "Migrate the publisher role from dcc-mcp/dcc-mcp-core to dcc-mcp/dcc-mcp-agent-plugins so registration is managed where the manifest now lives.",
     "required_ordering": [
       "1. Land and review this contract + validator (Phase 1). Core remains the only entity that can mint the io.github.dcc-mcp/* OIDC token for the publisher.",
-      "2. Before switching, coordinate a single cutover: DISABLE the old Core `publish-mcp-registry.yml` release/dispatch triggers FIRST, then enable the new agent-plugins publisher.",
-      "3. Do NOT rely on cross-repo `concurrency` groups: they are per-repository and do not serialize writers in two different repos. Two simultaneously active publishers will double-write the same registry name.",
+      "2. Before switching, coordinate a single cutover: DISABLE the old Core publish-mcp-registry.yml release/dispatch triggers FIRST, then enable the new agent-plugins publisher.",
+      "3. Do NOT rely on cross-repo concurrency groups: they are per-repository and do not serialize writers in two different repos. Two simultaneously active publishers will double-write the same registry name.",
       "4. Re-validate that exactly one active_publisher remains, that OIDC namespace ownership still resolves, and that no badge is attached before the new entry is queryable on the live registry."
     ],
     "blockers": [
       "OIDC publisher identity: the live publish workflow is gated on github.repository == 'dcc-mcp/dcc-mcp-core'; moving the publisher requires confirming the registry still accepts the io.github.dcc-mcp/* namespace from the new repo.",
+      "End-to-end test: no test currently proves a Core (or other) consumer actually reads mcp_registry/server.json at a pinned SHA and verifies its sha256 before publishing. Phase 2 MUST add this e2e test before any publisher cutover; until then this proposal provides NO enforceable publish gate.",
       "Core 0.20.53 re-release is a separate publish-fix item and must not be bundled into this migration."
     ]
   }

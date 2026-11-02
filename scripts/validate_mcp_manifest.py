@@ -1,24 +1,33 @@
-"""Fail-stop validator for the centralized MCP Registry manifest.
+"""Offline dry-run validator for an UNACTIVATED Phase-1 manifest proposal.
 
 Phase 1 only. This module is deliberately STDLIB-ONLY and READ-ONLY:
 
 * It validates ``mcp_registry/server.json`` against the pinned official
   ``server.json`` schema (vendored, offline) and against the publish contract.
 * It performs NO network calls, NO registry writes, NO OAuth, NO publish, and
-  writes NO files. Running it is a pure dry-run gate.
-* The sole publisher (dcc-mcp/dcc-mcp-core) calls this before its existing
-  publish workflow acts. If this exits non-zero, publishing must not proceed.
+  writes NO files. Running it is a pure offline dry-run over this repo's own
+  committed artifacts.
+* This Phase-1 proposal is UNACTIVATED: NO live publisher or consumer is wired
+  to it. ``dcc-mcp/dcc-mcp-core``'s live ``publish-mcp-registry.yml`` does NOT
+  fetch this manifest or run this validator. A non-zero exit only means the
+  committed proposal artifacts are inconsistent; it does NOT gate any live
+  publish. Wiring a consumer is a separate, reviewed Phase-2 change (hallong
+  activation + independent review + an end-to-end test).
 
 Checks (each is a separate function so it can be unit-tested with negative
 fixtures):
 
 * official-schema conformance (offline Draft-07 subset)
-* pinned full-SHA input source + sha256 integrity of manifest/schema/baseline
+* the contract stays explicitly UNACTIVATED (activation flags false, no false
+  source_ref pin, draft status)
+* sha256 integrity of the committed manifest/schema/baseline
 * backward-compatibility of every immutable identity/wiring field
 * ``repository`` continues to point at the real server source (Core), never the
   skills repo
-* three version domains validated separately (no conflation)
-* exactly ONE active publisher (dual-publisher is a double-write hazard)
+* three version domains validated separately as STATIC authoring values (no
+  conflation, no claim of live PyPI/Registry verification)
+* exactly ONE active publisher DESIGN declaration (offline, not enforced on any
+  live publish)
 """
 
 from __future__ import annotations
@@ -35,7 +44,6 @@ ROOT = Path(__file__).resolve().parent.parent
 MCP = ROOT / "mcp_registry"
 
 NAME_RE = re.compile(r"^[a-zA-Z0-9.-]+/[a-zA-Z0-9._-]+$")
-FULL_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 # Version ranges are rejected by the official schema; reject them here too.
 VERSION_RANGE_RE = re.compile(r"(\^|~=|>=|<=|[*xX]|\|\||\s-\s)")
 SKILLS_REPO_FRAGMENTS = ("dcc-mcp-agent-plugins",)
@@ -171,11 +179,36 @@ def check_official_schema(manifest: Any, schema: dict) -> list[str]:
     return _json_schema_validate(manifest, schema, schema)
 
 
-def check_source_ref(contract: dict) -> list[str]:
-    ref = contract["manifest"].get("source_ref", "")
-    if not FULL_SHA_RE.match(ref):
-        return [f"source_ref {ref!r} is not a full 40-hex commit SHA (a moving branch/tag is forbidden)"]
-    return []
+def check_activation_state(contract: dict) -> list[str]:
+    """Guard the honest framing of this Phase-1 change.
+
+    This proposal is UNACTIVATED: no live consumer/publisher is wired and there
+    is no enforceable publish gate. Reject re-introducing the false fixed-SHA
+    provenance (a ``source_ref`` pin into a base commit where the manifest did
+    not exist) or flipping the activation flags without the separate reviewed
+    Phase-2 change plus an end-to-end test.
+    """
+    errors: list[str] = []
+    activation = contract.get("activation", {})
+    for flag in ("phase_1_is_activated", "live_consumer_or_publisher_wired", "enforceable_publish_gate"):
+        if activation.get(flag) is not False:
+            errors.append(f"activation.{flag} must be false for the unactivated Phase-1 proposal (got {activation.get(flag)!r})")
+    if contract.get("status") != "draft-do-not-activate":
+        errors.append(f"status must be 'draft-do-not-activate' (got {contract.get('status')!r})")
+    if "source_ref" in contract.get("manifest", {}):
+        errors.append(
+            "manifest.source_ref reintroduces a false fixed-SHA provenance claim; "
+            "integrity is anchored to the committed sha256, not a fetch pin"
+        )
+    return errors
+
+
+def pypi_authoring_version(contract: dict) -> str:
+    """Read the PyPI authoring-time version from the contract (single source of truth).
+
+    The value is a STATIC authoring snapshot, NOT a live PyPI/Registry lookup.
+    """
+    return str(contract["version_domains"]["pypi_package"]["value_at_authoring"])
 
 
 def check_integrity(manifest_bytes: bytes, schema_bytes: bytes, baseline_bytes: bytes, contract: dict) -> list[str]:
@@ -228,6 +261,17 @@ def check_version_domains(manifest: Any, contract: dict, plugin_suite_version: s
     if version != pkg_version:
         errors.append(f"version-domain mismatch: version={version!r} != packages[0].version={pkg_version!r}")
 
+    # Static authoring self-consistency (offline only): the source manifest
+    # version must match the value recorded in the contract. This checks the
+    # proposal's own data has not drifted; it is NOT a live Registry/PyPI check.
+    registry_authoring = domains.get("registry_metadata", {}).get("value_in_source_manifest")
+    if registry_authoring is not None and str(version) != str(registry_authoring):
+        errors.append(
+            f"source manifest version {version!r} != contract "
+            f"registry_metadata.value_in_source_manifest {registry_authoring!r} "
+            f"(static authoring self-consistency)"
+        )
+
     # A plugin-suite version must never leak into the MCP server metadata.
     if plugin_suite_version and (version == plugin_suite_version or pkg_version == plugin_suite_version):
         errors.append(
@@ -270,7 +314,7 @@ def run_all_checks(
 ) -> list[str]:
     errors: list[str] = []
     errors += check_official_schema(manifest, schema)
-    errors += check_source_ref(contract)
+    errors += check_activation_state(contract)
     errors += check_integrity(manifest_bytes, schema_bytes, baseline_bytes, contract)
     errors += check_backward_compat(manifest, contract)
     errors += check_repository_source(manifest)
@@ -308,16 +352,22 @@ def main(argv: list[str] | None = None) -> int:
         baseline_bytes, plugin_suite_version,
     )
 
-    print("MCP manifest dry-run (read-only; no publish/registry/OAuth/network writes)")
-    print(f"  manifest: {contract['manifest']['path']} @ {contract['manifest']['source_ref']}")
+    print("MCP manifest dry-run (offline, read-only; no publish/registry/OAuth/network writes)")
+    print(f"  manifest: {contract['manifest']['path']} (integrity anchored to committed sha256; no source_ref pin)")
     print(f"  official schema: {contract['official_schema']['url']}")
-    print(f"  version domains: registry/package={manifest['version']}, pypi=0.20.53, plugin_suite={plugin_suite_version}")
+    print(
+        "  version domains (STATIC authoring values, NOT live-verified): "
+        f"registry/package={manifest['version']}, pypi={pypi_authoring_version(contract)}, "
+        f"plugin_suite={plugin_suite_version}"
+    )
+    print("  activation: UNACTIVATED draft proposal; no live consumer/publisher and no enforceable publish gate wired.")
     if errors:
         print(f"FAIL-STOP: {len(errors)} error(s):")
         for e in errors:
             print(f"  - {e}")
         return 1
-    print("PASS: all schema / integrity / backward-compat / version-domain / single-publisher checks passed.")
+    print("PASS: offline static checks (schema / activation-state / integrity / backward-compat / version-domain / single-publisher) passed.")
+    print("NOTE: this does NOT activate, publish, or enforce anything; a live publisher/consumer is a separate Phase-2 change.")
     return 0
 
 
