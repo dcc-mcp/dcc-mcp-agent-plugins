@@ -1,0 +1,39 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.dcc-mcp/dcc-mcp-core",
+  "title": "DCC-MCP",
+  "description": "One MCP endpoint that lets AI agents drive DCC and engine hosts with a typed tool contract.",
+  "version": "0.20.53",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/dcc-mcp/dcc-mcp-agent-plugins/1c24132488612eb4fba8d78bf3183ac73a71e829/plugins/dcc-mcp/assets/logo.png",
+      "mimeType": "image/png"
+    }
+  ],
+  "repository": {
+    "url": "https://github.com/dcc-mcp/dcc-mcp-core",
+    "source": "github",
+    "id": "950630502"
+  },
+  "websiteUrl": "https://dcc-mcp.github.io/",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "dcc-mcp-server",
+      "version": "0.20.53",
+      "runtimeHint": "uvx",
+      "transport": {
+        "type": "streamable-http",
+        "url": "http://127.0.0.1:{DCC_MCP_GATEWAY_PORT}/mcp"
+      },
+      "environmentVariables": [
+        {
+          "name": "DCC_MCP_GATEWAY_PORT",
+          "description": "Port the machine-wide gateway binds. One agent endpoint fronts every live DCC backend, so the port in the transport URL has to match this value.",
+          "default": "9765"
+        }
+      ]
+    }
+  ]
+}
