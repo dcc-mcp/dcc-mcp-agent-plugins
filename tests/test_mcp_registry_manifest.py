@@ -170,20 +170,50 @@ class TestBackwardCompatNegative(ContractFixture):
     def test_changed_immutable_name_is_rejected(self):
         bad = copy.deepcopy(self.manifest)
         bad["name"] = "io.github.dcc-mcp/dcc-mcp-agent-plugins"
-        self.assertTrue(any("'name'" in e for e in vm.check_backward_compat(bad, self.contract)))
+        self.assertTrue(any("'name'" in e for e in vm.check_backward_compat(bad, self.contract, self.baseline)))
 
     def test_changed_transport_url_is_rejected(self):
         bad = copy.deepcopy(self.manifest)
         bad["packages"][0]["transport"]["url"] = "http://evil.example/mcp"
-        self.assertTrue(any("transport.url" in e for e in vm.check_backward_compat(bad, self.contract)))
+        self.assertTrue(any("transport.url" in e for e in vm.check_backward_compat(bad, self.contract, self.baseline)))
 
     def test_changed_package_identifier_is_rejected(self):
         bad = copy.deepcopy(self.manifest)
         bad["packages"][0]["identifier"] = "something-else"
-        self.assertTrue(any("identifier" in e for e in vm.check_backward_compat(bad, self.contract)))
+        self.assertTrue(any("identifier" in e for e in vm.check_backward_compat(bad, self.contract, self.baseline)))
 
     def test_good_manifest_passes_backward_compat(self):
-        self.assertEqual(vm.check_backward_compat(self.manifest, self.contract), [])
+        self.assertEqual(vm.check_backward_compat(self.manifest, self.contract, self.baseline), [])
+
+    def test_coordinated_manifest_contract_drift_is_rejected(self):
+        # Reviewer finding B: the OLD check compared manifest only against the
+        # duplicated contract expectation (both editable in the same PR). A
+        # coordinated edit that changes BOTH the manifest field and the
+        # contract's immutable_fields expectation, while leaving the
+        # sha256-anchored Core baseline unchanged, used to slip through. The
+        # baseline is the real immutable source of truth, so it must fail-stop.
+        drift = "io.github.dcc-mcp/dcc-mcp-agent-plugins"
+        bad_manifest = copy.deepcopy(self.manifest)
+        bad_manifest["name"] = drift
+        bad_contract = copy.deepcopy(self.contract)
+        bad_contract["immutable_fields"]["name"] = drift  # launder the expectation
+        errors = vm.check_backward_compat(bad_manifest, bad_contract, self.baseline)
+        self.assertTrue(any("'name'" in e for e in errors),
+                        f"coordinated drift was not rejected: {errors}")
+
+    def test_contract_expectation_diverging_from_baseline_is_rejected(self):
+        # Even with an UNCHANGED manifest, an expectation that silently diverged
+        # from the Core baseline must be flagged (the expectation is not truth).
+        bad_contract = copy.deepcopy(self.contract)
+        bad_contract["immutable_fields"]["repository.url"] = "https://github.com/dcc-mcp/dcc-mcp-agent-plugins"
+        errors = vm.check_backward_compat(self.manifest, bad_contract, self.baseline)
+        self.assertTrue(any("diverges from the Core baseline" in e for e in errors),
+                        f"expectation/baseline divergence was not flagged: {errors}")
+
+    def test_unavailable_baseline_fails_closed(self):
+        # A missing/unparseable baseline cannot be used to fake a pass.
+        errors = vm.check_backward_compat(self.manifest, self.contract, None)
+        self.assertTrue(errors)
 
 
 class TestRepositorySourceNegative(ContractFixture):
@@ -242,10 +272,14 @@ class TestVersionRangeBoundaries(ContractFixture):
     )
     # Specific versions the registry accepts, incl. semver prerelease/build
     # metadata that happens to contain x/X (must NOT be treated as wildcards).
+    # The '.x' / '.X' cases (1.0.0-rc.x, 1.0.0+build.x, 1.0.0+build.X) are the
+    # reviewer finding A boundary: a wildcard-looking *label* after '-' / '+'
+    # is a valid, specific version, not a range segment.
     VALID_VERSIONS = (
         "1.2.3", "0.20.53", "2.1.0-alpha", "1.0.0-next.1",
         "1.0.0+linux", "1.0.0-beta.1", "1.0.0-rc.1+exp.sha.5114f85",
-        "0.0.4",
+        "0.0.4", "1.0.0-rc.x", "1.0.0+build.x", "1.0.0+build.X",
+        "1.0.0-x", "1.0.0+21AF26D3",
     )
 
     def _version_errors(self, version):
@@ -276,7 +310,10 @@ class TestVersionRangeBoundaries(ContractFixture):
         for v in ("~1.2.3", ">1.0.0", "<2", "1.x", "1.*"):
             with self.subTest(reject=v):
                 self.assertIsNotNone(vm.VERSION_RANGE_RE.search(v))
-        for v in ("1.0.0-next.1", "1.0.0+linux"):
+        # reviewer finding A: x/X inside prerelease/build labels is specific,
+        # not a wildcard segment. '.x'/'X' at a segment boundary was the bug.
+        for v in ("1.0.0-next.1", "1.0.0+linux", "1.0.0-rc.x",
+                  "1.0.0+build.x", "1.0.0+build.X"):
             with self.subTest(accept=v):
                 self.assertIsNone(vm.VERSION_RANGE_RE.search(v))
 

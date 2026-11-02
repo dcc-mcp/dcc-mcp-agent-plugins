@@ -47,12 +47,21 @@ NAME_RE = re.compile(r"^[a-zA-Z0-9.-]+/[a-zA-Z0-9._-]+$")
 # The official schema's version fields reject ranges only DESCRIPTIVELY (their
 # descriptions list '^1.2.3', '~1.2.3', '>=1.2.3', '1.x', '1.*' as rejected;
 # there is NO `pattern` keyword enforcing it). Mirror that intent offline:
-# reject leading comparators/operators, OR-joined and hyphen ranges, and whole
-# wildcard SEGMENTS (1.x / 1.* / x / *). Do NOT flag a bare x/X/* that is
-# merely part of a prerelease or build identifier (the x in "next"/"linux" in
-# 1.0.0-next.1 / 1.0.0+linux), which are valid, specific semver strings.
+# reject leading comparators/operators, OR-joined and hyphen ranges, and a
+# whole wildcard SEGMENT in the numeric CORE version (1.x / 1.* / x / *).
+#
+# A bare x/X/* that is merely part of a semver prerelease or build identifier
+# is a valid, specific version and MUST NOT be treated as a wildcard segment:
+# e.g. 1.0.0-rc.x, 1.0.0+build.x, 1.0.0+build.X (the x/X is a label, not a
+# range). The wildcard alternative below is anchored at ^ and only consumes
+# digit/dot groups before matching x/X/*, so it can never reach an identifier
+# that starts after the first '-' (prerelease) or '+' (build) separator. The
+# official schema lists 2.1.0-alpha as a valid example for the same reason.
 VERSION_RANGE_RE = re.compile(
-    r"(?:^|[\s,])[<>=~^!]|\|\||\s-\s|(?:^|\.)\s*[*xX]\s*(?:\.|$)"
+    r"(?:^|[\s,])[<>=~^!]"
+    r"|\|\|"
+    r"|\s-\s"
+    r"|^\s*(?:\d+\.)*[xX*](?:\.(?:\d+|[xX*]))*"
 )
 SKILLS_REPO_FRAGMENTS = ("dcc-mcp-agent-plugins",)
 
@@ -233,16 +242,43 @@ def check_integrity(manifest_bytes: bytes, schema_bytes: bytes, baseline_bytes: 
     return errors
 
 
-def check_backward_compat(manifest: Any, contract: dict) -> list[str]:
+def check_backward_compat(manifest: Any, contract: dict, baseline: Any) -> list[str]:
+    """Compare immutable identity/wiring fields against the Core baseline.
+
+    The sha256-anchored ``core-baseline.server.json`` (verified by
+    check_integrity) is the immutable SOURCE OF TRUTH. ``contract``'s
+    ``immutable_fields`` are only the DECLARED expectations: they live in the
+    same PR as the manifest and can be edited in lockstep. Comparing only
+    manifest-vs-contract would let a single coordinated edit change both the
+    manifest field and its duplicated expectation while the baseline bytes stay
+    unchanged, producing a false pass. So we anchor on the baseline: the
+    declared expectation must match the baseline, and the manifest value must
+    match the baseline. ``baseline`` is the PARSED JSON object (or None if it
+    could not be parsed / is unavailable).
+    """
     errors: list[str] = []
+    if baseline is None:
+        return ["Core baseline is unavailable; cannot verify immutable fields"]
     for dotted, expected in contract["immutable_fields"].items():
         if dotted.startswith("$"):
             continue
+        b_found, b_value = _get(dotted, baseline)
+        if not b_found:
+            errors.append(f"immutable field '{dotted}' is missing from the Core baseline")
+            continue
+        if expected != b_value:
+            errors.append(
+                f"immutable field '{dotted}' contract expectation {expected!r} "
+                f"diverges from the Core baseline {b_value!r}"
+            )
         found, value = _get(dotted, manifest)
         if not found:
             errors.append(f"immutable field '{dotted}' is missing")
-        elif value != expected:
-            errors.append(f"immutable field '{dotted}' changed: expected {expected!r}, got {value!r}")
+        elif value != b_value:
+            errors.append(
+                f"immutable field '{dotted}' changed: expected {b_value!r} "
+                f"(Core baseline), got {value!r}"
+            )
     return errors
 
 
@@ -321,10 +357,19 @@ def run_all_checks(
     active_publishers: list[str] | None = None,
 ) -> list[str]:
     errors: list[str] = []
+    # The Core baseline is the sha256-anchored immutable source of truth for
+    # backward compatibility (see check_backward_compat). Parse it once here;
+    # check_integrity independently verifies baseline_bytes against the pinned
+    # digest, so a tampered/unparseable baseline is fail-stop in two places.
+    try:
+        baseline = json.loads(baseline_bytes)
+    except (ValueError, TypeError) as exc:
+        baseline = None
+        errors.append(f"Core baseline is not valid JSON: {exc}")
     errors += check_official_schema(manifest, schema)
     errors += check_activation_state(contract)
     errors += check_integrity(manifest_bytes, schema_bytes, baseline_bytes, contract)
-    errors += check_backward_compat(manifest, contract)
+    errors += check_backward_compat(manifest, contract, baseline)
     errors += check_repository_source(manifest)
     errors += check_version_domains(manifest, contract, plugin_suite_version)
     errors += check_single_publisher(contract, active_publishers)
