@@ -12,6 +12,7 @@ import importlib.util
 import json
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parent.parent
 MCP = ROOT / "mcp_registry"
@@ -38,12 +39,18 @@ class ContractFixture(unittest.TestCase):
         self.baseline_bytes = (ROOT / self.contract["baseline"]["path"]).read_bytes()
         self.suite_version = str(_load("plugins/dcc-mcp/plugin.json")["version"])
 
-    def run_all(self, manifest=None, contract=None, active=None):
+    def run_all(self, manifest=None, contract=None, active=None, manifest_bytes=None):
+        # ``manifest`` (structural checks) and ``manifest_bytes`` (sha256
+        # integrity) are independent inputs to run_all_checks. Keep the
+        # committed bytes by default when only the in-memory manifest is
+        # overridden: re-serializing would inject an unrelated digest mismatch
+        # that could MASK a missing backward-compat call in a full-pipeline
+        # test. Pass explicit tampered bytes only when a test targets integrity.
         return vm.run_all_checks(
             contract or self.contract,
             manifest if manifest is not None else self.manifest,
             self.schema,
-            self.manifest_bytes if manifest is None else json.dumps(manifest, indent=2).encode(),
+            manifest_bytes if manifest_bytes is not None else self.manifest_bytes,
             self.schema_bytes,
             self.baseline_bytes,
             self.suite_version,
@@ -216,6 +223,64 @@ class TestVersionDomainNegative(ContractFixture):
         self.assertEqual(vm.check_version_domains(self.manifest, self.contract, self.suite_version), [])
 
 
+class TestVersionRangeBoundaries(ContractFixture):
+    """Version-range guard must match the official schema's INTENT, both ways.
+
+    The vendored schema's version fields have no ``pattern`` keyword; they reject
+    ranges only descriptively (examples ``'^1.2.3'``, ``'~1.2.3'``,
+    ``'>=1.2.3'``, ``'1.x'``, ``'1.*'``). Our offline static guard must reject
+    real range/comparator syntax WITHOUT flagging valid semver prerelease or
+    build identifiers that merely contain the letters x/X (reviewer finding A).
+    """
+
+    # Range syntax the registry/schema rejects: schema description examples plus
+    # the common bare comparators, wildcards, OR-joins and hyphen ranges.
+    INVALID_RANGES = (
+        "^1.2.3", "~1.2.3", ">=1.2.3", ">1.0.0", "<2", "<=2.0.0",
+        "=1.2.3", "~>1.0", "1.x", "1.*", "1.X", "x", "*", "1.x.2",
+        "1.2.3 - 2.0.0", "^1 || ^2",
+    )
+    # Specific versions the registry accepts, incl. semver prerelease/build
+    # metadata that happens to contain x/X (must NOT be treated as wildcards).
+    VALID_VERSIONS = (
+        "1.2.3", "0.20.53", "2.1.0-alpha", "1.0.0-next.1",
+        "1.0.0+linux", "1.0.0-beta.1", "1.0.0-rc.1+exp.sha.5114f85",
+        "0.0.4",
+    )
+
+    def _version_errors(self, version):
+        bad = copy.deepcopy(self.manifest)
+        bad["version"] = version
+        bad["packages"][0]["version"] = version  # keep the two domains equal
+        return vm.check_version_domains(bad, self.contract, self.suite_version)
+
+    def test_real_ranges_are_rejected(self):
+        for v in self.INVALID_RANGES:
+            with self.subTest(range=v):
+                self.assertTrue(
+                    any("range" in e for e in self._version_errors(v)),
+                    f"version range {v!r} was not rejected",
+                )
+
+    def test_valid_semver_with_x_is_accepted(self):
+        for v in self.VALID_VERSIONS:
+            with self.subTest(version=v):
+                self.assertFalse(
+                    any("range" in e for e in self._version_errors(v)),
+                    f"valid version {v!r} was wrongly flagged as a range",
+                )
+
+    def test_range_regex_is_segment_aware(self):
+        # Direct unit of the static guard: a bare x/X inside a prerelease or
+        # build identifier is not a wildcard SEGMENT, but 1.x / 1.* are.
+        for v in ("~1.2.3", ">1.0.0", "<2", "1.x", "1.*"):
+            with self.subTest(reject=v):
+                self.assertIsNotNone(vm.VERSION_RANGE_RE.search(v))
+        for v in ("1.0.0-next.1", "1.0.0+linux"):
+            with self.subTest(accept=v):
+                self.assertIsNone(vm.VERSION_RANGE_RE.search(v))
+
+
 class TestSinglePublisherNegative(ContractFixture):
     def test_dual_publisher_is_rejected(self):
         self.assertTrue(vm.check_single_publisher(
@@ -236,12 +301,47 @@ class TestSinglePublisherNegative(ContractFixture):
 
 class TestEndToEndFailStop(ContractFixture):
     def test_dual_publisher_fails_full_pipeline(self):
-        self.assertTrue(self.run_all(active=["dcc-mcp/dcc-mcp-core", "dcc-mcp/dcc-mcp-agent-plugins"]))
+        errors = self.run_all(active=["dcc-mcp/dcc-mcp-core", "dcc-mcp/dcc-mcp-agent-plugins"])
+        self.assertTrue(any("publisher" in e for e in errors))
 
     def test_immutable_change_fails_full_pipeline(self):
         bad = copy.deepcopy(self.manifest)
         bad["name"] = "io.github.dcc-mcp/wrong"
-        self.assertTrue(self.run_all(manifest=bad))
+        errors = self.run_all(manifest=bad)
+        # PRECISE error, not just "any errors": a digest mismatch (or any
+        # unrelated failure) must not be able to satisfy this assertion.
+        self.assertTrue(any("immutable field 'name' changed" in e for e in errors))
+        # NO digest noise: the pipeline must fail ONLY on the immutable-name
+        # regression, proving the backward-compat check actually ran rather
+        # than the test passing on an unrelated sha256 mismatch.
+        self.assertFalse(any("sha256 mismatch" in e for e in errors))
+
+    def test_digest_only_change_does_not_fake_immutable_error(self):
+        # NEGATIVE CONTROL #1: a change that ONLY causes a sha256 mismatch (a
+        # non-immutable brand field, re-serialized bytes) yields errors but must
+        # NOT yield the precise immutable-name error. This is exactly the case
+        # that made the OLD assertTrue(any(errors)) vacuous.
+        bad = copy.deepcopy(self.manifest)
+        bad["title"] = "DCC-MCP (tampered)"
+        # Tampered BYTES only (a non-immutable brand field), structural manifest
+        # otherwise intact -> integrity fails, backward-compat does not.
+        errors = self.run_all(
+            manifest=bad,
+            manifest_bytes=json.dumps(bad, indent=2).encode(),
+        )
+        self.assertTrue(any("sha256 mismatch" in e for e in errors))
+        self.assertFalse(any("immutable field 'name' changed" in e for e in errors))
+
+    def test_immutable_error_requires_backward_compat_check(self):
+        # NEGATIVE CONTROL #2: neutralize check_backward_compat to simulate it
+        # being REMOVED from run_all_checks. The precise immutable-name error
+        # must disappear -> the main assertion genuinely depends on the check
+        # being wired into the pipeline (i.e., cannot falsely pass).
+        bad = copy.deepcopy(self.manifest)
+        bad["name"] = "io.github.dcc-mcp/wrong"
+        self.assertTrue(any("immutable field 'name' changed" in e for e in self.run_all(manifest=bad)))
+        with mock.patch.object(vm, "check_backward_compat", return_value=[]):
+            self.assertFalse(any("immutable field 'name' changed" in e for e in self.run_all(manifest=bad)))
 
 
 if __name__ == "__main__":
