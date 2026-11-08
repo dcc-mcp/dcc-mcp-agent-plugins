@@ -9,7 +9,7 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: Cross-platform routing contract. The current DCC-CUA host is installed and verified through the official dcc-mcp-cli component manifest; exact platform capabilities remain runtime-discovered.
-    version: "0.19.120"
+    version: "0.19.121"
     search-hint: "dcc-cua DCC CUA dcc cua our dcc-cua our dcc cua 我们的 dcc-cua 我们的 dcc cua project-owned UI control browser DOM exact PID HWND computer use automation"
     tags: "dcc-cua, dcc-ui-control, ui-control, browser-dom, exact-window, computer-use, infrastructure"
   openclaw:
@@ -42,14 +42,19 @@ grants, target binding, interruption, and confirmation policy still apply.
 
 ## Route attestation
 
-Before the first application observation or input, report all four fields:
+Before the first application-window observation or input, report all four
+fields:
 
 ```text
 provider=dcc-cua runtime=<version> pid=<exact-pid> hwnd=<exact-native-hwnd>
 ```
 
-Do not perform the operation if the provider is different or the target is not
-exactly bound.
+The discovery phase is the bounded exception: runtime-advertised
+`list_apps`, `list_windows`, and capability/health probes may run with
+`pid=unbound` and `hwnd=unbound` because they return metadata only and do not
+capture pixels or send input. Once a specific application window is observed
+or acted on, exact PID and HWND are mandatory and the attestation above must
+be emitted first.
 
 ## Runtime preflight
 
@@ -75,17 +80,49 @@ dcc-cua profile --id <profile-id>
 
 Do not invent a profile ID. Runtime-advertised capabilities are authoritative.
 
+## Unbound discovery and application launch
+
+When the user gives a broad request without a process target, keep the first
+stage metadata-only:
+
+1. Use the runtime-advertised `list_apps` to report installed and running
+   applications. Use `list_windows` to inspect window candidates when the
+   application identity is still ambiguous. Do not take a screenshot, read an
+   application UI tree, or send input in this stage.
+2. If the user asks to open or test an application, call the runtime's
+   `launch_app` with the discovered application identity (or an explicitly
+   supplied path) and the task grant that allows app launch. Keep discovery,
+   launch, and follow-up calls on one persistent Host connection.
+3. Use the returned PID/HWND or a bounded `wait_for_window`/`list_windows`
+   lookup for the launched application. Never choose the first window when the
+   result is ambiguous; refresh discovery or report the ambiguity.
+4. Bind the exact PID/HWND, emit the route attestation, and only then enter the
+   normal observation -> one action -> fresh observation loop.
+
+This supports broad requests such as “列出当前可用的软件，打开看看能不能
+用” without widening an application session to the whole desktop. Desktop-wide
+capture or desktop input remains a separate, explicitly authorized target.
+
+For any application that may require authentication, inspect whether an
+existing session is usable after binding its exact window. If the flow reaches
+password, SSO, MFA, CAPTCHA, security, or account-permission UI, stop at that
+boundary and hand it to the user. Never enter or copy credentials, tokens,
+recovery codes, or session data through DCC-CUA. If the user completes the
+login, resume only after a fresh exact-window observation.
+
 ## Execution order
 
 1. Prefer a typed DCC-MCP host tool when it directly expresses the operation.
 2. Use DCC-CUA only for the UI behavior that typed host tools cannot expose.
-3. Bind one exact target with process ID and native window handle. Missing
-   either identifier blocks observation and input.
-4. Open one scoped session with the minimum task grant required for the work.
-5. Take a fresh observation before each action that depends on UI state.
-6. Act using stable semantic control or DOM references when available.
-7. Wait for a typed state transition and verify the real final state.
-8. Stop the session on success, failure, interruption, or abandonment.
+3. If no target is supplied, complete only the bounded discovery/launch stage
+   above; do not call window observation or input tools without an exact target.
+4. Bind one exact target with process ID and native window handle before any
+   application-window observation or input.
+5. Open one scoped session with the minimum task grant required for the work.
+6. Take a fresh observation before each action that depends on UI state.
+7. Act using stable semantic control or DOM references when available.
+8. Wait for a typed state transition and verify the real final state.
+9. Stop the session on success, failure, interruption, or abandonment.
 
 Continue within the existing task grant until the requested destination state
 is verified, or a concrete blocker requires user action. Do not ask again for
