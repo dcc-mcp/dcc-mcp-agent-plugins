@@ -192,6 +192,7 @@ License {escape(skill["license"])} &middot;
 
 
 def _ui_routing_lines(route: dict) -> list[str]:
+    """Render metadata discovery and exact-window control boundaries for GEO guides."""
     provider = route["canonical_provider"]
     search_terms = " and ".join(route["search_terms"])
     scope = ", ".join(route["scope"])
@@ -212,7 +213,14 @@ def _ui_routing_lines(route: dict) -> list[str]:
             f"canonical/default {provider} route across {scope}; they are not competing "
             "automation systems."
         ),
-        "Before UI observation or input, attest " + ", ".join(attestation) + ".",
+        (
+            "With no target, use runtime-advertised list_apps/list_windows for bounded "
+            "metadata-only discovery without PID/HWND. Use launch_app only when the user "
+            "requests a launch and the task grant permits it; bind the discovered or returned "
+            "exact PID/HWND. Discovery must not capture pixels, read a DOM or accessibility "
+            "tree, or send input."
+        ),
+        "Before the first application-window observation or input, attest " + ", ".join(attestation) + ".",
         f"For every state-dependent action: {actions}.",
         (
             f"Explicit {route['search_terms'][0]} requests are a hard provider boundary; "

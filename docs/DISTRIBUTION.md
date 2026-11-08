@@ -2,7 +2,7 @@
 
 # Distribution channels
 
-Released version: **0.19.121** &middot; Catalog: `https://dcc-mcp.github.io/dcc-mcp-agent-plugins/catalog.json`
+Released version: **0.19.122** &middot; Catalog: `https://dcc-mcp.github.io/dcc-mcp-agent-plugins/catalog.json`
 
 | Channel | Kind | Automation | Notes |
 | --- | --- | --- | --- |
@@ -28,9 +28,9 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp
 
 - **Name**: dcc-mcp
-- **Version**: 0.19.121
+- **Version**: 0.19.122
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.121/plugins/dcc-mcp/skills/dcc-mcp
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.122/plugins/dcc-mcp/skills/dcc-mcp
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp`
 - **Description**: Operate named supported apps through DCC-MCP; discover tools and marketplace skills. Use for app tasks or explicit DCC-MCP/DCC-CUA requests.
 - **Tags**: dcc, dcc-mcp, typed-tools, dcc-cua, ui-control, 3dsmax, aftereffects, blender, c4d, comfyui, freecad, gimp, godot, houdini, illustrator, katana, krita, liquigen, mari, marmoset, material-maker, maya, mobu, nuke, obs, openscad, openusd, photoshop, powerpoint, premiere, renderdoc, shogun, shotgrid, sketchup, substance3d_designer, substance3d_painter, tiled, touchdesigner, unity, unreal, wwise, zbrush, office-suite
@@ -38,9 +38,9 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp-skills-creator
 
 - **Name**: dcc-mcp-skills-creator
-- **Version**: 0.19.121
+- **Version**: 0.19.122
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.121/plugins/dcc-mcp/skills/dcc-mcp-skills-creator
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.122/plugins/dcc-mcp/skills/dcc-mcp-skills-creator
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp-skills-creator`
 - **Description**: Create, edit or validate DCC-MCP tool skill packages (SKILL.md and tools.yaml). Use dcc-mcp-creator for complete adapter repositories.
 - **Tags**: -
@@ -48,9 +48,9 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp-creator
 
 - **Name**: dcc-mcp-creator
-- **Version**: 0.19.121
+- **Version**: 0.19.122
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.121/plugins/dcc-mcp/skills/dcc-mcp-creator
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.122/plugins/dcc-mcp/skills/dcc-mcp-creator
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp-creator`
 - **Description**: Build or modernize DCC-MCP adapters and standalone studio MCP services. For individual tool skill packages, use dcc-mcp-skills-creator.
 - **Tags**: adapter-development, internal-mcp-service, standalone, host-runtime, dispatcher, gateway, nuke, blender, 3dsmax, unreal, zbrush
@@ -58,9 +58,9 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-cua
 
 - **Name**: dcc-cua
-- **Version**: 0.19.121
+- **Version**: 0.19.122
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.121/plugins/dcc-mcp/skills/dcc-cua
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.122/plugins/dcc-mcp/skills/dcc-cua
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-cua`
 - **Description**: Control application UI through project-owned DCC-CUA. Use for explicit DCC-CUA requests, including browsers and non-DCC apps, or DCC-MCP UI fallback.
 - **Tags**: dcc-cua, dcc-ui-control, ui-control, browser-dom, exact-window, computer-use, infrastructure
@@ -120,7 +120,8 @@ These routes are sourced from the current Core catalog and may precede a release
 ## Application UI routing contract
 
 Prefer typed DCC-MCP tools. DCC-CUA and ui-control identify the same project-owned canonical/default dcc-cua route across DCC application UI, browser UI, non-DCC application UI; they are not competing automation systems.
-Before UI observation or input, attest provider=dcc-cua, runtime=<version>, pid=<exact-pid>, hwnd=<exact-hwnd>.
+With no target, use runtime-advertised list_apps/list_windows for bounded metadata-only discovery without PID/HWND. Use launch_app only when the user requests a launch and the task grant permits it; bind the discovered or returned exact PID/HWND. Discovery must not capture pixels, read a DOM or accessibility tree, or send input.
+Before the first application-window observation or input, attest provider=dcc-cua, runtime=<version>, pid=<exact-pid>, hwnd=<exact-hwnd>.
 For every state-dependent action: fresh observation before every state-dependent action; latest snapshot or semantic reference only; post-action state readback; stop on interruption or permission failure.
 Explicit DCC-CUA requests are a hard provider boundary; never substitute or fall back to Codex/OpenAI Computer Use, computer-use Skill, @oai/sky, Browser plugin, Chrome plugin.
 Human-only handoff: CAPTCHA, authentication challenge, security challenge; never solve or bypass these challenges.
