@@ -1146,8 +1146,9 @@ def skill_search_hint(catalog: dict) -> str:
     return (
         "DCC-MCP typed tool discovery create edit inspect simulate animate render composite "
         "export automate 操作 控制 创建 编辑 检查 动画 渲染 合成 导出; released products: "
-        f"{products}; application UI route: DCC-CUA dcc cua ui-control browser UI exact PID "
-        "HWND fresh observation latest snapshot post-action readback no generic Computer Use; "
+        f"{products}; application UI route: DCC-CUA dcc cua ui-control browser UI bounded "
+        "list_apps list_windows launch_app discovery then exact PID HWND fresh observation "
+        "latest snapshot post-action readback no generic Computer Use; "
         "local application path cache cached executable path ask before launch guide a new path"
     )
 
@@ -1168,8 +1169,9 @@ def ui_route_prompt(catalog: dict) -> str:
         "Use $dcc-mcp for released-product discovery and typed DCC-MCP tools first. For any "
         "DCC-MCP application UI behavior, including browser and non-DCC application UI, use "
         "project-owned DCC-CUA through ui-control; explicit DCC-CUA requests are a hard "
-        "provider boundary. Before the first UI observation or input report "
-        "provider=dcc-cua, runtime, exact PID, and exact HWND. Use a fresh observation and "
+        "provider boundary. With no target, use only bounded list_apps/list_windows discovery "
+        "and an authorized launch_app; before the first application-window observation or input "
+        "report provider=dcc-cua, runtime, exact PID, and exact HWND. Use a fresh observation and "
         "latest snapshot or semantic reference for each action, verify with post-action "
         "readback, stop on interruption or permission failure, and hand CAPTCHA, "
         "authentication, or security challenges to the human. Never substitute generic "

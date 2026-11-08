@@ -435,6 +435,22 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
             with self.subTest(term=term):
                 self.assertIn(term, body)
 
+    def test_default_ui_route_supports_generic_unbound_discovery(self) -> None:
+        dcc_cua = (ROOT / "plugins" / "dcc-mcp" / "skills" / "dcc-cua" / "SKILL.md").read_text(
+            encoding="utf-8"
+        ).casefold()
+        ui_workflows = (
+            ROOT / "plugins" / "dcc-mcp" / "skills" / "dcc-mcp" / "references" / "UI_WORKFLOWS.md"
+        ).read_text(encoding="utf-8").casefold()
+        for document in (dcc_cua, ui_workflows):
+            for term in ("list_apps", "list_windows", "launch_app", "metadata-only"):
+                with self.subTest(term=term):
+                    self.assertIn(term, document)
+        self.assertIn("exact pid/hwnd", ui_workflows)
+        self.assertIn("authorized `launch_app`", ui_workflows)
+        self.assertIn("exact pid and hwnd", dcc_cua)
+        self.assertNotIn("figma", dcc_cua)
+
     def test_generated_discovery_surfaces_are_current(self) -> None:
         result = subprocess.run(
             [sys.executable, "scripts/sync_product_discovery.py", "--check"],

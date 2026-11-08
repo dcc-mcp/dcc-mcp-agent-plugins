@@ -2,6 +2,19 @@
 
 ### DCC UI Control fallback
 
+If the user has not supplied a process target, use the DCC-CUA discovery stage
+first: read-only `list_apps`/`list_windows` metadata may identify installed or
+running applications, and an authorized `launch_app` may start the requested
+application. Keep that stage metadata-only; it does not authorize screenshots,
+DOM reads, accessibility trees, or input. Use the returned exact PID/HWND,
+report `provider=dcc-cua runtime=<version> pid=<exact-pid> hwnd=<exact-hwnd>`,
+and only then enter the scoped snapshot -> one act -> snapshot loop below.
+
+Do not select the first window from an ambiguous result. For any requested
+application that reaches password, SSO, MFA, CAPTCHA, security, or
+account-permission screens, stop and hand that boundary to the user. Never
+enter or copy credentials, tokens, or recovery codes.
+
 Load the **DCC UI Control** runtime with `dcc-mcp-cli load-skill ui-control` only
 when structured DCC capabilities cannot reach the required semantic UI:
 
