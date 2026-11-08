@@ -9,6 +9,8 @@ import unittest
 from copy import deepcopy
 from pathlib import Path
 
+import yaml
+
 from scripts.distribution import build_catalog
 from scripts.product_discovery import (
     load_product_catalog,
@@ -436,6 +438,7 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
                 self.assertIn(term, body)
 
     def test_default_ui_route_supports_generic_unbound_discovery(self) -> None:
+        """Keep unbound metadata discovery separate from exact-window operations."""
         dcc_cua = (ROOT / "plugins" / "dcc-mcp" / "skills" / "dcc-cua" / "SKILL.md").read_text(
             encoding="utf-8"
         ).casefold()
@@ -450,6 +453,28 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
         self.assertIn("authorized `launch_app`", ui_workflows)
         self.assertIn("exact pid and hwnd", dcc_cua)
         self.assertNotIn("figma", dcc_cua)
+
+    def test_ui_prompts_allow_existing_windows_without_a_launch(self) -> None:
+        """Both entry prompts must let discovery bind a running application."""
+        for path in (
+            ROOT / "plugins/dcc-mcp/skills/dcc-cua/agents/openai.yaml",
+            OPENAI_INTERFACE,
+        ):
+            prompt = yaml.safe_load(path.read_text(encoding="utf-8"))["interface"]["default_prompt"]
+            with self.subTest(path=path.relative_to(ROOT).as_posix()):
+                self.assertIn("without launching an application", prompt)
+                self.assertIn(
+                    "Use launch_app only when the user requests a launch and the task grant permits it",
+                    prompt,
+                )
+                self.assertIn("Discovery must not capture pixels, read a DOM or accessibility tree, or send input", prompt)
+
+    def test_snapshot_guidance_requires_both_bound_identifiers(self) -> None:
+        """The executable workflow must not offer a title-only snapshot route."""
+        workflow = (SKILL_MD.parent / "references/UI_WORKFLOWS.md").read_text(encoding="utf-8")
+        step = next(line for line in workflow.splitlines() if line.startswith("1. `ui_control__snapshot`"))
+        self.assertIn("bound exact `process_id` and `window_handle`", step)
+        self.assertNotIn("or `window_title`", step)
 
     def test_generated_discovery_surfaces_are_current(self) -> None:
         result = subprocess.run(

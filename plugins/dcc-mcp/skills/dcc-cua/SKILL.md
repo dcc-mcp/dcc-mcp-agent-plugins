@@ -9,7 +9,7 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: Cross-platform routing contract. The current DCC-CUA host is installed and verified through the official dcc-mcp-cli component manifest; exact platform capabilities remain runtime-discovered.
-    version: "0.19.121"
+    version: "0.19.122"
     search-hint: "dcc-cua DCC CUA dcc cua our dcc-cua our dcc cua 我们的 dcc-cua 我们的 dcc cua project-owned UI control browser DOM exact PID HWND computer use automation"
     tags: "dcc-cua, dcc-ui-control, ui-control, browser-dom, exact-window, computer-use, infrastructure"
   openclaw:
@@ -89,7 +89,7 @@ stage metadata-only:
    applications. Use `list_windows` to inspect window candidates when the
    application identity is still ambiguous. Do not take a screenshot, read an
    application UI tree, or send input in this stage.
-2. If the user asks to open or test an application, call the runtime's
+2. If the user asks to open or start an application, call the runtime's
    `launch_app` with the discovered application identity (or an explicitly
    supplied path) and the task grant that allows app launch. Keep discovery,
    launch, and follow-up calls on one persistent Host connection.

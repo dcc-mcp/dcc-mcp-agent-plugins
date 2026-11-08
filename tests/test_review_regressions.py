@@ -12,7 +12,7 @@ from tempfile import TemporaryDirectory
 ROOT = Path(__file__).resolve().parent.parent
 
 from scripts import product_discovery
-from scripts.build_geo_site import _llms_txt, build
+from scripts.build_geo_site import _distribution_doc, _llms_txt, build
 from scripts.distribution import build_catalog
 
 
@@ -499,10 +499,18 @@ class IndependentReviewRegressionTests(unittest.TestCase):
             checker(renamed, immutable_snapshot)
 
     def test_built_llms_txt_preserves_the_complete_ui_routing_contract(self) -> None:
+        """Published GEO guides must preserve discovery and window attestation boundaries."""
         with TemporaryDirectory() as directory:
             output = Path(directory) / "site"
-            build(output, ROOT)
+            catalog = build(output, ROOT)
             llms = (output / "llms.txt").read_text(encoding="utf-8")
+
+        for document in (llms, _distribution_doc(catalog)):
+            self.assertIn("bounded metadata-only discovery without PID/HWND", document)
+            self.assertIn("Use launch_app only when the user requests a launch and the task grant permits it", document)
+            self.assertIn("Discovery must not capture pixels, read a DOM or accessibility tree, or send input", document)
+            self.assertIn("Before the first application-window observation or input, attest", document)
+            self.assertNotIn("Before UI observation or input, attest", document)
 
         route = self.catalog["ui_routing"]
         self.assertIn("typed DCC-MCP tools", llms)
