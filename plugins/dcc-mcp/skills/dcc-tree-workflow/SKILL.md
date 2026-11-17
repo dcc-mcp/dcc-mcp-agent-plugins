@@ -81,6 +81,13 @@ successful export do not establish the final geometry or appearance.
    Record exact views and hashes in the manifest. Existing multiview tools may
    provide beauty/wire but must not be represented as providing category masks
    or automatic visual matching unless their actual schemas and outputs do so.
+   If the selected Blender MCP exposes `blender_render__start_tree_diagnostic`,
+   invoke it through that Blender instance with the exported OBJ, output
+   directory and explicit wood/card material mapping; poll its
+   `blender_render__get_tree_diagnostic` tool and verify its manifest and
+   images. Its bare view is a material-filtered diagnostic of the full export,
+   not an independent bare-project export or proof of card triangle counts.
+   If these tools are unavailable, report the missing Blender capability.
 4. Compare results against the reference, keeping numerical evidence separate
    from visual judgment. Image comparison or parameter fitting requires a
    separately discovered cross-host capability; do not claim automated fitting,
