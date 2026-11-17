@@ -8,7 +8,7 @@ metadata:
   dcc-mcp:
     dcc: python
     layer: domain
-    version: "0.1.0"
+    version: "0.19.122"
     search-hint: "SpeedTree Blender reference tree production validation silhouette tree foliage card geometry 跨软件 树木 树叶 面数 参考图"
     tags: "speedtree, blender, tree, reference, cross-dcc, verification"
 ---
