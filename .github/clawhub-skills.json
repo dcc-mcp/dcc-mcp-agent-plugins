@@ -23,6 +23,12 @@
       "slug": "dcc-cua",
       "owner": "loonghao",
       "version": "0.19.121"
+    },
+    {
+      "path": "plugins/dcc-mcp/skills/dcc-tree-workflow",
+      "slug": "dcc-tree-workflow",
+      "owner": "loonghao",
+      "version": "0.1.0"
     }
   ]
 }
