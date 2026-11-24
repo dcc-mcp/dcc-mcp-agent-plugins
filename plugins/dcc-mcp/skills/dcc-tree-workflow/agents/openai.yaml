@@ -1,0 +1,4 @@
+interface:
+  display_name: "DCC Tree Workflow"
+  short_description: "Coordinate tree production across DCC hosts"
+  default_prompt: "Use $dcc-tree-workflow to produce and review a tree across SpeedTree and Blender."

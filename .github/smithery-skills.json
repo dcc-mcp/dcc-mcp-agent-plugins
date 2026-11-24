@@ -20,6 +20,11 @@
       "slug": "dcc-cua",
       "path": "plugins/dcc-mcp/skills/dcc-cua",
       "git_url": "https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/main/plugins/dcc-mcp/skills/dcc-cua"
+    },
+    {
+      "slug": "dcc-tree-workflow",
+      "path": "plugins/dcc-mcp/skills/dcc-tree-workflow",
+      "git_url": "https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/main/plugins/dcc-mcp/skills/dcc-tree-workflow"
     }
   ]
 }
