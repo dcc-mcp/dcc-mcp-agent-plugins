@@ -1142,6 +1142,7 @@ def skill_description(catalog: dict) -> str:
 
 
 def skill_search_hint(catalog: dict) -> str:
+    """Expose routed product names and bounded UI discovery terms to Skill search."""
     products = " ".join(term for product in routed_products(catalog) for term in product_terms(product))
     return (
         "DCC-MCP typed tool discovery create edit inspect simulate animate render composite "
@@ -1165,12 +1166,16 @@ def skill_tags(catalog: dict) -> list[str]:
 
 
 def ui_route_prompt(catalog: dict) -> str:
+    """Describe optional launch and exact-window control in the default agent prompt."""
     return (
         "Use $dcc-mcp for released-product discovery and typed DCC-MCP tools first. For any "
         "DCC-MCP application UI behavior, including browser and non-DCC application UI, use "
         "project-owned DCC-CUA through ui-control; explicit DCC-CUA requests are a hard "
-        "provider boundary. With no target, use only bounded list_apps/list_windows discovery "
-        "and an authorized launch_app; before the first application-window observation or input "
+        "provider boundary. With no target, use bounded metadata-only list_apps/list_windows "
+        "discovery. Bind a discovered exact PID/HWND without launching an application. "
+        "Use launch_app only when the user requests a launch and the task grant permits it, "
+        "then bind the returned exact PID/HWND. Discovery must not capture pixels, read a DOM "
+        "or accessibility tree, or send input. Before the first application-window observation or input "
         "report provider=dcc-cua, runtime, exact PID, and exact HWND. Use a fresh observation and "
         "latest snapshot or semantic reference for each action, verify with post-action "
         "readback, stop on interruption or permission failure, and hand CAPTCHA, "

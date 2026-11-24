@@ -78,6 +78,7 @@ def _folded_description(value: str) -> list[str]:
 
 
 def _render_ui_route_block(catalog: dict) -> str:
+    """Render discovery, launch authorization, and window binding in the default Skill."""
     route = catalog["ui_routing"]
     search_terms = " and ".join(f"`{term}`" for term in route["search_terms"])
     scope = ", ".join(route["scope"])
@@ -94,8 +95,10 @@ def _render_ui_route_block(catalog: dict) -> str:
         f"{scope}; they are not competing automation systems. An explicit DCC-CUA request "
         "is a hard provider boundary. Do not recommend or silently fall back to "
         f"{fallbacks}. If the project route is unavailable, repair it or report the blocker.\n\n"
-        "The unbound discovery phase may use runtime-advertised list_apps, list_windows, "
-        "and launch_app metadata without a PID/HWND; it must not capture pixels or send input. "
+        "The unbound discovery phase may use runtime-advertised list_apps/list_windows "
+        "metadata without a PID/HWND. Use launch_app only when the user requests a launch "
+        "and the task grant permits it; bind the discovered or returned exact PID/HWND. "
+        "Discovery must not capture pixels, read a DOM or accessibility tree, or send input. "
         "Before the first application-window observation or input, visibly attest "
         "`provider=dcc-cua runtime=<version> pid=<exact-pid> hwnd=<exact-native-hwnd>`. "
         "Missing or stale binding data stops the action. For every state-dependent UI action, "
