@@ -22,11 +22,11 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            cli: .released-cli/dcc-mcp-cli
+            cli: .released-cli/dccmcp
           - os: macos-latest
-            cli: .released-cli/dcc-mcp-cli
+            cli: .released-cli/dccmcp
           - os: windows-latest
-            cli: .released-cli/dcc-mcp-cli.exe
+            cli: .released-cli/dccmcp.exe
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     steps:

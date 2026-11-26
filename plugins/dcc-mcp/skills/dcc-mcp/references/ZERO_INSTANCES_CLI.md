@@ -6,9 +6,10 @@ only runtime-registration evidence. It does not prove that the application is
 unsupported, uninstalled, impossible to bootstrap from a project, or
 incompatible because of a version string or custom fork.
 
-Do not run `search`, `describe`, or `call` without a live matching instance and
-an identity returned by discovery. Read-only catalog inspection, diagnosis, and
-install planning are safe before mutation consent.
+- `dccmcp health` (or `python scripts/dcc_gateway.py health`) succeeds,
+- `dccmcp list` returns `"total": 0` for local inventory, or
+  `dccmcp list --gateway <name>` returns `"total": 0` for a remote profile, and
+- the user has explicitly approved setup guidance.
 
 ## Select the evidence boundary
 
@@ -24,10 +25,44 @@ matching instances, keep that remote result as the only runtime-registration
 evidence. Do not run the targeted local `dcc-types --dcc-type <dcc>` decision
 and do not execute a `next_action` produced from the local FileRegistry.
 
-First inspect the catalog without a registry filter:
+1. Which DCC product the user needs.
+2. Whether they want commands suggested or executed.
+3. That they will confirm after each DCC-side step so you can re-run
+   `dccmcp list`.
+
+---
+
+## Diagnose
+
+| Check | Meaning | Next step |
+|-------|---------|-----------|
+| `dccmcp doctor` reports local profile, registry path, zero local inventory, and server binary diagnostics | Confirms which local state the CLI is reading before adapter setup | Use the reported registry path when checking sidecar/server logs |
+| `dccmcp list` returns `total == 0` in local mode | The loopback gateway was ensured, but no local DCC sidecar/server is registered in the FileRegistry | Start a DCC adapter |
+| `dccmcp list --gateway <name>` fails | Remote gateway profile is unreachable; remote gateways cannot be auto-started | Inspect the selected profile and remote gateway URL before adapter setup |
+| `dccmcp health` fails | CLI auto-ensure could not start or reach the local loopback gateway | Inspect structured CLI output before endpoint/admin/update workflows |
+
+Local `dccmcp list` first ensures the machine-wide loopback gateway, then
+reads the FileRegistry directly. In the built-in `local` profile, `search`,
+`describe`, `call`, and guarded `stop-instance` use the registered DCC
+instance's own MCP/safe-stop endpoints after the same gateway lifecycle check.
+`load-skill` goes through that ensured gateway so its capability index stays
+coherent, while explicit `--no-auto-gateway` mode retains direct loading.
+`wait-ready` combines the instance readyz report with the discovery MCP catalog
+contract when `skill_catalog` is absent. Endpoint/admin/update workflows also auto-ensure a
+machine-wide gateway daemon when they target loopback HTTP.
+Per-DCC adapters register themselves through their own sidecar/server runtime.
+The legacy first-wins election is only for explicit
+`dcc-mcp-server auto --legacy-gateway-election` setups.
+
+---
+
+## Adapter discovery
+
+With user approval, build an adapter package plan via the CLI:
 
 ```bash
-dcc-mcp-cli --output json dcc-types
+dccmcp install --dcc-type maya
+dccmcp install --dcc-type blender
 ```
 
 Match the requested DCC against exactly one canonical `dcc_type`. Only after an
@@ -188,24 +223,28 @@ After mutation consent, add only the arguments required by that runbook. Use
 `install_policy.auto_install_enabled=true`:
 
 ```bash
-dcc-mcp-cli install --dcc-type <dcc> --python "<dcc-python>" --execute
+dccmcp install --dcc-type <dcc> --python "<dcc-python>" --execute
 ```
 
 Game-engine hosts need the same evidence separation:
 
-- Unreal can use a project-mounted plugin and engine-bundled Python path; do
-  not require legacy Remote Execution or an optional native bridge unless the
-  current adapter contract does.
-- Unity and supported Tuanjie builds share the adapter-owned compatibility
-  decision; a `t` version string is not an unsupported verdict.
-- Godot may use a project-local EditorPlugin plus an external sidecar; a
-  machine-wide inventory miss does not prove that addon absent.
+Execution installs/verifies packages only. The online registration signal is
+still `dccmcp list`: the DCC plugin or sidecar must start, stay alive, and
+self-register in the FileRegistry or selected gateway.
 
 These are routing boundaries, not real-host acceptance claims. Preserve
 version and custom-fork uncertainty until the owning adapter's compatibility
 check runs.
 
-After installation or bootstrap:
+The plan JSON includes a `next_steps` array. If it includes
+`read-install-instructions`, read the referenced raw `install.md` from the
+adapter repository first; that runbook owns host-specific setup. Then follow the
+remaining steps after installation: start/enable the DCC plugin, run
+`dccmcp doctor`, confirm `dccmcp list`, wait with
+`dccmcp wait-ready --dcc-type <dcc>`, search tools, then install optional
+marketplace skills by running marketplace search, inspecting the selected
+package when unfamiliar, then installing it with
+`dccmcp marketplace install <package_name> --dcc <dcc> --reload`.
 
 1. Start or enable the adapter-owned host plugin.
 2. Run `dcc-mcp-cli doctor`.
@@ -215,6 +254,54 @@ After installation or bootstrap:
 6. Call only the returned instance-qualified slug, then verify the real-host
    effect through an authoritative typed readback.
 
-If no Python runtime or trusted studio package manager is available, stop and
-ask the operator to provision one. Never fetch and execute an installer through
-an unreviewed shell pipeline.
+```bash
+python scripts/dcc_gateway.py install --dcc-type maya
+python scripts/dcc_gateway.py install --dcc-type blender
+```
+
+The Python fallback can install the CLI if needed only after user consent (pass
+`--ensure-cli`). It accepts the fixed official release manifest, validates the
+version and asset URL, verifies SHA-256, and only then delegates to
+`dccmcp install`. Verification failure preserves any existing CLI and
+falls back to the supported Python REST operations; adapter installation itself
+still requires the CLI.
+
+---
+
+## Generic Adapter Checklist
+
+Build the plan first:
+
+```bash
+dccmcp install --dcc-type maya
+dccmcp install --dcc-type blender
+dccmcp install --dcc-type houdini
+dccmcp install --dcc-type photoshop
+dccmcp install --dcc-type 3dsmax
+```
+
+Then:
+
+1. Read the `read-install-instructions.url` from the plan when present.
+2. Follow that adapter-maintained `install.md` for host-specific plugin
+   enablement, setup scripts, and smoke prompts.
+3. Run `--execute` only after user consent, and only with the interpreter/path
+   arguments requested by that adapter runbook.
+4. Start or reload the DCC plugin so its sidecar self-registers.
+5. Re-run:
+
+```bash
+dccmcp list
+```
+
+When `total >= 1`, continue with the plan's CLI next steps:
+`doctor -> wait-ready -> search -> describe -> call`. If a listed row has
+`direct_control.ready=false`, inspect `direct_control.diagnostics` first; it
+carries sidecar `failure_stage`, `failure_reason`, host RPC metadata, gateway
+recovery fields, and any supervisor-recorded stdout/stderr log paths. If
+marketplace skills were installed without `--reload`, finish with
+`reload-skills`.
+
+If neither Python nor `py` is available, stop and ask the operator to provision
+Python or `vx` through a trusted OS or studio package manager. Do not fetch and
+execute a remote installer through a shell pipeline.

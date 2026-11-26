@@ -64,7 +64,7 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
         cli_types = self.catalog["sources"]["released_cli"]["dcc_types"]
         product_types = [product["id"] for product in self.catalog["products"]]
         self.assertEqual(cli_types, product_types)
-        self.assertEqual(37, len(product_types))
+        self.assertEqual(18, len(product_types))
 
     def test_released_cli_snapshot_rejects_missing_or_misdirected_products(self) -> None:
         payload = {
@@ -159,15 +159,13 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
             "Build the scene in Blender": "blender",
             "Create the gameplay scene in Godot": "godot",
             "Create a prop in 3dsmax": "3dsmax",
-            "Animate this in C4D": "c4d",
             "Retarget this in MoBu": "mobu",
             "Set up a level in UE": "unreal",
             "Package this UE4 project": "unreal",
             "在虚幻引擎中创建关卡": "unreal",
-            "请在团结引擎中创建场景": "unity",
-            "Open the Tuanjie project": "unity",
-            "Open this scene in Unity": "unity",
             "Check the task in ShotGrid": "shotgrid",
+            "Inspect this file in OpenUSD": "openusd",
+            "Review the frame in RenderDoc": "renderdoc",
             "Author this in Substance Designer": "substance3d_designer",
             "Paint this in Substance Painter": "substance3d_painter",
         }
@@ -185,8 +183,6 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
             "在 Excel 中做表": "office-suite",
             "Create a spreadsheet in Microsoft Excel": "office-suite",
             "Create a spreadsheet": "office-suite",
-            "做一个 PPTX 演示": "powerpoint",
-            "在幻灯片里整理内容": "powerpoint",
             "Inspect the simulation in LiquiGen": "liquigen",
         }
         for query, expected in cases.items():
@@ -469,15 +465,24 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
         for path in PLUGIN_MANIFESTS:
             manifest = json.loads(outputs[path])
             with self.subTest(path=path.relative_to(ROOT).as_posix()):
-                self.assertIn("36 released creative applications", manifest["description"])
+                self.assertIn(
+                    f"{len(reduced_catalog['products'])} released creative applications",
+                    manifest["description"],
+                )
 
         codex_manifest = json.loads(outputs[PLUGIN_MANIFESTS[1]])
-        self.assertIn("36 creative products", codex_manifest["interface"]["shortDescription"])
         self.assertIn(
-            "36 released creative applications",
+            f"{len(reduced_catalog['products'])} creative products",
+            codex_manifest["interface"]["shortDescription"],
+        )
+        self.assertIn(
+            f"{len(reduced_catalog['products'])} released creative applications",
             codex_manifest["interface"]["longDescription"],
         )
-        self.assertIn("Route 36 released creative products", outputs[OPENAI_INTERFACE])
+        self.assertIn(
+            f"Route {len(reduced_catalog['products'])} released creative products",
+            outputs[OPENAI_INTERFACE],
+        )
 
     def test_public_distribution_catalog_projects_the_canonical_contract(self) -> None:
         public_catalog = build_catalog(ROOT)

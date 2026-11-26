@@ -146,7 +146,7 @@ def launch_prompt(
             " 请明确回复“启动/是”后再执行。"
         )
     install_hint = (
-        f'如需安装，可运行：dcc-mcp-cli install --dcc-type {product_id} '
+        f'如需安装，可运行：dccmcp install --dcc-type {product_id} '
         f'--dcc-path "<软件绝对路径>"。'
         if install_available
         else ""

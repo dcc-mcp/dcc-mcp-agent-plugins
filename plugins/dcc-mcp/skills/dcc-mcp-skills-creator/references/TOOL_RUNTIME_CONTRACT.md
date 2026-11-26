@@ -24,23 +24,6 @@ Generated `tools.yaml` entries follow the modern contract:
   the tool script or handler validation instead of `anyOf`, `oneOf`, `allOf`,
   `not`, `if`/`then`/`else`, or dependent-schema keywords. When a complex
   schema is unavoidable, discovery must route through `describe` before call.
-- Published recipe `inputs_schema` references stay within one schema resource:
-  use `#`, a local JSON Pointer such as `#/$defs/name`, or a local `$anchor`
-  such as `#name`. Recipe admission rejects `$id`, `$dynamicRef`, and
-  `$dynamicAnchor`; external and resource-relative `$ref` values are not
-  supported by the dependency-free validator.
-- A recipe `inputs_schema` may declare `$schema` only at the schema resource
-  root, and its value must be the absolute canonical Draft 2020-12 URI
-  `https://json-schema.org/draft/2020-12/schema`. Null, relative, unsupported,
-  and nested dialect declarations fail closed during recipe admission.
-- Recipe `pattern` and `patternProperties` expressions must use syntax shared
-  by Python 3.7-3.14. Version-specific constructs such as atomic groups
-  `(?>...)` fail closed; use portable constructs such as `(?:...)` only when
-  they preserve the intended matching semantics. Global inline flags such as
-  `(?i)` are portable only at the absolute start; use scoped flags such as
-  `(?i:...)` when flags must appear after a prefix or inside another group.
-  The `\B` non-boundary assertion is not portable because its empty-string
-  behavior changes in Python 3.14; express the intended boundary explicitly.
 - `execution` is `sync` or `async`; use `async` for deferred/long-running work.
 - `job_strategy` is `monolithic` (default), `chunked`, or `isolated`. Agents
   use it to select a safe execution and recovery workflow.
@@ -96,14 +79,6 @@ service-owned operation and returns a durable job id immediately. Declare the
 poll and cancel tools in `next-tools` and in the result recovery context.
 Status must remain readable after a transport disconnect or adapter restart;
 state cancellation ownership honestly when it cannot be reconstructed.
-The launch result must include the same durable `job_id` plus one canonical
-status. To make CLI `--wait` follow the adapter operation, declare the status
-tool in `next-tools.on-success` with `execution: sync`, a string `job_id` as its
-only required input, and both `read_only_hint: true` and `idempotent_hint: true`.
-Every other input must be optional and safe when omitted. Core rejects async,
-mutating, optional-id, multi-required-input, and untyped pollers. The status tool must
-return the queried ID or an explicit unknown-ID error; it must never create a
-new operation while polling.
 
 Render and cook status tools should reuse the Core progress vocabulary:
 `status`, `progress.current`, `progress.total`, and `progress.message`.
@@ -127,11 +102,10 @@ For one indivisible DCC-native call, keep `job_strategy: monolithic`. Prefer
 `execution: async` so the initial transport returns a core job id, then poll
 the instance-routable `jobs_get_status`. A transport timeout is not completion
 or cancellation: rediscover the instance and query the job before retrying.
-Declare potentially long tools as `execution: async` with a realistic positive
-`timeout_hint_secs`. The timeout hint describes a budget, not an execution mode;
-do not rely on it to obtain a job envelope. Some older REST runtimes promoted
-hinted synchronous tools differently from MCP, so validate both routes on the
-exact target Core artifact and keep the execution declaration explicit.
+Do not publish a potentially long tool as `execution: sync` with no timeout
+metadata. A positive `timeout_hint_secs` also makes Core return a job envelope;
+use it when duration is known but the tool otherwise retains synchronous
+semantics inside the worker.
 The creator scaffold deliberately emits `monolithic` for async tools; change it
 only with the matching chunked runner or isolated status/cancel implementation.
 
@@ -165,10 +139,7 @@ only with the matching chunked runner or isolated status/cancel implementation.
 - For custom-drawn canvases, viewport manipulators, or face controls, use one
   `drag` path from the latest snapshot. `keys` may hold Ctrl, Shift, or Alt for
   pointer-modified drags; snapshot again immediately before deriving another
-  path. In `pixels_only` mode, the path has exactly two endpoints and their `x`/`y`
-  values are physical screenshot pixels local to the latest main PNG. Do not
-  convert them to desktop coordinates, apply DPI scaling or use secondary
-  popup-image coordinates.
+  path.
 - Never set `DCC_MCP_CUA_ALLOW_RAW_INPUT` from a skill script. Native input is
   enabled by default, and the operator-owned `false` setting disables it.
   Native input also requires the
@@ -193,3 +164,4 @@ only with the matching chunked runner or isolated status/cancel implementation.
   credentials, prompts, or secret-shaped fields. Visual fallback assets must
   be content-addressed, exact-window bounded, confidence gated, stable across
   multiple frames, and fail closed on geometry/DPI/topology drift.
+

@@ -134,14 +134,14 @@ RELEASED_CORE_WORKFLOW_REQUIRED_TRIGGERS = {
 RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
     ".github/workflows/skillhub.yml": {'sync': 'ccf8ff8575cfd48c703850ca613134c6522203a77551c1788455894fb5924fc0'},
     ".github/workflows/ci.yml": {
-        "product-discovery": "f548c76c55d0a0901fcc29489d635ba1c0fc0d3c07ecc283ed3d102ceb918d49",
+        "product-discovery": "6a5ab32b7de74afec3f2f75e68c839c096ecb08738ac1b8ca7f8b615aba28fad",
         "validate": "3d9ffa7bcb000cacb170786d81467beb18d63de758ce093bfc3a165a91381a89",
     },
     ".github/workflows/clawhub.yml": {
         "sync-skills": "09adf490a6df55f5ebbf3e8e040b0b14baa0115cf2241b521d54c1604f9c45d9",
     },
     ".github/workflows/release.yml": {
-        "github-release": "99356779fa49b277609f1a6575c274dff907e1edf914203a23c07ac209cfe006",
+        "github-release": "a732d8aef15186a6fd36fcfba9d0c95074a1bb60b423c93a86e471f8c796bb6a",
         "publish-clawhub": "c911a32259c3658a50b2f6c47ba2a80240a9e168c4bcfda483cb212640340330",
         "publish-skillhub": "c615caf60b1514b58e53c02ca2758e92c0bc0f836cb2f870e1c3c142152bb2a7",
         "publish-smithery": "2749e01e660ea0ed74c37d4e4f25c23f6848925055806bf91ca4634e67e75530",
@@ -159,9 +159,9 @@ RELEASED_CORE_JOB_EXECUTION_CONTROLS = {
                 "fail-fast": False,
                 "matrix": {
                     "include": [
-                        {"os": "ubuntu-latest", "cli": ".released-cli/dcc-mcp-cli"},
-                        {"os": "macos-latest", "cli": ".released-cli/dcc-mcp-cli"},
-                        {"os": "windows-latest", "cli": ".released-cli/dcc-mcp-cli.exe"},
+                        {"os": "ubuntu-latest", "cli": ".released-cli/dccmcp"},
+                        {"os": "macos-latest", "cli": ".released-cli/dccmcp"},
+                        {"os": "windows-latest", "cli": ".released-cli/dccmcp.exe"},
                     ]
                 },
             },
@@ -396,21 +396,34 @@ def validate_product_catalog(data: dict) -> None:
     if not isinstance(sources, dict):
         raise ValueError("product catalog is missing sources")
     released_cli = sources.get("released_cli", {})
+    core_runtime = sources.get("core_runtime", {})
     core_catalog = sources.get("core_catalog", {})
-    if released_cli.get("repository") != "https://github.com/dcc-mcp/dcc-mcp-core":
-        raise ValueError("released CLI must use the official dcc-mcp-core repository")
+    if released_cli.get("name") != "dccmcp":
+        raise ValueError("released CLI must use the dccmcp product name")
+    if released_cli.get("repository") != "https://github.com/dcc-mcp/dcc-mcp-cli":
+        raise ValueError("released CLI must use the official dcc-mcp-cli repository")
     if released_cli.get("tag") != f"v{released_cli.get('version')}":
         raise ValueError("released CLI tag must match its version")
     if CORE_COMMIT_RE.fullmatch(str(released_cli.get("commit", ""))) is None:
         raise ValueError("released CLI must be pinned to a full release commit")
+    if released_cli.get("command") != "dccmcp --output json dcc-types":
+        raise ValueError("released CLI must use the dccmcp catalog command")
+    if core_runtime.get("name") != "dcc-mcp-core":
+        raise ValueError("Core runtime must use the dcc-mcp-core product name")
+    if core_runtime.get("repository") != "https://github.com/dcc-mcp/dcc-mcp-core":
+        raise ValueError("Core runtime must use the official dcc-mcp-core repository")
+    if core_runtime.get("tag") != f"v{core_runtime.get('version')}":
+        raise ValueError("Core runtime tag must match its version")
+    if CORE_COMMIT_RE.fullmatch(str(core_runtime.get("commit", ""))) is None:
+        raise ValueError("Core runtime must be pinned to a full release commit")
     if core_catalog.get("repository") != "https://github.com/dcc-mcp/dcc-mcp-core":
         raise ValueError("core catalog must use the official dcc-mcp-core repository")
     if CORE_COMMIT_RE.fullmatch(str(core_catalog.get("commit", ""))) is None:
         raise ValueError("core catalog must be pinned to a full immutable commit")
     if core_catalog.get("path") != "dcc-mcp-catalog.yml":
         raise ValueError("core catalog path must be dcc-mcp-catalog.yml")
-    if core_catalog.get("commit") != released_cli.get("commit"):
-        raise ValueError("core catalog must be pinned to the released CLI commit")
+    if core_catalog.get("commit") != core_runtime.get("commit"):
+        raise ValueError("core catalog must be pinned to the Core runtime commit")
     current_core_catalog = sources.get("current_core_catalog")
     if current_core_catalog is not None:
         if current_core_catalog.get("repository") != "https://github.com/dcc-mcp/dcc-mcp-core":
@@ -710,7 +723,7 @@ def validate_released_core_runtime(
     catalog: dict, *, installed_version: str, resolved_commit: str
 ) -> None:
     """Require the installed Core and resolved release ref to match one catalog contract."""
-    released = catalog["sources"]["released_cli"]
+    released = catalog["sources"]["core_runtime"]
     if installed_version != released["version"]:
         raise ValueError(
             f"installed Core version differs: expected {released['version']}, got {installed_version}"
@@ -1002,7 +1015,7 @@ def _validate_released_core_job(
 
 def validate_released_core_workflows(catalog: dict, workflows: dict[str, str]) -> None:
     """Require one structurally executable catalog-derived Core setup per job."""
-    released = catalog["sources"]["released_cli"]
+    released = catalog["sources"]["core_runtime"]
     version_pin = re.compile(r"(?im)^\s*DCC_MCP_CORE_VERSION\s*:\s*['\"]?([^'\"\s]+)")
     commit_pin = re.compile(r"(?im)^\s*DCC_MCP_CORE_COMMIT\s*:\s*['\"]?([0-9a-f]+)")
 
@@ -1084,7 +1097,9 @@ def validate_core_catalog_snapshot(catalog: dict, payload: dict) -> None:
     released_identities = {
         _adapter_identity(product["adapter"]) for product in catalog["products"]
     }
-    if set(authoritative) != expected_identities and set(authoritative) != released_identities:
+    if not expected_identities.issubset(authoritative) and not released_identities.issubset(
+        authoritative
+    ):
         raise ValueError("immutable Core adapter identities differ from PRODUCTS.json")
 
     for identity, product in products.items():
@@ -1136,8 +1151,13 @@ def plugin_keywords(catalog: dict) -> list[str]:
 
 def skill_description(catalog: dict) -> str:
     return (
-        "Operate named supported apps through DCC-MCP; discover tools and marketplace skills. "
-        "Use for app tasks or explicit DCC-MCP/DCC-CUA requests."
+        f"Default DCC-MCP router for {len(catalog['products'])} released creative products "
+        f"and {len(catalog.get('application_routes', []))} current application routes. "
+        "Use for a named supported app or explicit DCC-MCP request. Controls live apps, writes "
+        "files, contacts gateways, and can install a CLI with setup authorization. "
+        "Use typed DCC-MCP tools first. For application UI, including browsers and non-DCC "
+        "apps, DCC-CUA and ui-control name the same project-owned route and explicit DCC-CUA "
+        "requests never fall back to generic Computer Use providers."
     )
 
 

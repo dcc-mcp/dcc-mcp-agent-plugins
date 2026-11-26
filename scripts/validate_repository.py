@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PLUGIN = ROOT / "plugins" / "dcc-mcp"
 SMITHERY_MANIFEST = ROOT / ".github" / "smithery-skills.json"
 AGENT_PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+AGENT_PLUGIN_CONTRACT = PLUGIN / "agent-plugin.json"
 PLUGIN_MANIFESTS = (
     PLUGIN / "plugin.json",
     PLUGIN / ".codex-plugin" / "plugin.json",
@@ -87,6 +88,40 @@ def main() -> int:
     agent_plugin = json.loads(PLUGIN_MANIFESTS[0].read_text(encoding="utf-8"))
     if agent_plugin.get("$schema") != AGENT_PLUGIN_SCHEMA:
         raise ValueError("invalid Agent Plugins schema")
+
+    contract = json.loads(AGENT_PLUGIN_CONTRACT.read_text(encoding="utf-8"))
+    released_cli = product_catalog["sources"]["released_cli"]
+    if contract.get("schema_version") != "1" or contract.get("id") != "dcc-mcp":
+        raise ValueError("invalid DCCMCP agent-plugin contract identity")
+    if contract.get("version") != agent_plugin.get("version"):
+        raise ValueError("agent-plugin contract version differs from plugin")
+    runtime = contract.get("runtime", {})
+    if runtime.get("kind") != "dccmcp-cli":
+        raise ValueError("agent-plugin contract must use the dccmcp-cli runtime")
+    if runtime.get("minimum_cli") != released_cli["version"]:
+        raise ValueError("agent-plugin minimum CLI differs from PRODUCTS.json")
+    if set(runtime.get("transports", [])) != {"streamable-http", "rest"}:
+        raise ValueError("agent-plugin contract transports must be streamable-http and rest")
+    entrypoints = contract.get("entrypoints", [])
+    if not any(
+        entry.get("kind") == "skill"
+        and entry.get("path") == "skills/dcc-mcp/SKILL.md"
+        and (PLUGIN / entry["path"]).is_file()
+        for entry in entrypoints
+        if isinstance(entry, dict) and isinstance(entry.get("path"), str)
+    ):
+        raise ValueError("agent-plugin contract is missing the dcc-mcp Skill entrypoint")
+    commands = contract.get("commands", [])
+    if not any(
+        command.get("name") == "dccmcp"
+        and "dcc-mcp-cli" in command.get("compatibility_aliases", [])
+        for command in commands
+        if isinstance(command, dict)
+    ):
+        raise ValueError("agent-plugin contract must declare dccmcp and its compatibility alias")
+    processes = contract.get("permissions", {}).get("process", [])
+    if not {"dccmcp", "dcc-mcp-cli"}.issubset(processes):
+        raise ValueError("agent-plugin process permissions must include dccmcp and dcc-mcp-cli")
 
     plugin_versions = {json.loads(path.read_text(encoding="utf-8"))["version"] for path in PLUGIN_MANIFESTS}
     if len(plugin_versions) != 1:

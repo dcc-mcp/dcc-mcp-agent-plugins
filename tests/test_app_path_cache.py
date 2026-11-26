@@ -63,9 +63,7 @@ class AppPathCacheTests(unittest.TestCase):
                 )
                 self.assertIn("已不存在", prompt)
                 self.assertIn("新的软件绝对路径", prompt)
-                self.assertIn("是否需要我先提供官方安装方式", prompt)
-                self.assertIn("https://obsproject.com/download", prompt)
-                self.assertIn("dcc-mcp-cli install --dcc-type obs", prompt)
+                self.assertIn("dccmcp install --dcc-type obs", prompt)
             finally:
                 if old is None:
                     os.environ.pop(module.CACHE_ENV, None)

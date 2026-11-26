@@ -65,7 +65,7 @@ them in `SKILL.md`, `tools.yaml`, examples, logs, or result payloads.
 Validate before starting the service:
 
 ```bash
-dcc-mcp-cli lint skills
+dccmcp lint skills
 ```
 
 For hermetic tests, set `DCC_MCP_DISABLE_DEFAULT_SKILL_PATHS=1` so operator
@@ -98,7 +98,7 @@ Verify this ladder in order:
 5. Call it once with invalid input and confirm the error is safe and actionable.
 6. Stop the service and confirm its registry row disappears.
 
-Use `dcc-mcp-cli list`, `load-skill`, `describe`, and `call --wait` as
+Use `dccmcp list`, `load-skill`, `describe`, and `call --wait` as
 the agent smoke once the local service is registered. Keep the returned slug
 and `request_id`; do not guess names or retry before diagnosis. If no approved
 direct MCP client is available, complete the CLI smoke and record direct MCP

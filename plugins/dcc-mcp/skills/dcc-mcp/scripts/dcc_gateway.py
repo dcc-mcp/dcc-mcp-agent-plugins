@@ -20,8 +20,10 @@ from typing import Any
 
 from gateway_endpoint import NoGatewayRedirect, resolve_gateway_url, validate_gateway_url
 
+from gateway_endpoint import NoGatewayRedirect, validate_gateway_url
+
 DEFAULT_BASE_URL = "http://127.0.0.1:9765"
-OFFICIAL_REPO = "dcc-mcp/dcc-mcp-core"
+OFFICIAL_REPO = "dcc-mcp/dcc-mcp-cli"
 DEFAULT_VERSION = "latest"
 MAX_MANIFEST_BYTES = 64 * 1024
 MAX_CLI_BYTES = 256 * 1024 * 1024
@@ -115,17 +117,17 @@ def _release_assets() -> tuple[str, str] | None:
     machine = platform.machine().lower()
     if system == "windows" and machine in {"amd64", "x86_64"}:
         return (
-            "dcc-mcp-cli-windows-x86_64.exe",
+            "dccmcp-windows-x86_64.exe",
             "dcc-mcp-update-manifest-windows-x86_64.json",
         )
     if system == "linux" and machine in {"amd64", "x86_64"}:
         return (
-            "dcc-mcp-cli-linux-x86_64",
+            "dccmcp-linux-x86_64",
             "dcc-mcp-update-manifest-linux-x86_64.json",
         )
     if system == "darwin":
         return (
-            "dcc-mcp-cli-macos-universal2",
+            "dccmcp-macos-universal2",
             "dcc-mcp-update-manifest-macos-universal2.json",
         )
     return None
@@ -166,9 +168,9 @@ def _verified_manifest_entry(
         raise ValueError(f"invalid official release manifest: {exc}") from exc
     if not isinstance(manifest, dict):
         raise ValueError("invalid official release manifest: expected an object")
-    entry = manifest.get("dcc-mcp-cli")
+    entry = manifest.get("dccmcp")
     if not isinstance(entry, dict):
-        raise ValueError("invalid official release manifest: dcc-mcp-cli entry is missing")
+        raise ValueError("invalid official release manifest: dccmcp entry is missing")
 
     entry_version = entry.get("version")
     url = entry.get("url")
@@ -192,7 +194,7 @@ def install_cli(
     install_dir: Path,
     version: str = DEFAULT_VERSION,
 ) -> tuple[bool, str, str | None]:
-    """Install dcc-mcp-cli only after its official manifest verifies SHA-256."""
+    """Install dccmcp and its compatibility alias after manifest verification."""
     assets = _release_assets()
     if assets is None:
         return False, "unsupported platform for release asset", None
@@ -210,8 +212,9 @@ def install_cli(
     except (urllib.error.URLError, OSError, ValueError) as exc:
         return False, f"verified install failed: {exc}", None
 
-    executable_name = "dcc-mcp-cli.exe" if platform.system().lower() == "windows" else "dcc-mcp-cli"
+    executable_name = "dccmcp.exe" if platform.system().lower() == "windows" else "dccmcp"
     target = install_dir / executable_name
+    compatibility_target = install_dir / ("dcc-mcp-cli.exe" if target.suffix else "dcc-mcp-cli")
 
     try:
         install_dir.mkdir(parents=True, exist_ok=True)
@@ -245,6 +248,7 @@ def install_cli(
         if platform.system().lower() != "windows":
             tmp_path.chmod(0o755)
         tmp_path.replace(target)
+        shutil.copyfile(target, compatibility_target)
     except (urllib.error.URLError, OSError, ValueError) as exc:
         with contextlib.suppress(OSError):
             tmp_path.unlink()
@@ -328,9 +332,9 @@ def python_fallback(command: str, args: argparse.Namespace) -> dict[str, Any]:
 
 
 def run_command(command: str, args: argparse.Namespace) -> dict[str, Any]:
-    """Prefer the CLI; never replay an attempted tool call with an unknown outcome."""
+    """Prefer dccmcp, optionally install it, then fall back to Python REST."""
     try:
-        args.base_url = resolve_gateway_url(args.base_url)
+        args.base_url = validate_gateway_url(args.base_url)
     except ValueError as exc:
         return {"success": False, "error": "invalid-gateway-url", "detail": str(exc)}
     cli_path, cli_details = resolve_cli(args)
@@ -363,19 +367,12 @@ def run_command(command: str, args: argparse.Namespace) -> dict[str, Any]:
 def build_parser() -> argparse.ArgumentParser:
     """Create the helper CLI parser."""
     parser = argparse.ArgumentParser(description="DCC-MCP gateway helper with CLI-first execution.")
-    parser.add_argument(
-        "--base-url",
-        default=None,
-        help=(
-            "Exact approved gateway origin. If omitted, DCC_MCP_BASE_URL may select "
-            "loopback only; inherited environment never authorizes a remote gateway."
-        ),
-    )
-    parser.add_argument("--cli", default="dcc-mcp-cli")
+    parser.add_argument("--base-url", default=os.environ.get("DCC_MCP_BASE_URL") or DEFAULT_BASE_URL)
+    parser.add_argument("--cli", default="dccmcp")
     parser.add_argument(
         "--ensure-cli",
         action="store_true",
-        help="After explicit user consent, install dcc-mcp-cli from its verified official release manifest",
+        help="After explicit user consent, install dccmcp from its verified official release manifest",
     )
     parser.add_argument(
         "--install-dir",
