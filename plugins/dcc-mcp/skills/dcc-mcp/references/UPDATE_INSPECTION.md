@@ -29,8 +29,8 @@ support. Do not claim a minimum supported release until one is published.
 
 If support cannot be established, report "This CLI has not been confirmed to
 support the requested read-only command", keep runtime observations unknown,
-and provide the [official releases](https://github.com/dcc-mcp/dcc-mcp-core/releases)
-and [official source](https://github.com/dcc-mcp/dcc-mcp-core). Stop without invoking the
+and provide the [official CLI releases](https://github.com/dcc-mcp/dcc-mcp-cli/releases)
+and [official CLI source](https://github.com/dcc-mcp/dcc-mcp-cli). Stop without invoking the
 command, automatically upgrading, or retrying another installed binary. If an
 already verified safe candidate rejects the subcommand, report it as unsupported
 and return to metadata inspection rather than treating it as an update check.

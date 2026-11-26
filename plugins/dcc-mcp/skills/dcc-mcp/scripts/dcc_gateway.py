@@ -136,7 +136,7 @@ def _normalized_version(version: str) -> str | None:
         return None
     match = _VERSION_RE.fullmatch(version)
     if match is None:
-        raise ValueError("version must be 'latest' or a stable release such as v0.19.63")
+        raise ValueError("version must be 'latest' or a stable release such as v0.21.2")
     return match.group(1)
 
 

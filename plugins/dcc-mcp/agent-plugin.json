@@ -2,7 +2,7 @@
   "schema_version": "1",
   "id": "dcc-mcp",
   "name": "DCCMCP Agent Plugin",
-  "version": "0.19.97",
+  "version": "0.19.98",
   "runtime": {
     "kind": "dccmcp-cli",
     "minimum_cli": "0.21.2",
