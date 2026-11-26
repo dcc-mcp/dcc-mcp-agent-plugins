@@ -9,7 +9,7 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: Cross-platform routing contract. The current DCC-CUA host is independently released and reached through the official dccmcp CUA forwarding contract; exact platform capabilities remain runtime-discovered.
-    version: "0.19.121"
+    version: "0.19.97"
     search-hint: "dcc-cua DCC CUA dcc cua our dcc-cua our dcc cua 我们的 dcc-cua 我们的 dcc cua project-owned UI control browser DOM exact PID HWND computer use automation"
     tags: "dcc-cua, dcc-ui-control, ui-control, browser-dom, exact-window, computer-use, infrastructure"
   openclaw:
