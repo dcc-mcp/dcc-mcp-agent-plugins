@@ -44,8 +44,8 @@ separately running gateway/adapter are different versions.
 The host commands already own local software discovery and provisioning:
 
 ```bash
-dcc-mcp-cli --output json host list
-dcc-mcp-cli --output json host doctor
+dccmcp --output json host list
+dccmcp --output json host doctor
 ```
 
 Prefer `host doctor <exact-host-id>` when the task names one host. `host list`
@@ -130,11 +130,11 @@ official installation route. Which would you like to use?” Replace every part
 with actual evidence and omit irrelevant products.
 
 When the user chooses an open-source host, use the existing
-`dcc-mcp-cli host install <exact-host-id>` workflow only after consent. It reads
+`dccmcp host install <exact-host-id>` workflow only after consent. It reads
 the manifest and lock, checks the platform channel and refuses commercial
 hosts. Do not copy a version out of a conversation into an installer. Review
 whether the install command remembers consent before selecting `--yes`.
-Host installation and `dcc-mcp-cli install --dcc-type <dcc>` adapter installation
+Host installation and `dccmcp install --dcc-type <dcc>` adapter installation
 are separate steps. Recheck host, registration, readiness, exact tool schema,
 and the actual requested effect afterward. Never automatically launch a host.
 

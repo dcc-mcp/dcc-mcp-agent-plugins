@@ -5,8 +5,8 @@ A generic marketplace request alone does not select this ecosystem. Install/upda
 an exact package ID follow the same discovery path:
 
 ```bash
-dcc-mcp-cli marketplace search --query "maya rigging" --limit 20
-dcc-mcp-cli marketplace inspect <exact-name-from-search>
+dccmcp marketplace search --query "maya rigging" --limit 20
+dccmcp marketplace inspect <exact-name-from-search>
 ```
 
 Marketplace discovery does not require a live DCC instance. Do not apply
@@ -39,17 +39,17 @@ in builds that apply updates before argument parsing.
 Use the gateway release manifest for binary checks. An available binary must have a valid SHA-256; `update apply` verifies it during download, binds one component to the exact CLI installation, and re-verifies it before replacement and restart. Legacy unsigned staging is quarantined. A running server must be updated in its own environment. The Admin Instances panel is check-only for every binary because the gateway cannot prove an installation root. See the CLI cheatsheet for platform manifests, server updates, and the verified `dcc-cua` sibling contract.
 
 ```bash
-dcc-mcp-cli update check
-dcc-mcp-cli update apply
+dccmcp update check
+dccmcp update apply
 ```
 
 For marketplace Skills, search first when the exact package ID is not known:
 
 ```bash
-dcc-mcp-cli marketplace search --query "maya rigging" --limit 20
-dcc-mcp-cli marketplace inspect <package_name>
-dcc-mcp-cli marketplace install <package_name> --dcc maya --reload
-dcc-mcp-cli marketplace install <profile_package_name> --target game:the-bazaar
+dccmcp marketplace search --query "maya rigging" --limit 20
+dccmcp marketplace inspect <package_name>
+dccmcp marketplace install <package_name> --dcc maya --reload
+dccmcp marketplace install <profile_package_name> --target game:the-bazaar
 ```
 
 `--query "maya rigging"` remains supported for scripts. Search and inspect are
@@ -62,7 +62,7 @@ After updates or installs without `--reload`, run `reload-skills`; then use `loa
 Use `install` for adapter plans, never for marketplace Skills:
 
 ```bash
-dcc-mcp-cli install --dcc-type maya
+dccmcp install --dcc-type maya
 ```
 Ask before `--execute`, follow the returned `next_steps`, and do not treat
 package installation as live registration. Pip plans must preserve the catalog-pinned artifact; see the CLI cheatsheet. If no standard DCC is found, ask for an absolute path and pass `--dcc-path`. If auto-install is disabled, show

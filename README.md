@@ -162,7 +162,7 @@ After installing the Skill, start the DCC application and enable its DCC-MCP
 adapter. Then run:
 
 ```powershell
-dcc-mcp-cli list
+dccmcp list
 ```
 
 The output must contain a running instance with the adapter's documented

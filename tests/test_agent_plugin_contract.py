@@ -33,3 +33,13 @@ class AgentPluginContractTests(unittest.TestCase):
         self.assertEqual("dccmcp", command["name"])
         self.assertIn("dcc-mcp-cli", command["compatibility_aliases"])
         self.assertEqual({"dccmcp", "dcc-mcp-cli"}, set(contract["permissions"]["process"]))
+
+    def test_cua_skill_uses_the_standalone_forwarding_contract(self) -> None:
+        skill = (ROOT / "plugins" / "dcc-mcp" / "skills" / "dcc-cua" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("dccmcp cua -- manifest", skill)
+        self.assertIn("dccmcp cua -- ping", skill)
+        self.assertIn("dccmcp cua -- host-ensure", skill)
+        self.assertNotIn("components status dcc-cua", skill)
+        self.assertNotIn("components ensure dcc-cua", skill)

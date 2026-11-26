@@ -98,7 +98,7 @@ installation URL is not copied into the public decision.
 ### Result views (pending Core release)
 
 The CLI result-view change is not available in every installed release. Check
-`dcc-mcp-cli --help` before using `--raw-result`, `--select` or
+`dccmcp --help` before using `--raw-result`, `--select` or
 `--show-maintenance`; do not install or update a CLI without authorization.
 
 On builds with these flags, `call` prints structured results once by omitting
@@ -188,13 +188,13 @@ paths, or full tool payloads.
 ## Failure findings and public-safe bundles
 
 ```bash
-dcc-mcp-cli feedback route finding.json --json
-dcc-mcp-cli feedback bundle reviewed-finding.json --json
-dcc-mcp-cli feedback bundle reviewed-finding.json \
+dccmcp feedback route finding.json --json
+dccmcp feedback bundle reviewed-finding.json --json
+dccmcp feedback bundle reviewed-finding.json \
   --install-report install-report.json --json
-dcc-mcp-cli feedback bundle reviewed-finding.json \
+dccmcp feedback bundle reviewed-finding.json \
   --dcc-pid 4321 --log-dir /safe/log/root --host-error-lines 50 --json
-dcc-mcp-cli feedback file reviewed-finding.json --json
+dccmcp feedback file reviewed-finding.json --json
 # Only after reviewing the plan and receiving explicit user authorization,
 # execute the returned next_step.argv exactly.
 ```

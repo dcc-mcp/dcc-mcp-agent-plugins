@@ -119,7 +119,7 @@ class FirstRunReportTests(unittest.TestCase):
         self.assertEqual("unknown", result["applications"][0]["category"])
 
     def test_found_cli_is_not_a_verified_version_or_healthy_runtime(self):
-        REPORT.shutil.which.return_value = "/private/home/bin/dcc-mcp-cli"
+        REPORT.shutil.which.return_value = "/private/home/bin/dccmcp"
         result = self.report()
         self.assertEqual("found", result["cli"]["availability"])
         self.assertEqual("unknown", result["cli"]["version_status"])

@@ -36,8 +36,8 @@ already verified safe candidate rejects the subcommand, report it as unsupported
 and return to metadata inspection rather than treating it as an update check.
 
 ```bash
-dcc-mcp-cli --output json update inspect
-dcc-mcp-cli --output json update inspect --offline
+dccmcp --output json update inspect
+dccmcp --output json update inspect --offline
 ```
 
 ## Keep Version Observations Separate
@@ -82,8 +82,8 @@ a rollback command when the installation owner provides no verified path.
 Use the read-only official catalog and Marketplace providers:
 
 ```bash
-dcc-mcp-cli --output json update discover --query "animation" --limit 20
-dcc-mcp-cli --output json update discover --offline --provider official_install_catalog
+dccmcp --output json update discover --query "animation" --limit 20
+dccmcp --output json update discover --offline --provider official_install_catalog
 ```
 
 The provider-qualified results include application targets, package metadata,
@@ -107,8 +107,8 @@ workflow when the selected CLI's entry point is safe. Preview explicitly chosen
 files with the inspection-capable binary:
 
 ```bash
-dcc-mcp-cli --output json feedback bundle reviewed-finding.json
-dcc-mcp-cli --output json feedback file reviewed-finding.json
+dccmcp --output json feedback bundle reviewed-finding.json
+dccmcp --output json feedback file reviewed-finding.json
 ```
 
 The bundle v2 is a minimal diagnostic summary, not a publishable Finding v1.

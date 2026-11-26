@@ -7,11 +7,11 @@ catalog entry prove different things.
 
 ## Check the installed build
 
-Record `dcc-mcp-cli --version`, then run the documented diagnostic commands:
+Record `dccmcp --version`, then run the documented diagnostic commands:
 
 ```powershell
-dcc-mcp-cli --output toon --no-auto-gateway host list
-dcc-mcp-cli --output toon --no-auto-gateway host doctor <host-id>
+dccmcp --output toon --no-auto-gateway host list
+dccmcp --output toon --no-auto-gateway host doctor <host-id>
 ```
 
 Use the exact host identifier returned by `host list`. `host doctor` locates the
@@ -63,10 +63,10 @@ For a reviewed CLI build containing the Windows Inkscape archive channel:
 # Task-owned absolute destination; use a process-local environment value.
 $env:DCC_MCP_HOSTS_DIR = 'C:\vector-task\software'
 $env:INKSCAPE_PROFILE_DIR = 'C:\vector-task\host-probe-profile'
-dcc-mcp-cli --output toon --no-auto-gateway host doctor inkscape
+dccmcp --output toon --no-auto-gateway host doctor inkscape
 # Run only after installation is authorized.
-dcc-mcp-cli --output toon --no-auto-gateway host install inkscape --yes
-dcc-mcp-cli --output toon --no-auto-gateway host doctor inkscape==1.4.4
+dccmcp --output toon --no-auto-gateway host install inkscape --yes
+dccmcp --output toon --no-auto-gateway host doctor inkscape==1.4.4
 ```
 
 These commands describe the coordinated development source, not a guarantee

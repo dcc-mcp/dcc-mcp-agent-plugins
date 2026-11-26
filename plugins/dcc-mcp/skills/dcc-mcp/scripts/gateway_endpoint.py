@@ -1,12 +1,16 @@
 """Validate gateway origins before either CLI dispatch or REST transport."""
 
 import ipaddress
+import os
 import re
 from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler
 
 
-def validate_gateway_url(value):
+DEFAULT_GATEWAY_URL = "http://127.0.0.1:9765"
+
+
+def validate_gateway_url(value, *, allow_remote=True):
     """Allow canonical loopback HTTP or TLS origins; never URL credentials."""
     if not isinstance(value, str) or re.search(r"[\s\\%]", value):
         raise ValueError("gateway URL contains ambiguous characters")
@@ -29,7 +33,23 @@ def validate_gateway_url(value):
         loopback = host == "localhost"
     if parsed.scheme == "http" and not loopback:
         raise ValueError("remote gateways require HTTPS; use an explicitly trusted origin")
+    if not loopback and not allow_remote:
+        raise ValueError(
+            "a remote gateway cannot be selected through DCC_MCP_BASE_URL; "
+            "pass its exact approved HTTPS origin with --base-url"
+        )
     return value.rstrip("/")
+
+
+def resolve_gateway_url(explicit_value=None, *, environment=None):
+    """Resolve an endpoint without treating inherited environment as remote trust."""
+    if explicit_value is not None:
+        return validate_gateway_url(explicit_value, allow_remote=True)
+    env = os.environ if environment is None else environment
+    inherited = env.get("DCC_MCP_BASE_URL")
+    if inherited:
+        return validate_gateway_url(inherited, allow_remote=False)
+    return DEFAULT_GATEWAY_URL
 
 
 class NoGatewayRedirect(HTTPRedirectHandler):

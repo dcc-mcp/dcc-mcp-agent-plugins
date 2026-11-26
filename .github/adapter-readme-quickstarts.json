@@ -6,11 +6,6 @@
       "dcc_type": "blender",
       "smoke_prompt": "Use dcc-mcp to inspect the current Blender scene."
     },
-    "dcc-mcp-comfyui": {
-      "dcc_name": "ComfyUI",
-      "dcc_type": "comfyui",
-      "smoke_prompt": "Use dcc-mcp to inspect the current ComfyUI workflow and queue status."
-    },
     "dcc-mcp-godot": {
       "dcc_name": "Godot",
       "dcc_type": "godot",

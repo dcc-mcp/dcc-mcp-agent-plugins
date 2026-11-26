@@ -1,6 +1,6 @@
 # Zero instances — typed discovery and setup
 
-Use this guide when local `dcc-mcp-cli list` reports `total: 0`, or when a
+Use this guide when local `dccmcp list` reports `total: 0`, or when a
 selected remote profile reports no matching live instance. A zero inventory is
 only runtime-registration evidence. It does not prove that the application is
 unsupported, uninstalled, impossible to bootstrap from a project, or
@@ -18,12 +18,28 @@ named remote gateway before choosing a command. These branches are mutually
 exclusive: never use a local registry decision or its `next_action` as evidence
 for a remote gateway.
 
+Only local zero inventory uses the targeted local decision. Remote zero
+inventory uses exact catalog matching and never consumes a local registry plan.
+
 ### Remote zero-instance branch
 
 When `list --gateway <name>` or the selected non-local profile reports zero
 matching instances, keep that remote result as the only runtime-registration
 evidence. Do not run the targeted local `dcc-types --dcc-type <dcc>` decision
 and do not execute a `next_action` produced from the local FileRegistry.
+
+First inspect the catalog without a registry filter:
+
+```bash
+dccmcp --output json dcc-types
+```
+
+Match the requested DCC against one exact canonical catalog identifier. Only
+after an exact match may you generate the read-only plan:
+
+```bash
+dccmcp --output json --non-interactive install --dcc-type <dcc>
+```
 
 1. Which DCC product the user needs.
 2. Whether they want commands suggested or executed.
@@ -69,7 +85,7 @@ Match the requested DCC against exactly one canonical `dcc_type`. Only after an
 exact match may you generate the read-only plan:
 
 ```bash
-dcc-mcp-cli --output json --non-interactive install --dcc-type <dcc>
+dccmcp --output json --non-interactive install --dcc-type <dcc>
 ```
 
 If there is no exact catalog match, keep public support, package installation,
@@ -82,7 +98,7 @@ is guidance only; it is not remote inventory, readiness, or real-host evidence.
 Confirm the requested DCC type, then run the versioned local decision:
 
 ```bash
-dcc-mcp-cli --output json dcc-types --dcc-type <dcc>
+dccmcp --output json dcc-types --dcc-type <dcc>
 ```
 
 The command does not start a gateway. Its `schema_version: 1` result follows
@@ -133,7 +149,7 @@ If the installed CLI rejects `--dcc-type` on `dcc-types`, preserve the same
 boundaries with the older read-only commands:
 
 ```bash
-dcc-mcp-cli --output json dcc-types
+dccmcp --output json dcc-types
 ```
 
 Match only an exact canonical catalog identifier. If no row matches, report
@@ -142,7 +158,7 @@ project-plugin absence, version incompatibility, or an unsupported host. Only
 after an exact match, generate the plan:
 
 ```bash
-dcc-mcp-cli --output json --non-interactive install --dcc-type <dcc>
+dccmcp --output json --non-interactive install --dcc-type <dcc>
 ```
 
 The `read-install-instructions` URL remains the adapter-owned setup source.
@@ -150,7 +166,7 @@ Updating the CLI is a separate consent-gated operation.
 
 ## Diagnose local startup state
 
-Run `dcc-mcp-cli doctor` when the selected profile, registry, or gateway state
+Run `dccmcp doctor` when the selected profile, registry, or gateway state
 is unclear. Local `list` first ensures the loopback gateway and then reads the
 FileRegistry. DCC adapters register through their sidecar/server runtime;
 package installation alone does not create a row.
@@ -179,7 +195,7 @@ When the host application itself is missing, ask one concise follow-up before
 choosing a setup path: “未发现 `<dcc>` 的可用实例。你已经安装它了吗？如果没有，
 是否需要我提供或执行官方安装方式？” If the product record has `host_install`,
 show that official HTTPS source. Keep this separate from
-`dcc-mcp-cli install --dcc-type <dcc>`, which installs the DCC-MCP adapter and does
+`dccmcp install --dcc-type <dcc>`, which installs the DCC-MCP adapter and does
 not prove that the host application is installed. Never download, install, or
 launch the host from a missing path without the user's explicit consent.
 
@@ -210,7 +226,7 @@ product snapshot or the official signed installation feed.
 Build the plan using the exact argv from the decision. For a legacy CLI, use:
 
 ```bash
-dcc-mcp-cli --output json --non-interactive install --dcc-type <dcc>
+dccmcp --output json --non-interactive install --dcc-type <dcc>
 ```
 
 Read the plan's `read-install-instructions` URL first. That adapter-owned
@@ -232,6 +248,14 @@ Execution installs/verifies packages only. The online registration signal is
 still `dccmcp list`: the DCC plugin or sidecar must start, stay alive, and
 self-register in the FileRegistry or selected gateway.
 
+- Unreal can use a project-mounted plugin and engine-bundled Python path; do
+  not require legacy Remote Execution or an optional native bridge unless the
+  current adapter contract does.
+- Unity and supported Tuanjie builds share the adapter-owned compatibility
+  decision; a `t` version string is not an unsupported verdict.
+- Godot may use a project-local EditorPlugin plus an external sidecar; a
+  machine-wide inventory miss does not prove that addon absent.
+
 These are routing boundaries, not real-host acceptance claims. Preserve
 version and custom-fork uncertainty until the owning adapter's compatibility
 check runs.
@@ -247,9 +271,9 @@ package when unfamiliar, then installing it with
 `dccmcp marketplace install <package_name> --dcc <dcc> --reload`.
 
 1. Start or enable the adapter-owned host plugin.
-2. Run `dcc-mcp-cli doctor`.
-3. Re-run `dcc-mcp-cli list` and select the exact row.
-4. Run `dcc-mcp-cli wait-ready --dcc-type <dcc>` when needed.
+2. Run `dccmcp doctor`.
+3. Re-run `dccmcp list` and select the exact row.
+4. Run `dccmcp wait-ready --dcc-type <dcc>` when needed.
 5. Search for the requested capability.
 6. Call only the returned instance-qualified slug, then verify the real-host
    effect through an authoritative typed readback.

@@ -173,7 +173,7 @@ def update_summary(report: dict[str, Any] | None) -> dict[str, Any]:
 
 def build_report(
     *,
-    cli: str = "dcc-mcp-cli",
+    cli: str = "dccmcp",
     products: dict[str, Any] | None = None,
     host_report: dict[str, Any] | None = None,
     host_manifest: dict[str, Any] | None = None,
@@ -339,7 +339,7 @@ def build_report(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--cli", default="dcc-mcp-cli")
+    parser.add_argument("--cli", default="dccmcp")
     parser.add_argument("--host-report", type=Path)
     parser.add_argument("--host-manifest", type=Path)
     parser.add_argument("--decision", type=Path, action="append", default=[])

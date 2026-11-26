@@ -9,7 +9,7 @@ matching Core implementation and its supported CLI version are verified.
 The pending command is:
 
 ```bash
-dcc-mcp-cli verify --dcc-type <dcc> --python <target-python> --json
+dccmcp verify --dcc-type <dcc> --python <target-python> --json
 ```
 
 It checks a pip adapter's pinned installed distribution version and module
