@@ -3,10 +3,10 @@
   "sources": {
     "released_cli": {
       "name": "dccmcp",
-      "version": "0.21.1",
+      "version": "0.21.2",
       "repository": "https://github.com/dcc-mcp/dcc-mcp-cli",
-      "tag": "v0.21.1",
-      "commit": "9d0bb2b82f00c74160939c1d0ee3bb58ee44d729",
+      "tag": "v0.21.2",
+      "commit": "1356421595707d076bc9077c54d7f5703c512af3",
       "command": "dccmcp --output json dcc-types",
       "checked_at": "2026-11-26",
       "reported_total": 18,

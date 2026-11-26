@@ -5,7 +5,7 @@
   "version": "0.19.97",
   "runtime": {
     "kind": "dccmcp-cli",
-    "minimum_cli": "0.21.1",
+    "minimum_cli": "0.21.2",
     "transports": ["streamable-http", "rest"]
   },
   "entrypoints": [

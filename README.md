@@ -286,7 +286,7 @@ The `0.21.0` DCCMCP CLI release is a breaking change in the command and
 distribution boundary. The primary executable is `dccmcp`, published from the
 standalone [`dcc-mcp-cli`](https://github.com/dcc-mcp/dcc-mcp-cli) repository.
 The `dcc-mcp-cli` executable remains a compatibility alias for existing
-automation. This Skill suite requires `dccmcp >= 0.21.1`, records that contract
+automation. This Skill suite requires `dccmcp >= 0.21.2`, records that contract
 in [`agent-plugin.json`](plugins/dcc-mcp/agent-plugin.json), and does not treat
 the Core repository as the CLI release source.
 
