@@ -14,7 +14,7 @@ metadata:
     dcc: python
     layer: infrastructure
     compatibility: Cross-platform Windows/macOS/Linux. Prefers dccmcp on PATH; its consent-gated bootstrap accepts only the official release manifest and verifies SHA-256 before replacement. Local profile needs no gateway env. Use --require-gateway plus --agent-session-id when gateway stats are required evidence. DCC_MCP_BASE_URL is optional for remote/legacy gateway REST fallback.
-    version: "0.19.122"
+    version: "0.19.123"
     search-hint: "DCC-MCP typed tool discovery create edit inspect simulate animate render composite export automate 操作 控制 创建 编辑 检查 动画 渲染 合成 导出; released products: 3dsmax Autodesk 3ds Max 3ds Max aftereffects Adobe After Effects After Effects blender godot Godot Engine houdini SideFX Houdini katana Foundry Katana maya Autodesk Maya mobu Autodesk MotionBuilder MotionBuilder nuke Foundry Nuke openusd Universal Scene Description photoshop Adobe Photoshop premiere Adobe Premiere Pro Premiere Pro Adobe Premiere renderdoc shotgrid Autodesk Flow Production Tracking Flow Production Tracking substance3d_designer Adobe Substance 3D Designer Substance 3D Designer Substance Designer substance3d_painter Adobe Substance 3D Painter Substance 3D Painter Substance Painter unreal Unreal Engine UE4 UE5 虚幻引擎 UE zbrush obs OBS Studio OBS 录屏 OBS录屏 OBS 录制 OBS录制 liquigen Liquid Gen office-suite Microsoft Office Microsoft Excel Microsoft Word Microsoft Outlook 表格 电子表格 做表 spreadsheet Excel Word Outlook; application UI route: DCC-CUA dcc cua ui-control browser UI bounded list_apps list_windows launch_app discovery then exact PID HWND fresh observation latest snapshot post-action readback no generic Computer Use; local application path cache cached executable path ask before launch guide a new path"
     tags: "dcc, dcc-mcp, typed-tools, dcc-cua, ui-control, 3dsmax, aftereffects, blender, godot, houdini, katana, maya, mobu, nuke, openusd, photoshop, premiere, renderdoc, shotgrid, substance3d_designer, substance3d_painter, unreal, zbrush, obs, liquigen, office-suite"
   openclaw:
@@ -40,6 +40,118 @@ Local application path cache: when the user gives an absolute local software pat
 
 Discovery and packaging evidence do not claim licensed real-host validation.
 <!-- END GENERATED PRODUCT DISCOVERY ROUTING -->
+
+## First-run environment guidance
+
+On the first task in a new environment, check CLI availability before invoking
+it. Use [First run](references/FIRST_RUN.md) for the safe version check and the
+existing host/adapter discovery reports. Keep installed, registered, healthy
+and callable separate; report available, configuration-needed and installable
+options with their evidence. Unknown or disconnected is never “not installed”.
+Reuse the verified installers only after the user chooses setup.
+
+## Live application workflow
+
+Before creating or materially revising DCC content, MUST read and execute the
+[production reuse gate](https://github.com/dcc-mcp/dcc-mcp-core/blob/main/crates/dcc-mcp-gateway/src/gateway/native_resources/agent_workflows.md#production-reuse-gate),
+or the running gateway's `gateway://docs/agent-workflows` resource. A readable
+URI alone is insufficient: confirm the actual `Production reuse gate` section
+and `dcc-mcp-production-reuse/v1` contract, then read its substantive rules.
+Save the decoded JSON payload from the resource's `contents[].text` (or trusted
+source Markdown) to a task-local file and run
+`python scripts/check_production_guide.py <file>` to detect an old
+or missing contract. This checks document shape, not source authenticity or task
+execution. For an old gateway, try the canonical Core source URL above; this
+allows the new guide to be used without an automatic runtime upgrade. If neither
+contains the contract (including when Core main has not received it yet), report
+the Core-first rollout dependency and stop dependent production; planning and
+read-only discovery may continue. Never silently skip the gate, install an update
+without authorization, or claim that an older deployed gateway enforces it.
+
+Do bounded
+initial discovery (about one minute) across existing skills/providers, our
+marketplace, the host's official plugin/asset market and trusted upstream sources.
+Evaluate free-first fit, rights, compatibility and callable interfaces; validate
+reuse through actual MCP calls. Record why no candidate fits before minimal
+fallback. Discovery alone is not proof. Missing guide access is a blocker to
+this gate, not permission to silently skip it.
+
+For every production task across supported DCCs, select suitable mature tools,
+plugins, assets and specialist capabilities before deciding what to write or
+generate. Compare license and attribution obligations, host/version compatibility,
+maintenance, visual quality, performance, security and actual integration cost.
+Prefer quality free options when they fit; neither all-handwritten work nor
+mandatory plugin use is an acceptance criterion. Reuse does not authorize paid
+acquisition, wider permissions or executing unreviewed software.
+
+Use a suitable existing project/template as the default starting point before
+bespoke construction. First inspect the task-relevant entries in the bundled
+[template license catalog](references/TEMPLATE_CATALOG/README.md), then search
+trusted upstream sources for gaps. Catalog entries are candidates, not approved
+downloads or verified host integrations. Check the pinned version and licenses
+for code, assets and fonts separately, including attribution, modification,
+export and source/binary redistribution conditions. Unknown rights or host
+compatibility block adoption, not read-only evaluation. Do not install or run a
+template merely because it is listed. Record the selected template and remaining
+verification, or why no template fits, before choosing assets/plugins and the
+smallest necessary custom work. An explicit user choice takes precedence.
+
+In the existing task recipe/evidence report, identify the selected source and
+version, explain the selection or rejection, and distinguish original work,
+adapted work, external assets and generated content. Retain required notices
+and verify the assembled result in the real target host; a download, import or
+successful build alone is not production acceptance.
+
+Visual design needs the appropriate specialist design or art workflow and a
+reviewable visual artifact. An engineering HTML wireframe or code diagram is
+not a game art concept or visual design acceptance. If the required tools are
+unavailable, hand off a concrete design brief, references, constraints and
+acceptance targets with the blocker; do not silently substitute a wireframe.
+Keep functional fixes separate from asset selection and visual acceptance.
+
+Use `dccmcp` when shell access exists, unless the user selects native MCP.
+MCP-only clients use the equivalent structured inventory/search/load/describe/call tools.
+Keep one transport and exact instance for the operation.
+
+- Start local work with `dccmcp list`. Inspect live readiness and select the
+  instance that owns the requested scene. Ask only if ownership is ambiguous.
+- A launched CLI with a health error needs `dccmcp doctor`, not reinstallation.
+  Only command-not-found means it is missing. For authorized setup, run
+  `python scripts/check_cli.py --ensure-cli --pretty` from this skill directory;
+  otherwise obtain setup consent first. Verification failures stop installation.
+- With zero instances, stop tool search and calls. Only local zero inventory
+  uses `dccmcp --output json dcc-types --dcc-type <dcc>`;
+  remote zero inventory uses exact catalog matching followed by a plan-only
+  install command. Follow [zero-instance recovery](references/ZERO_INSTANCES_CLI.md).
+  `live_instances: 0` proves no registration, not missing support or installation.
+- Search narrowly by intent and target, copy the returned slug, and follow its
+  validated `next_step`: call, describe, or load with correlated arguments.
+  Use the current schema; never invent slugs. Prefer `--output toon` for agent
+  reading and JSON for machine parsing.
+- Read [tool execution](references/TOOL_EXECUTION.md) before a live call for
+  payloads, leases, job ownership and recovery. Use typed tools first; raw
+  scripting requires an exposed, policy-compliant adapter tool and no typed coverage.
+- Continue through the requested operation and postcondition readback. A job ID,
+  successful dispatch, or changed-state digest alone does not prove completion.
+  Preserve operation IDs after uncertainty; never blindly replay mutations.
+
+## Conditional workflows
+
+Read only the reference needed for the selected task:
+
+| Task | Reference |
+|---|---|
+| Remote profile, local/gateway routing, or gateway stats | [Gateway profiles](references/GATEWAY_PROFILES.md); stats require `--require-gateway --agent-session-id <task-id>` from the first call |
+| Read a YouTube/other video tutorial or reproduce its DCC technique | [Tutorial reading and native replay](references/TUTORIAL_REPLAY.md); prefer VX runtime composition, retain timestamped captions/frames and validate a bounded native result |
+| Menus, dialogs, browser or other application UI | [UI workflows](references/UI_WORKFLOWS.md) and the bundled `dcc-cua` skill; keep its exact binding and interruption contract |
+| DCC-MCP marketplace discovery, package installation or binary update | [Marketplace maintenance](references/MARKETPLACE_MAINTENANCE.md); catalog discovery needs no live instance |
+| Installing or probing an open-source application, including a portable build | [Host software deployment](references/HOST_SOFTWARE_DEPLOYMENT.md); software availability and adapter support are separate facts |
+| Recreating vector artwork through a native adapter or extension | [Native vector workflow](references/NATIVE_VECTOR_WORKFLOW.md); require real host creation, export and acceptance evidence |
+| Explicit Figma, Penpot, Pencil / pen.dev, Sketch, or Framer component-library to page/frontend task | [Experimental design workflow](references/DESIGN_WORKFLOW.md); reuse an authorized official session, discover current capabilities, and retain native acceptance evidence |
+| New software support request | [Software request draft](references/SOFTWARE_REQUEST.md); verify ownership, deduplicate and obtain approval before publishing |
+| Failed call, readiness fault or bug report | [Failure reporting](references/FAILURE_REPORTING.md) |
+| Command syntax or recovery details | [CLI cheatsheet](references/CLI_CHEATSHEET.md) |
+
 
 # DCC-MCP — Default DCC Control
 
