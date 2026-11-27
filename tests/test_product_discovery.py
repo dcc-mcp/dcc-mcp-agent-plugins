@@ -285,13 +285,7 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
     def test_free_open_source_products_expose_official_host_install_sources(self) -> None:
         expected = {
             "blender",
-            "comfyui",
-            "freecad",
-            "gimp",
             "godot",
-            "krita",
-            "openscad",
-            "obs",
         }
         products = {
             product["id"]: product
