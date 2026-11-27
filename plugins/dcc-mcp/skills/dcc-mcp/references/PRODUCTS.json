@@ -33,23 +33,23 @@
     },
     "core_runtime": {
       "name": "dcc-mcp-core",
-      "version": "0.21.0",
+      "version": "0.22.0",
       "repository": "https://github.com/dcc-mcp/dcc-mcp-core",
-      "tag": "v0.21.0",
-      "commit": "e5682f4c400ed64125dec6b0a4a3b2a1a62af0a0"
+      "tag": "v0.22.0",
+      "commit": "664fb8ab62f893bb8fd279087467bb6608d5a227"
     },
     "core_catalog": {
       "repository": "https://github.com/dcc-mcp/dcc-mcp-core",
-      "commit": "e5682f4c400ed64125dec6b0a4a3b2a1a62af0a0",
+      "commit": "664fb8ab62f893bb8fd279087467bb6608d5a227",
       "path": "dcc-mcp-catalog.yml"
     },
-    "owner_repositories_checked_at": "2026-11-26",
+    "owner_repositories_checked_at": "2026-11-27",
     "current_core_catalog": {
       "repository": "https://github.com/dcc-mcp/dcc-mcp-core",
-      "commit": "05b3c61cf787045f11e4fd49019c2be090e9db78",
+      "commit": "664fb8ab62f893bb8fd279087467bb6608d5a227",
       "path": "dcc-mcp-catalog.yml",
       "ref": "main",
-      "checked_at": "2026-09-10"
+      "checked_at": "2026-11-27"
     }
   },
   "ui_routing": {
