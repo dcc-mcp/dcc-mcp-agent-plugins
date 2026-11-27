@@ -25,7 +25,7 @@ class AdapterReadmeSyncTests(unittest.TestCase):
 
     def test_render_uses_canonical_install_and_adapter_specific_smoke_prompt(self) -> None:
         self.assertIn("codex plugin marketplace add dcc-mcp/dcc-mcp-agent-plugins", self.generated)
-        self.assertIn("dcc-mcp-cli list", self.generated)
+        self.assertIn("dccmcp list", self.generated)
         self.assertIn("dcc_type=blender", self.generated)
         self.assertIn(self.entry["smoke_prompt"], self.generated)
         self.assertNotIn("{{", self.generated)

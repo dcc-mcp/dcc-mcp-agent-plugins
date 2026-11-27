@@ -1,4 +1,4 @@
-"""Install and attest the one released Core runtime declared by PRODUCTS.json."""
+"""Install and attest the released Core runtime and CLI declared by PRODUCTS.json."""
 
 from __future__ import annotations
 
@@ -83,10 +83,13 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     catalog = load_product_catalog()
-    released = catalog["sources"]["released_cli"]
-    resolved_commit = resolve_release_commit(released["repository"], released["tag"])
+    released_core = catalog["sources"]["core_runtime"]
+    released_cli = catalog["sources"]["released_cli"]
+    resolved_commit = resolve_release_commit(
+        released_core["repository"], released_core["tag"]
+    )
     installed_version = install_released_core(
-        released["version"],
+        released_core["version"],
         with_catalog_dependencies=args.with_catalog_dependencies,
     )
     validate_released_core_runtime(
@@ -95,8 +98,11 @@ def main(argv: list[str] | None = None) -> int:
         resolved_commit=resolved_commit,
     )
     if args.ensure_cli_dir is not None:
-        ensure_released_cli(args.ensure_cli_dir, released["version"])
-    print(f"Released Core {installed_version} matches {resolved_commit}")
+        ensure_released_cli(args.ensure_cli_dir, released_cli["version"])
+    print(
+        f"Released Core {installed_version} matches {resolved_commit}; "
+        f"released CLI {released_cli['version']}"
+    )
     return 0
 
 

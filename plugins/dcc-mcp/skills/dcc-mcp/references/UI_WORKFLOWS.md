@@ -15,7 +15,7 @@ application that reaches password, SSO, MFA, CAPTCHA, security, or
 account-permission screens, stop and hand that boundary to the user. Never
 enter or copy credentials, tokens, or recovery codes.
 
-Load the **DCC UI Control** runtime with `dcc-mcp-cli load-skill ui-control` only
+Load the **DCC UI Control** runtime with `dccmcp load-skill ui-control` only
 when structured DCC capabilities cannot reach the required semantic UI:
 
 1. `ui_control__snapshot` with an exact `process_id`, `window_handle`, or `window_title`.

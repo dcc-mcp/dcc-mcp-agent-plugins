@@ -109,7 +109,7 @@ def _render_ui_route_block(catalog: dict) -> str:
         "tell the user the cached path, and ask explicitly "
         "whether to start it; never launch from a cached path without confirmation. If the "
         "path is stale or missing, guide the user to provide a new absolute path and show "
-        "`dcc-mcp-cli install --dcc-type <id> --dcc-path \"<path>\"` when installation is available. "
+        "`dccmcp install --dcc-type <id> --dcc-path \"<path>\"` when installation is available. "
         "See `references/LOCAL_APP_PATH_CACHE.md`.\n\n"
         "Discovery and packaging evidence do not claim licensed real-host validation.\n"
         f"{UI_ROUTE_END}"
@@ -222,7 +222,7 @@ def rendered_outputs(catalog: dict) -> dict[Path, str]:
             interface["defaultPrompt"] = [
                 "Show the released DCC-MCP products I can route to.",
                 "Create a simple scene in Blender with typed DCC-MCP tools.",
-                "Set up a playable scene in Unity or Tuanjie with DCC-MCP.",
+                "Set up a playable scene in Godot with DCC-MCP.",
                 "Use DCC-CUA through ui-control for this exact application window.",
             ]
         outputs[path] = _json_text(manifest)
@@ -247,12 +247,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--check-cli",
         action="store_true",
-        help="compare the catalog with the installed released dcc-mcp-cli",
+        help="compare the catalog with the installed released dccmcp",
     )
     parser.add_argument(
         "--cli",
-        default="dcc-mcp-cli",
-        help="exact dcc-mcp-cli executable to use with --check-cli",
+        default="dccmcp",
+        help="exact dccmcp executable to use with --check-cli",
     )
     parser.add_argument(
         "--check-core-catalog",
@@ -320,7 +320,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             cli_version = version_result.stdout.strip().split()[-1]
             catalog_result = subprocess.run(
-                [args.cli, "dcc-types", "--output", "json"],
+                [args.cli, "--output", "json", "dcc-types"],
                 capture_output=True,
                 text=True,
                 check=True,
@@ -332,11 +332,11 @@ def main(argv: list[str] | None = None) -> int:
                 install_result = subprocess.run(
                     [
                         args.cli,
+                        "--output",
+                        "json",
                         "install",
                         "--dcc-type",
                         product["id"],
-                        "--output",
-                        "json",
                     ],
                     capture_output=True,
                     text=True,

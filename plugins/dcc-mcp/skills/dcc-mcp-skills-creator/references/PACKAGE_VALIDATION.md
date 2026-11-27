@@ -16,7 +16,7 @@
 ### Validate an existing skill
 
 ```bash
-dcc-mcp-cli lint /path/to/my-skill
+dccmcp lint /path/to/my-skill
 ```
 
 The CLI loads the sibling `tools.yaml` table and invokes every declaration

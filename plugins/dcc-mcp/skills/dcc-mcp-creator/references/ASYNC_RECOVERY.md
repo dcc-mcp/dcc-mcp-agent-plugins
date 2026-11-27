@@ -78,31 +78,4 @@ would be unsafe.
   DCC/sidecar process, that status tool must be owned by the worker/service or
   another independently live control process; gateway restart alone cannot
   recreate an API whose owner exited.
-- A bounded SQLite shutdown may return before an in-flight statement has
-  quiesced. Core closes the old handle immediately but retains its physical
-  ownership lease until every admitted operation exits; do not start a
-  replacement owner until acquisition succeeds. Never bypass the lease or
-  reuse a second path alias to the same database.
-- Read `job_persistence` from the server `/health` payload before claiming
-  durable job history. `degraded` means recent writes failed; `disabled` means
-  the manager latched repeated failures and is serving jobs from memory only.
-  `last_error_kind` is a stable category (`readonly`, `wal`, `busy`,
-  `disk_full`, `decode`, `feature_disabled`, `retention_prune_failed`,
-  `server_shutdown`, or `backend`) for diagnostics.
-  Do not expose backend messages or filesystem paths from that status.
-  Gateway `/admin/api/health` and `/v1/debug/health` aggregate the same
-  payload-safe state per registered backend; `unavailable` means the backend
-  did not answer the bounded admin read.
-  A `retention_prune_failed` latch recovers only after a real backend prune
-  succeeds. An empty cleanup is a no-op and must leave that health state
-  disabled because it did not verify storage recovery.
-  `job_retention_hours` is opt-in startup pruning of terminal rows only;
-  leave it unset when retention ownership is not established.
-- Make every adapter-owned launch return its durable `job_id` and one canonical
-  status (`pending`, `running`, `completed`, `failed`, `cancelled`, or
-  `interrupted`). Declare its status tool in `next-tools.on-success`. Automatic
-  CLI waiting is allowed only when that poller is `execution: sync`, marks both
-  `read_only_hint` and `idempotent_hint` true, and declares a string `job_id` as
-  its only required input. Every other input must be optional and safe when
-  omitted. The poller must query exactly that ID and return authoritative progress; an
-  unknown ID is an explicit error, never permission to mint a replacement job.
+

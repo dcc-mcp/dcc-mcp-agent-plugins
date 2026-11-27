@@ -14,7 +14,7 @@ One canonical Skill suite lives under `plugins/dcc-mcp/skills/`. Vendor
 manifests are thin adapters; they do not fork instructions or runtime behavior.
 Released-product discovery is generated from
 [`plugins/dcc-mcp/skills/dcc-mcp/references/PRODUCTS.json`](plugins/dcc-mcp/skills/dcc-mcp/references/PRODUCTS.json),
-a provenance-bearing snapshot of the official `dcc-mcp-cli dcc-types` catalog
+a provenance-bearing snapshot of the official `dccmcp dcc-types` catalog
 reconciled with the owning adapter repositories. It also carries a small
 current-Core route set for adapters that have landed in Core before the next
 CLI release. It carries one canonical identity and bounded aliases per route
@@ -26,6 +26,12 @@ instead of repeating hand-maintained product lists across manifests.
 
 Install the default `dcc-mcp` Skill with one command. The installer detects
 supported agents in the current workspace and lets you choose the target:
+
+The [DCC-MCP website](https://dcc-mcp.github.io/dcc-mcp-agent-plugins/) also
+provides a platform selector with copy-ready native and Agent Skills install
+commands for Codex, Claude Code, Cursor, Gemini CLI, GitHub Copilot, Windsurf,
+OpenCode, Cline, Roo Code, Kiro, Amp, OpenHands, Continue, Replit, OpenClaw,
+CodeBuddy, and WorkBuddy.
 
 ```bash
 npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp
@@ -156,7 +162,7 @@ After installing the Skill, start the DCC application and enable its DCC-MCP
 adapter. Then run:
 
 ```powershell
-dcc-mcp-cli list
+dccmcp list
 ```
 
 The output must contain a running instance with the adapter's documented
@@ -199,6 +205,11 @@ through `node_modules`:
 npm install @dcc-mcp/skills
 npx --yes skills@1.5.22 experimental_sync
 ```
+
+The release workflow publishes `@dcc-mcp/skills` to npm after the GitHub
+Release is created. The package includes `catalog.json` and
+`agent-installers.json` so other tools can discover the same platform install
+paths without scraping the website.
 
 ### PulseMCP
 
@@ -261,12 +272,29 @@ without a Core release, and Core can release without changing Skill content.
 `metadata.dcc-mcp.version` in each `SKILL.md` follows this repository's suite
 version.
 
-Product discovery is a separate compatibility contract. It is regenerated from
-`PRODUCTS.json` and can add a route from the current Core catalog (for example
-the Office/PPT workflow) even while the released CLI snapshot remains at its
-own version. OBS Studio and LiquiGen are part of the released CLI catalog. Run
-`sync_product_discovery.py --check --check-core-catalog` to verify the generated
-surfaces against the pinned released Core catalog.
+Core skill synchronization and product discovery are separate contracts. The
+weekly `core-sync.yml` job compares the three canonical Skill bodies with the
+pinned Core checkout. Product discovery is regenerated from `PRODUCTS.json` and
+can add a route from the current Core catalog (for example OBS Studio, LiquiGen,
+or the Office workflow) even while the released CLI snapshot remains at its
+own version. Run `sync_product_discovery.py --check --check-core-catalog` to
+verify both the generated surfaces and the pinned current catalog.
+
+## CLI compatibility boundary
+
+The `0.21.0` DCCMCP CLI release is a breaking change in the command and
+distribution boundary. The primary executable is `dccmcp`, published from the
+standalone [`dcc-mcp-cli`](https://github.com/dcc-mcp/dcc-mcp-cli) repository.
+The `dcc-mcp-cli` executable remains a compatibility alias for existing
+automation. This Skill suite requires `dccmcp >= 0.21.2`, records that contract
+in [`agent-plugin.json`](plugins/dcc-mcp/agent-plugin.json), and does not treat
+the Core repository as the CLI release source.
+
+CLI updates use `dccmcp update` for the normal check, download, SHA-256
+verification, and staged replacement flow. Windows release builds use the
+MSVC target. WinGet keeps the `DccMcp.DccMcpCli` package identifier so existing
+installations can upgrade, and macOS users can install the maintained formula
+with `brew tap dcc-mcp/tap && brew install dccmcp`.
 
 When a user gives an absolute local application path, the default Skill stores
 it in the per-user cache used by
@@ -370,7 +398,7 @@ not an installer or a fifth target in the canonical four-Skill release suite.
 ## Security boundary
 
 The plugin ships no public MCP server. It connects to the user's local DCC-MCP
-gateway through `dcc-mcp-cli`; a public multi-tenant MCP endpoint is a separate
+gateway through `dccmcp`; the `dcc-mcp-cli` binary remains a compatibility alias and a public multi-tenant MCP endpoint is a separate
 security and deployment product.
 
 Product catalog, package, and CI evidence proves discoverability and artifact

@@ -42,13 +42,17 @@ def _package_json(catalog: dict, manifest: dict) -> dict:
         },
         "bugs": {"url": f"{catalog['repository']}/issues"},
         "publishConfig": {"access": manifest["npm"]["access"], "registry": manifest["npm"]["registry"]},
-        "files": ["skills", "catalog.json", "README.md", "LICENSE"],
+        "files": ["skills", "catalog.json", "agent-installers.json", "README.md", "LICENSE"],
     }
 
 
 def _readme(catalog: dict, manifest: dict) -> str:
     rows = "\n".join(
         f"| `{skill['slug']}` | {skill['description']} |" for skill in catalog["skills"]
+    )
+    agent_rows = "\n".join(
+        f"| {agent['name']} | {agent['kind']} | {agent['target']} |"
+        for agent in catalog["agent_installers"]
     )
     return f"""# {manifest["npm"]["package"]}
 
@@ -77,6 +81,16 @@ To install directly from the repository instead:
 ```bash
 {catalog["install"]["skills_cli"]}
 ```
+
+## Supported agent install paths
+
+The same catalog also carries copy-ready install paths for the mainstream Agent
+Skills hosts and native plugin marketplaces. The machine-readable list is
+available in [`agent-installers.json`](./agent-installers.json).
+
+| Platform | Path | Target |
+| --- | --- | --- |
+{agent_rows}
 
 ## Skills
 
@@ -117,6 +131,9 @@ def build(output: Path, root: Path = ROOT) -> dict:
     (output / "package.json").write_text(json.dumps(package, indent=2) + "\n", encoding="utf-8")
     (output / "catalog.json").write_text(
         json.dumps(catalog, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    (output / "agent-installers.json").write_text(
+        json.dumps(catalog["agent_installers"], indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
     (output / "README.md").write_text(_readme(catalog, manifest), encoding="utf-8")
     shutil.copyfile(root / "LICENSE", output / "LICENSE")

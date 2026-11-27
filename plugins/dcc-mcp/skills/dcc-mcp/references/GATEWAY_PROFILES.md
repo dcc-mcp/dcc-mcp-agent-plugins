@@ -1,6 +1,6 @@
 ## Gateway Profiles And Local-First Inventory
 
-`dcc-mcp-cli` has a built-in `local` profile. In local mode, agent-control
+`dccmcp` has a built-in `local` profile. In local mode, agent-control
 commands first ensure the machine-wide loopback gateway is healthy, then
 `list` reads FileRegistry; `search`, `describe`, `call`, and guarded
 `stop-instance` use the selected instance endpoints. `load-skill` uses the
@@ -16,11 +16,11 @@ that, they remain visible for diagnostics. Use `wait-ready` or `doctor` when a
 listed instance is still booting.
 
 ```bash
-dcc-mcp-cli gateway register https://workstation.example:19293 --name pcA
-dcc-mcp-cli gateway list
-dcc-mcp-cli gateway set pcA
-dcc-mcp-cli gateway set local
-dcc-mcp-cli list --gateway pcA
+dccmcp gateway register https://workstation.example:19293 --name pcA
+dccmcp gateway list
+dccmcp gateway set pcA
+dccmcp gateway set local
+dccmcp list --gateway pcA
 ```
 
 Use `--gateway <name>` to override the current profile for one command.
@@ -40,7 +40,7 @@ Agent-control commands (`list`, `search`, `describe`, `load-skill`, `call`,
 such as `health`, `update`, and `smoke` without an explicit `--url` auto-ensure
 loopback HTTP gateway targets. File-only commands and explicit lifecycle
 commands do not auto-start the gateway.
-When startup state is unclear, run `dcc-mcp-cli doctor` before troubleshooting
+When startup state is unclear, run `dccmcp doctor` before troubleshooting
 adapters. It reports profile config/current selection, the registry directory
 and local inventory, direct-control readiness counts, gateway daemon status, and
 server binary path/source/version without launching or downloading anything.
@@ -54,3 +54,4 @@ not-ready rows under `local.inventory.direct_control.not_ready_instances`.
 Detailed daemon lifecycle, profile commands, release assets, and fallback
 behavior live in [CLI cheatsheet](CLI_CHEATSHEET.md). Read it only
 when setup, lifecycle, or transport troubleshooting is needed.
+

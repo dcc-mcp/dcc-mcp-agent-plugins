@@ -21,12 +21,23 @@ CLAWHUB_MANIFEST = ROOT / ".github" / "clawhub-skills.json"
 
 def load_manifest(path: Path = DISTRIBUTION_MANIFEST) -> dict:
     data = json.loads(path.read_text(encoding="utf-8"))
-    for key in ("site", "npm", "skills_cli", "channels"):
+    for key in ("site", "npm", "skills_cli", "agent_installers", "channels"):
         if key not in data:
             raise ValueError(f"distribution manifest is missing {key!r}")
     base_url = data["site"]["base_url"]
     if not base_url.startswith("https://") or base_url.endswith("/"):
         raise ValueError("site.base_url must be an https URL without a trailing slash")
+    installers = data["agent_installers"]
+    if not isinstance(installers, list) or not installers:
+        raise ValueError("agent_installers must be a non-empty list")
+    required_agent_fields = {"id", "name", "kind", "target", "command", "description"}
+    installer_ids = set()
+    for installer in installers:
+        if not isinstance(installer, dict) or not required_agent_fields.issubset(installer):
+            raise ValueError("agent installer metadata is incomplete")
+        if installer["id"] in installer_ids:
+            raise ValueError(f"duplicate agent installer id: {installer['id']}")
+        installer_ids.add(installer["id"])
     return data
 
 
@@ -105,6 +116,7 @@ def build_catalog(root: Path = ROOT, manifest_path: Path = DISTRIBUTION_MANIFEST
             "skills_cli": f"npx --yes {cli_package} add {cli_repository} --skill dcc-mcp",
             "npm": f"npm install {npm_package}",
         },
+        "agent_installers": manifest["agent_installers"],
         "skills": skills,
         "products": product_catalog["products"],
         "application_routes": product_catalog.get("application_routes", []),

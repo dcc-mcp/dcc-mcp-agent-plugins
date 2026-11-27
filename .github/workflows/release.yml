@@ -24,7 +24,7 @@ jobs:
           python-version: "3.12"
       - run: python scripts/setup_released_core.py --with-catalog-dependencies --ensure-cli-dir .released-cli
       - run: python scripts/validate_repository.py
-      - run: python scripts/sync_product_discovery.py --check --check-core-catalog --check-cli --cli .released-cli/dcc-mcp-cli
+      - run: python scripts/sync_product_discovery.py --check --check-core-catalog --check-cli --cli .released-cli/dccmcp
       - run: python scripts/build_geo_site.py --check
       - name: Package release
         run: |

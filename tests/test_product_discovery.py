@@ -64,7 +64,7 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
         cli_types = self.catalog["sources"]["released_cli"]["dcc_types"]
         product_types = [product["id"] for product in self.catalog["products"]]
         self.assertEqual(cli_types, product_types)
-        self.assertEqual(37, len(product_types))
+        self.assertEqual(18, len(product_types))
 
     def test_released_cli_snapshot_rejects_missing_or_misdirected_products(self) -> None:
         payload = {
@@ -159,15 +159,13 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
             "Build the scene in Blender": "blender",
             "Create the gameplay scene in Godot": "godot",
             "Create a prop in 3dsmax": "3dsmax",
-            "Animate this in C4D": "c4d",
             "Retarget this in MoBu": "mobu",
             "Set up a level in UE": "unreal",
             "Package this UE4 project": "unreal",
             "在虚幻引擎中创建关卡": "unreal",
-            "请在团结引擎中创建场景": "unity",
-            "Open the Tuanjie project": "unity",
-            "Open this scene in Unity": "unity",
             "Check the task in ShotGrid": "shotgrid",
+            "Inspect this file in OpenUSD": "openusd",
+            "Review the frame in RenderDoc": "renderdoc",
             "Author this in Substance Designer": "substance3d_designer",
             "Paint this in Substance Painter": "substance3d_painter",
         }
@@ -185,8 +183,6 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
             "在 Excel 中做表": "office-suite",
             "Create a spreadsheet in Microsoft Excel": "office-suite",
             "Create a spreadsheet": "office-suite",
-            "做一个 PPTX 演示": "powerpoint",
-            "在幻灯片里整理内容": "powerpoint",
             "Inspect the simulation in LiquiGen": "liquigen",
         }
         for query, expected in cases.items():
@@ -196,7 +192,7 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
                     resolve_product_intent(query, self.catalog),
                 )
 
-    def test_maya_assetsync_capability_is_versioned_beyond_the_released_install(self) -> None:
+    def test_maya_catalog_version_matches_the_released_cli(self) -> None:
         maya = next(
             product for product in self.catalog["products"] if product["id"] == "maya"
         )
@@ -208,25 +204,15 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
                     {"status": "match", "product_ids": ["maya"]},
                     resolve_product_intent(intent, self.catalog),
                 )
-        self.assertEqual("0.9.22", maya["catalog_adapter_version"])
-        self.assertEqual(1, len(maya["versioned_capabilities"]))
-        capability = maya["versioned_capabilities"][0]
-        self.assertEqual("0.9.26", capability["minimum_adapter_version"])
-        self.assertEqual("requires_adapter_upgrade", capability["availability"])
-        self.assertEqual(
-            "https://github.com/dcc-mcp/dcc-mcp-maya/pull/486",
-            capability["source_url"],
-        )
-        for language in ("en", "zh"):
-            self.assertIn("AssetSync v2", capability["summary"][language])
-            self.assertIn("Arnold", capability["summary"][language])
+        self.assertEqual("0.9.42", maya["catalog_adapter_version"])
+        self.assertEqual([], maya["versioned_capabilities"])
 
         good_plan = {
             "dcc_type": "maya",
-            "version": "0.9.22",
+            "version": "0.9.42",
             "adapter": {
                 "name": "dcc-mcp-maya",
-                "version": "0.9.22",
+                "version": "0.9.42",
                 "url": "https://github.com/dcc-mcp/dcc-mcp-maya",
             },
             "steps": [
@@ -234,12 +220,16 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
                     "action": {
                         "type": "PipInstall",
                         "package": "dcc-mcp-maya",
-                        "version": "0.9.22",
+                        "version": "0.9.42",
                     }
                 }
             ],
         }
         validate_released_install_plan(maya, good_plan)
+        current_plan = deepcopy(good_plan)
+        current_plan["version"] = None
+        del current_plan["steps"][0]["action"]["version"]
+        validate_released_install_plan(maya, current_plan)
         mutations = []
         for path, value in (
             (("dcc_type",), "blender"),
@@ -260,42 +250,10 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
             with self.subTest(mutation=mutation), self.assertRaises(ValueError):
                 validate_released_install_plan(maya, mutation)
 
-    def test_versioned_capability_metadata_fails_closed(self) -> None:
-        maya_index = next(
-            index
-            for index, product in enumerate(self.catalog["products"])
-            if product["id"] == "maya"
-        )
-        mutations = []
-        for field, value in (
-            ("catalog_adapter_version", "0.9"),
-            ("catalog_adapter_version", "0.9.26"),
-        ):
-            mutation = deepcopy(self.catalog)
-            mutation["products"][maya_index][field] = value
-            mutations.append(mutation)
-        for field, value in (
-            ("minimum_adapter_version", "0.9.22"),
-            ("availability", "available"),
-            ("source_url", "https://github.com/attacker/dcc-mcp-maya/pull/486"),
-        ):
-            mutation = deepcopy(self.catalog)
-            mutation["products"][maya_index]["versioned_capabilities"][0][field] = value
-            mutations.append(mutation)
-        for mutation in mutations:
-            with self.subTest(), self.assertRaises(ValueError):
-                validate_product_catalog(mutation)
-
     def test_free_open_source_products_expose_official_host_install_sources(self) -> None:
         expected = {
             "blender",
-            "comfyui",
-            "freecad",
-            "gimp",
             "godot",
-            "krita",
-            "openscad",
-            "obs",
         }
         products = {
             product["id"]: product
@@ -469,15 +427,24 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
         for path in PLUGIN_MANIFESTS:
             manifest = json.loads(outputs[path])
             with self.subTest(path=path.relative_to(ROOT).as_posix()):
-                self.assertIn("36 released creative applications", manifest["description"])
+                self.assertIn(
+                    f"{len(reduced_catalog['products'])} released creative applications",
+                    manifest["description"],
+                )
 
         codex_manifest = json.loads(outputs[PLUGIN_MANIFESTS[1]])
-        self.assertIn("36 creative products", codex_manifest["interface"]["shortDescription"])
         self.assertIn(
-            "36 released creative applications",
+            f"{len(reduced_catalog['products'])} creative products",
+            codex_manifest["interface"]["shortDescription"],
+        )
+        self.assertIn(
+            f"{len(reduced_catalog['products'])} released creative applications",
             codex_manifest["interface"]["longDescription"],
         )
-        self.assertIn("Route 36 released creative products", outputs[OPENAI_INTERFACE])
+        self.assertIn(
+            f"Route {len(reduced_catalog['products'])} released creative products",
+            outputs[OPENAI_INTERFACE],
+        )
 
     def test_public_distribution_catalog_projects_the_canonical_contract(self) -> None:
         public_catalog = build_catalog(ROOT)

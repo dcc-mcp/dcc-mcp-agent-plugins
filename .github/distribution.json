@@ -2,7 +2,7 @@
   "site": {
     "base_url": "https://dcc-mcp.github.io/dcc-mcp-agent-plugins",
     "title": "DCC-MCP Agent Skills",
-    "tagline": "Discover and control 37 released creative applications plus 1 current Core application routes with typed DCC-MCP tools; route scoped application UI through project-owned DCC-CUA/ui-control.",
+    "tagline": "Discover and control 18 released creative applications plus 3 current Core application routes with typed DCC-MCP tools; route scoped application UI through project-owned DCC-CUA/ui-control.",
     "publisher": "DCC-MCP",
     "publisher_url": "https://github.com/dcc-mcp",
     "repository": "https://github.com/dcc-mcp/dcc-mcp-agent-plugins",
@@ -38,6 +38,189 @@
     "package": "skills@1.5.22",
     "repository": "dcc-mcp/dcc-mcp-agent-plugins"
   },
+  "agent_installers": [
+    {
+      "id": "auto",
+      "name": "Auto-detect",
+      "mark": "◎",
+      "kind": "skills-cli",
+      "target": "Supported Agent Skills hosts",
+      "command": "npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp --copy --yes",
+      "description": "Detect a supported host in the current workspace and install the canonical Skill.",
+      "featured": false
+    },
+    {
+      "id": "codex",
+      "name": "Codex",
+      "mark": "C",
+      "kind": "native",
+      "target": "Codex plugin marketplace",
+      "command": "codex plugin marketplace add dcc-mcp/dcc-mcp-agent-plugins\ncodex plugin add dcc-mcp@dcc-mcp",
+      "description": "Install the native Codex plugin from the DCC-MCP marketplace.",
+      "featured": true
+    },
+    {
+      "id": "claude-code",
+      "name": "Claude Code",
+      "mark": "✦",
+      "kind": "native",
+      "target": "Claude Code plugin marketplace",
+      "command": "/plugin marketplace add dcc-mcp/dcc-mcp-agent-plugins\n/plugin install dcc-mcp@dcc-mcp",
+      "description": "Run these two commands inside Claude Code to add the plugin.",
+      "featured": true
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor",
+      "mark": "◇",
+      "kind": "skills-cli",
+      "target": "Cursor project skills",
+      "command": "npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp --agent cursor --copy --yes",
+      "description": "Install into the current Cursor workspace with the shared Skills installer.",
+      "featured": true
+    },
+    {
+      "id": "gemini-cli",
+      "name": "Gemini CLI",
+      "mark": "✧",
+      "kind": "skills-cli",
+      "target": "Gemini CLI workspace",
+      "command": "npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp --agent gemini-cli --copy --yes",
+      "description": "Install into the current Gemini CLI workspace.",
+      "featured": true
+    },
+    {
+      "id": "github-copilot",
+      "name": "GitHub Copilot",
+      "mark": "●",
+      "kind": "skills-cli",
+      "target": "GitHub Copilot workspace",
+      "command": "npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp --agent github-copilot --copy --yes",
+      "description": "Install the Skill where GitHub Copilot can discover workspace instructions.",
+      "featured": true
+    },
+    {
+      "id": "windsurf",
+      "name": "Windsurf",
+      "mark": "≈",
+      "kind": "skills-cli",
+      "target": "Windsurf workspace",
+      "command": "npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp --agent windsurf --copy --yes",
+      "description": "Install into the current Windsurf workspace.",
+      "featured": true
+    },
+    {
+      "id": "opencode",
+      "name": "OpenCode",
+      "mark": "⌘",
+      "kind": "skills-cli",
+      "target": "OpenCode workspace",
+      "command": "npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp --agent opencode --copy --yes",
+      "description": "Install into the current OpenCode workspace.",
+      "featured": true
+    },
+    {
+      "id": "cline",
+      "name": "Cline",
+      "mark": "◉",
+      "kind": "skills-cli",
+      "target": "Cline workspace",
+      "command": "npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp --agent cline --copy --yes",
+      "description": "Install into the current Cline workspace.",
+      "featured": true
+    },
+    {
+      "id": "roo",
+      "name": "Roo Code",
+      "mark": "↗",
+      "kind": "skills-cli",
+      "target": "Roo Code workspace",
+      "command": "npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp --agent roo --copy --yes",
+      "description": "Install into the current Roo Code workspace.",
+      "featured": true
+    },
+    {
+      "id": "kiro-cli",
+      "name": "Kiro",
+      "mark": "K",
+      "kind": "skills-cli",
+      "target": "Kiro workspace",
+      "command": "npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp --agent kiro-cli --copy --yes",
+      "description": "Install into the current Kiro workspace.",
+      "featured": true
+    },
+    {
+      "id": "amp",
+      "name": "Amp",
+      "mark": "A",
+      "kind": "skills-cli",
+      "target": "Amp workspace",
+      "command": "npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp --agent amp --copy --yes",
+      "description": "Install into the current Amp workspace.",
+      "featured": false
+    },
+    {
+      "id": "codebuddy",
+      "name": "CodeBuddy",
+      "mark": "B",
+      "kind": "native",
+      "target": "CodeBuddy plugin marketplace",
+      "command": "codebuddy plugin marketplace add dcc-mcp/dcc-mcp-agent-plugins\ncodebuddy plugin install dcc-mcp@dcc-mcp",
+      "description": "Install the native CodeBuddy plugin from the DCC-MCP marketplace.",
+      "featured": false
+    },
+    {
+      "id": "openhands",
+      "name": "OpenHands",
+      "mark": "O",
+      "kind": "skills-cli",
+      "target": "OpenHands workspace",
+      "command": "npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp --agent openhands --copy --yes",
+      "description": "Install into the current OpenHands workspace.",
+      "featured": false
+    },
+    {
+      "id": "continue",
+      "name": "Continue",
+      "mark": "N",
+      "kind": "skills-cli",
+      "target": "Continue workspace",
+      "command": "npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp --agent continue --copy --yes",
+      "description": "Install into the current Continue workspace.",
+      "featured": false
+    },
+    {
+      "id": "replit",
+      "name": "Replit Agent",
+      "mark": "R",
+      "kind": "skills-cli",
+      "target": "Replit workspace",
+      "command": "npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp --agent replit --copy --yes",
+      "description": "Install into the current Replit workspace.",
+      "featured": false
+    },
+    {
+      "id": "openclaw",
+      "name": "OpenClaw",
+      "mark": "◌",
+      "kind": "registry",
+      "target": "ClawHub registry",
+      "command": "npx --yes clawhub@0.23.1 install @loonghao/dcc-mcp",
+      "description": "Install the published DCC-MCP Skill from ClawHub.",
+      "featured": false
+    },
+    {
+      "id": "workbuddy",
+      "name": "WorkBuddy",
+      "mark": "W",
+      "kind": "manual",
+      "target": "GitHub Release archive",
+      "command": "https://github.com/dcc-mcp/dcc-mcp-agent-plugins/releases/latest",
+      "description": "Download the Skill ZIP and add it from WorkBuddy's Skills panel.",
+      "featured": false,
+      "action": "link"
+    }
+  ],
   "channels": [
     {
       "name": "skills.sh",

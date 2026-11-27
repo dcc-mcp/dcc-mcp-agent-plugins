@@ -47,14 +47,21 @@ class IndependentReviewRegressionTests(unittest.TestCase):
 
     def test_required_ci_and_release_check_the_exact_released_cli(self) -> None:
         source = self.catalog["sources"]["released_cli"]
-        self.assertEqual("https://github.com/dcc-mcp/dcc-mcp-core", source["repository"])
+        core_runtime = self.catalog["sources"]["core_runtime"]
+        self.assertEqual("dccmcp", source["name"])
+        self.assertEqual("https://github.com/dcc-mcp/dcc-mcp-cli", source["repository"])
+        self.assertEqual("dccmcp --output json dcc-types", source["command"])
         self.assertEqual(f"v{source['version']}", source["tag"])
         self.assertEqual(
-            "05b3c61cf787045f11e4fd49019c2be090e9db78",
+            "26fd9dc6d34d5bd6ab99e5b7654868a2b8487ecb",
             source["commit"],
         )
         self.assertEqual(
-            source["commit"],
+            "https://github.com/dcc-mcp/dcc-mcp-core",
+            core_runtime["repository"],
+        )
+        self.assertEqual(
+            core_runtime["commit"],
             self.catalog["sources"]["core_catalog"]["commit"],
         )
 
@@ -415,7 +422,7 @@ class IndependentReviewRegressionTests(unittest.TestCase):
                 )
 
     def test_released_core_runtime_rejects_conflicting_version_or_commit(self) -> None:
-        source = self.catalog["sources"]["released_cli"]
+        source = self.catalog["sources"]["core_runtime"]
         checker = getattr(product_discovery, "validate_released_core_runtime", None)
         self.assertIsNotNone(checker, "installed Core needs exact version and commit validation")
         checker(
@@ -463,6 +470,7 @@ class IndependentReviewRegressionTests(unittest.TestCase):
         mutated_source["version"] = "99.99.99"
         mutated_source["tag"] = "v99.99.99"
         mutated_source["commit"] = "f" * 40
+        mutation["sources"]["core_runtime"]["commit"] = "f" * 40
         mutation["sources"]["core_catalog"]["commit"] = "f" * 40
         product_discovery.validate_product_catalog(mutation)
 

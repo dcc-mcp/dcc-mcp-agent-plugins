@@ -34,6 +34,7 @@ MARKETPLACE_MANIFESTS = (
     ROOT / ".codebuddy-plugin" / "marketplace.json",
 )
 CLAWHUB_MANIFEST = ROOT / ".github" / "clawhub-skills.json"
+AGENT_PLUGIN_CONTRACT = PLUGIN / "agent-plugin.json"
 
 
 def frontmatter_lines(text: str) -> list[str]:
@@ -101,6 +102,12 @@ def bump(version: str, root: Path = ROOT) -> list[Path]:
             data["version"] = version
             _write_json(path, data)
             changed.append(path)
+
+    contract = json.loads(AGENT_PLUGIN_CONTRACT.read_text(encoding="utf-8"))
+    if contract["version"] != version:
+        contract["version"] = version
+        _write_json(AGENT_PLUGIN_CONTRACT, contract)
+        changed.append(AGENT_PLUGIN_CONTRACT)
 
     for path in MARKETPLACE_MANIFESTS:
         data = json.loads(path.read_text(encoding="utf-8"))

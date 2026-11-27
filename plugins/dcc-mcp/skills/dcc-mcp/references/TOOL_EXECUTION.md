@@ -5,16 +5,16 @@ Run bundled `scripts/` commands from the dcc-mcp skill directory.
 ## CLI Invocation Contract
 
 Run documented commands directly; do not preflight them with
-`dcc-mcp-cli <command> --help`. Validate CLI-returned `next_step.command` and
+`dccmcp <command> --help`. Validate CLI-returned `next_step.command` and
 `next_step.arguments` against the scope contract below before preserving them. Use targeted subcommand help at most once per
 CLI version only after the documented syntax is rejected or when an option is
 not covered here. Use `--output json` for the versioned zero-instance decision;
 otherwise do not request it merely for agent-readable output.
 
 ```bash
-dcc-mcp-cli reload-skills --instance-id <instance-id> --output toon
-dcc-mcp-cli load-skill <skill-name> --instance-id <instance-id> --output toon
-dcc-mcp-cli stop-instance --dcc-type <dcc-type> --instance-id <instance-id> --output toon
+dccmcp reload-skills --instance-id <instance-id> --output toon
+dccmcp load-skill <skill-name> --instance-id <instance-id> --output toon
+dccmcp stop-instance --dcc-type <dcc-type> --instance-id <instance-id> --output toon
 ```
 
 `stop-instance` is only for a test-owned instance that advertises a safe-stop
@@ -26,7 +26,7 @@ Only run this when inventory shows at least one non-stale target:
 
 ```bash
 # CLI (primary)
-dcc-mcp-cli search --query "create sphere" --dcc-type maya --limit 20
+dccmcp search --query "create sphere" --dcc-type maya --limit 20
 
 # Python fallback
 python scripts/dcc_gateway.py search --query sphere --dcc-type maya --limit 20
@@ -53,7 +53,7 @@ Never hand-build slugs.
 
 ```bash
 # Only when next_step.action=describe
-dcc-mcp-cli describe maya.a1b2c3d4.maya_primitives__create_sphere
+dccmcp describe maya.a1b2c3d4.maya_primitives__create_sphere
 
 # Python fallback
 python scripts/dcc_gateway.py describe maya.a1b2c3d4.maya_primitives__create_sphere
@@ -66,13 +66,13 @@ and safety annotations before calling.
 
 ```bash
 # CLI (primary)
-dcc-mcp-cli call maya.a1b2c3d4.maya_primitives__create_sphere \
+dccmcp call maya.a1b2c3d4.maya_primitives__create_sphere \
   --require-gateway \
   --agent-session-id task-42 \
   --json '{"radius":2.0}'
 
 # When the workflow reserved this instance, repeat the exact lease owner.
-dcc-mcp-cli call maya.a1b2c3d4.maya_primitives__create_sphere \
+dccmcp call maya.a1b2c3d4.maya_primitives__create_sphere \
   --require-gateway \
   --agent-session-id task-42 \
   --json '{"radius":2.0}' \
@@ -109,8 +109,8 @@ For generated scripts, binary descriptors, or other payloads that may exceed a
 shell's command-line limit, pass the JSON object through a UTF-8 file or stdin:
 
 ```bash
-dcc-mcp-cli call godot_project__write_script --json-file payload.json
-generate_payload | dcc-mcp-cli call godot_project__write_script --json-file -
+dccmcp call godot_project__write_script --json-file payload.json
+generate_payload | dccmcp call godot_project__write_script --json-file -
 ```
 
 Use `--json` or `--json-file`, never both. `--json-file -` keeps large payloads

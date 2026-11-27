@@ -14,7 +14,7 @@ the [official installation guide]({{INSTALL_GUIDE_URL}}). Start {{DCC_NAME}},
 enable this adapter, and verify that the running instance is registered:
 
 ```powershell
-dcc-mcp-cli list
+dccmcp list
 ```
 
 Then ask your agent:

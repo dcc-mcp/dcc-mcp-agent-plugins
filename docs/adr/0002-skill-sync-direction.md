@@ -43,7 +43,7 @@ instructional change committed here alone is drift, not a fix.
 This repository owns released-product discovery because it must keep every
 installable channel and generated catalog identical. The canonical source is
 `plugins/dcc-mcp/skills/dcc-mcp/references/PRODUCTS.json`, derived from the
-released `dcc-mcp-cli dcc-types --output json` result and reconciled with the
+released `dccmcp --output json dcc-types` result and reconciled with the
 owning adapter repositories. It records one canonical `dcc_type`, bounded
 aliases, bilingual routing examples, owner identity, install availability, and
 the shared DCC-CUA/UI Control provider contract for every released product.

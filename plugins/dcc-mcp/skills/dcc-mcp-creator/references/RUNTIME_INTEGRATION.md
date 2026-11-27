@@ -27,7 +27,7 @@ contents or load the entire Core documentation tree.
 ## Integration contracts
 
 1. Classify the ownership boundary before creating files:
-   - Public DCC adapter: run `dcc-mcp-cli dcc-types`; improve an existing
+   - Public DCC adapter: run `dccmcp dcc-types`; improve an existing
      adapter instead of creating a duplicate. Add a genuinely new public
      adapter to `dcc-mcp-catalog.yml` and the compatibility matrix. A pip
      install entry requires the released universal wheel's exact HTTPS URL,
@@ -35,7 +35,7 @@ contents or load the entire Core documentation tree.
    - Private non-DCC service: work in the supplied local or intranet project,
      keep its stable custom service id private, and do not require a GitHub
      repository, public catalog entry, issue, or release. Use a studio-owned
-     catalog only when operators need `dcc-mcp-cli install` plans.
+     catalog only when operators need `dccmcp install` plans.
    - Skill package only: switch to `dcc-mcp-skills-creator`.
 2. Classify the runtime integration:
    - Embedded Python host: Blender, 3ds Max Python, Houdini, Maya, Nuke.
@@ -179,7 +179,7 @@ contents or load the entire Core documentation tree.
       `intent` may only raise the native host's independent UIA/input
       classification. Do not introduce a model-supplied `confirmed`/`approved`
       flag or environment bypass.
-8. Use CLI profiles (`dcc-mcp-cli gateway ...`, `list/search/describe/call`) as the user UX; treat `dcc-mcp-server` modes as runtime plumbing. Read `docs/guide/gateway.md` before changing daemon, guardian, sentinel, registry, or idle-timeout behavior.
+8. Use CLI profiles (`dccmcp gateway ...`, `list/search/describe/call`) as the user UX; treat `dcc-mcp-server` modes as runtime plumbing. Read `docs/guide/gateway.md` before changing daemon, guardian, sentinel, registry, or idle-timeout behavior.
    Gateway discovery reuses a recent capability snapshot across adjacent
    queries. Route adapter catalog changes through the existing
    load/reload/unload contracts that force a refresh; never depend on every

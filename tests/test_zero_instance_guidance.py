@@ -76,9 +76,9 @@ class ZeroInstanceGuidanceTests(unittest.TestCase):
             "### Remote zero-instance branch",
             "### Local zero-instance branch",
         )
-        catalog = "dcc-mcp-cli --output json dcc-types"
-        targeted = "dcc-mcp-cli --output json dcc-types --dcc-type <dcc>"
-        plan = "dcc-mcp-cli --output json --non-interactive install --dcc-type <dcc>"
+        catalog = "dccmcp --output json dcc-types"
+        targeted = "dccmcp --output json dcc-types --dcc-type <dcc>"
+        plan = "dccmcp --output json --non-interactive install --dcc-type <dcc>"
 
         self.assertIn(catalog, remote)
         self.assertNotIn(targeted, remote)
@@ -93,7 +93,7 @@ class ZeroInstanceGuidanceTests(unittest.TestCase):
             "### Local zero-instance branch",
             "## Legacy CLI fallback",
         )
-        targeted = "dcc-mcp-cli --output json dcc-types --dcc-type <dcc>"
+        targeted = "dccmcp --output json dcc-types --dcc-type <dcc>"
 
         self.assertIn(targeted, local)
         self.assertIn("Only in this local branch", local)
@@ -106,8 +106,8 @@ class ZeroInstanceGuidanceTests(unittest.TestCase):
             "## Legacy CLI fallback",
             "## Diagnose local startup state",
         )
-        catalog = "dcc-mcp-cli --output json dcc-types"
-        plan = "dcc-mcp-cli --output json --non-interactive install --dcc-type <dcc>"
+        catalog = "dccmcp --output json dcc-types"
+        plan = "dccmcp --output json --non-interactive install --dcc-type <dcc>"
 
         self.assertIn("rejects `--dcc-type`", legacy)
         self.assertIn("Match only an exact canonical catalog identifier", legacy)

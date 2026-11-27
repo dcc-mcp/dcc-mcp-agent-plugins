@@ -5,7 +5,7 @@ validation are complete. Keep one stable `session_id` in call metadata, then
 query the narrowest useful slice:
 
 ```bash
-dcc-mcp-cli stats --range 24h --dcc-type <dcc> --session-id <session-id>
+dccmcp stats --range 24h --dcc-type <dcc> --session-id <session-id>
 ```
 
 Get the `review_skill_improvement` prompt from this skill and supply the stats
@@ -24,14 +24,14 @@ from a candidate or automate that transition.
 
 Prefer `no_change`, then improving an existing skill, and create a new skill
 only for a repeated, reusable workflow that no current skill owns. Validate any
-accepted change with `validate_skill_dir` or `dcc-mcp-cli lint` before loading
+accepted change with `validate_skill_dir` or `dccmcp lint` before loading
 it. Statistics inform a proposal; they never authorize editing or publishing a
 skill without the task owner's requested scope.
 
 For a failed task, first use the `dcc-mcp` recovery flow: retain the
 `request_id`, run `doctor` for runtime/readiness faults, query
 `stats --status failure --session-id <session-id>`, and record structured
-feedback through the gateway-owned `dcc-mcp-cli feedback` command. A live
+feedback through the gateway-owned `dccmcp feedback` command. A live
 adapter's `dcc_feedback__report` is only a shared Core forwarder to that same
 gateway contract. The public-safe
 `/v1/debug/issue-reports/<request_id>` payload is suitable for a reviewed issue;
@@ -39,7 +39,7 @@ never publish `?mode=raw` automatically.
 
 Published Skills should declare `metadata.dcc-mcp.links.repo` and
 `metadata.dcc-mcp.links.issues`. Copy those exact values into Finding v1
-`evidence.routing` before using `dcc-mcp-cli feedback route`; never infer a
+`evidence.routing` before using `dccmcp feedback route`; never infer a
 tracker from a package name. Missing, non-canonical, or conflicting ownership
 must fail closed, and resolving a route never authorizes issue creation.
 

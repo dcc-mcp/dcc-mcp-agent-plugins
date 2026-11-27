@@ -18,10 +18,5 @@ python scripts/app_path_cache.py get --product obs
 
 When a cached path exists, the agent tells the user the path and asks for
 explicit confirmation before starting. When it is stale or absent, the agent
-asks for a new absolute path and asks whether the user wants the host application
-installed. When `PRODUCTS.json` provides a `host_install` HTTPS source, pass it
-with `--host-install-url` so the prompt points to the official installation page.
-The prompt may also show the separate adapter hint:
-`dcc-mcp-cli install --dcc-type <id> --dcc-path "<path>"`.
-That command installs the DCC-MCP adapter, not necessarily the host application.
-Downloads, installation, and launch still require explicit user confirmation.
+asks for a new absolute path and may show the install hint:
+`dccmcp install --dcc-type <id> --dcc-path "<path>"`.
