@@ -192,7 +192,7 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
                     resolve_product_intent(query, self.catalog),
                 )
 
-    def test_maya_assetsync_capability_is_versioned_beyond_the_released_install(self) -> None:
+    def test_maya_catalog_version_matches_the_released_cli(self) -> None:
         maya = next(
             product for product in self.catalog["products"] if product["id"] == "maya"
         )
@@ -204,25 +204,15 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
                     {"status": "match", "product_ids": ["maya"]},
                     resolve_product_intent(intent, self.catalog),
                 )
-        self.assertEqual("0.9.22", maya["catalog_adapter_version"])
-        self.assertEqual(1, len(maya["versioned_capabilities"]))
-        capability = maya["versioned_capabilities"][0]
-        self.assertEqual("0.9.26", capability["minimum_adapter_version"])
-        self.assertEqual("requires_adapter_upgrade", capability["availability"])
-        self.assertEqual(
-            "https://github.com/dcc-mcp/dcc-mcp-maya/pull/486",
-            capability["source_url"],
-        )
-        for language in ("en", "zh"):
-            self.assertIn("AssetSync v2", capability["summary"][language])
-            self.assertIn("Arnold", capability["summary"][language])
+        self.assertEqual("0.9.42", maya["catalog_adapter_version"])
+        self.assertEqual([], maya["versioned_capabilities"])
 
         good_plan = {
             "dcc_type": "maya",
-            "version": "0.9.22",
+            "version": "0.9.42",
             "adapter": {
                 "name": "dcc-mcp-maya",
-                "version": "0.9.22",
+                "version": "0.9.42",
                 "url": "https://github.com/dcc-mcp/dcc-mcp-maya",
             },
             "steps": [
@@ -230,12 +220,16 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
                     "action": {
                         "type": "PipInstall",
                         "package": "dcc-mcp-maya",
-                        "version": "0.9.22",
+                        "version": "0.9.42",
                     }
                 }
             ],
         }
         validate_released_install_plan(maya, good_plan)
+        current_plan = deepcopy(good_plan)
+        current_plan["version"] = None
+        del current_plan["steps"][0]["action"]["version"]
+        validate_released_install_plan(maya, current_plan)
         mutations = []
         for path, value in (
             (("dcc_type",), "blender"),
@@ -255,32 +249,6 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
         for mutation in mutations:
             with self.subTest(mutation=mutation), self.assertRaises(ValueError):
                 validate_released_install_plan(maya, mutation)
-
-    def test_versioned_capability_metadata_fails_closed(self) -> None:
-        maya_index = next(
-            index
-            for index, product in enumerate(self.catalog["products"])
-            if product["id"] == "maya"
-        )
-        mutations = []
-        for field, value in (
-            ("catalog_adapter_version", "0.9"),
-            ("catalog_adapter_version", "0.9.26"),
-        ):
-            mutation = deepcopy(self.catalog)
-            mutation["products"][maya_index][field] = value
-            mutations.append(mutation)
-        for field, value in (
-            ("minimum_adapter_version", "0.9.22"),
-            ("availability", "available"),
-            ("source_url", "https://github.com/attacker/dcc-mcp-maya/pull/486"),
-        ):
-            mutation = deepcopy(self.catalog)
-            mutation["products"][maya_index]["versioned_capabilities"][0][field] = value
-            mutations.append(mutation)
-        for mutation in mutations:
-            with self.subTest(), self.assertRaises(ValueError):
-                validate_product_catalog(mutation)
 
     def test_free_open_source_products_expose_official_host_install_sources(self) -> None:
         expected = {

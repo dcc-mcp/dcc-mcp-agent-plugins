@@ -2,7 +2,7 @@
 
 # Distribution channels
 
-Released version: **0.19.97** &middot; Catalog: `https://dcc-mcp.github.io/dcc-mcp-agent-plugins/catalog.json`
+Released version: **0.19.124** &middot; Catalog: `https://dcc-mcp.github.io/dcc-mcp-agent-plugins/catalog.json`
 
 | Channel | Kind | Automation | Notes |
 | --- | --- | --- | --- |
@@ -52,19 +52,29 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp
 
 - **Name**: dcc-mcp
-- **Version**: 0.19.97
+- **Version**: 0.19.124
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.97/plugins/dcc-mcp/skills/dcc-mcp
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.124/plugins/dcc-mcp/skills/dcc-mcp
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp`
 - **Description**: Default DCC-MCP router for 18 released creative products and 3 current application routes. Use for a named supported app or explicit DCC-MCP request. Controls live apps, writes files, contacts gateways, and can install a CLI with setup authorization. Use typed DCC-MCP tools first. For application UI, including browsers and non-DCC apps, DCC-CUA and ui-control name the same project-owned route and explicit DCC-CUA requests never fall back to generic Computer Use providers.
 - **Tags**: dcc, dcc-mcp, typed-tools, dcc-cua, ui-control, 3dsmax, aftereffects, blender, godot, houdini, katana, maya, mobu, nuke, openusd, photoshop, premiere, renderdoc, shotgrid, substance3d_designer, substance3d_painter, unreal, zbrush, obs, liquigen, office-suite
 
+### dcc-cua
+
+- **Name**: dcc-cua
+- **Version**: 0.19.124
+- **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.124/plugins/dcc-mcp/skills/dcc-cua
+- **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-cua`
+- **Description**: Control application UI through project-owned DCC-CUA. Use for explicit DCC-CUA requests, including browsers and non-DCC apps, or DCC-MCP UI fallback.
+- **Tags**: dcc-cua, dcc-ui-control, ui-control, browser-dom, exact-window, computer-use, infrastructure
+
 ### dcc-mcp-skills-creator
 
 - **Name**: dcc-mcp-skills-creator
-- **Version**: 0.19.97
+- **Version**: 0.19.124
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.97/plugins/dcc-mcp/skills/dcc-mcp-skills-creator
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.124/plugins/dcc-mcp/skills/dcc-mcp-skills-creator
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp-skills-creator`
 - **Description**: Create, edit or validate DCC-MCP tool skill packages (SKILL.md and tools.yaml). Use dcc-mcp-creator for complete adapter repositories.
 - **Tags**: -
@@ -72,47 +82,37 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp-creator
 
 - **Name**: dcc-mcp-creator
-- **Version**: 0.19.97
+- **Version**: 0.19.124
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.97/plugins/dcc-mcp/skills/dcc-mcp-creator
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.124/plugins/dcc-mcp/skills/dcc-mcp-creator
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp-creator`
 - **Description**: Build or modernize DCC-MCP adapters and standalone studio MCP services. For individual tool skill packages, use dcc-mcp-skills-creator.
 - **Tags**: adapter-development, internal-mcp-service, standalone, host-runtime, dispatcher, gateway, nuke, blender, 3dsmax, unreal, zbrush
 
-### dcc-cua
-
-- **Name**: dcc-cua
-- **Version**: 0.19.121
-- **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.121/plugins/dcc-mcp/skills/dcc-cua
-- **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-cua`
-- **Description**: Control application UI through project-owned DCC-CUA. Use for explicit DCC-CUA requests, including browsers and non-DCC apps, or DCC-MCP UI fallback.
-- **Tags**: dcc-cua, dcc-ui-control, ui-control, browser-dom, exact-window, computer-use, infrastructure
-
 ## Released product routing matrix
 
-Authoritative snapshot: `dccmcp --output json dcc-types` from release `0.21.1`.
+Authoritative snapshot: `dccmcp --output json dcc-types` from release `0.21.3`.
 
-| Canonical DCC type | Product | Bounded aliases | Family | Catalog install |
-| --- | --- | --- | --- | --- |
-| `3dsmax` | [Autodesk 3ds Max](https://github.com/dcc-mcp/dcc-mcp-3dsmax) | `3ds Max`, `3dsmax`, `3ds-max` | 3d-content | yes |
-| `aftereffects` | [Adobe After Effects](https://github.com/dcc-mcp/dcc-mcp-aftereffects) | `After Effects`, `AfterEffects` | adobe-content | yes |
-| `blender` | [Blender](https://github.com/dcc-mcp/dcc-mcp-blender) | `Blender` | 3d-content | yes |
-| `godot` | [Godot Engine](https://github.com/dcc-mcp/dcc-mcp-godot) | `Godot` | game-engine | yes |
-| `houdini` | [SideFX Houdini](https://github.com/dcc-mcp/dcc-mcp-houdini) | `Houdini` | 3d-content | yes |
-| `katana` | [Foundry Katana](https://github.com/dcc-mcp/dcc-mcp-katana) | `Katana` | 3d-content | yes |
-| `maya` | [Autodesk Maya](https://github.com/dcc-mcp/dcc-mcp-maya) | `Maya` | 3d-content | yes |
-| `mobu` | [Autodesk MotionBuilder](https://github.com/dcc-mcp/dcc-mcp-mobu) | `MotionBuilder`, `MoBu` | animation | yes |
-| `nuke` | [Foundry Nuke](https://github.com/dcc-mcp/dcc-mcp-nuke) | `Nuke` | compositing | yes |
-| `openusd` | [OpenUSD](https://github.com/dcc-mcp/dcc-mcp-openusd) | `Universal Scene Description` | interchange | yes |
-| `photoshop` | [Adobe Photoshop](https://github.com/dcc-mcp/dcc-mcp-photoshop) | `Photoshop` | adobe-content | yes |
-| `premiere` | [Adobe Premiere Pro](https://github.com/dcc-mcp/dcc-mcp-premiere) | `Premiere Pro`, `Adobe Premiere`, `Premiere` | adobe-content | yes |
-| `renderdoc` | [RenderDoc](https://github.com/dcc-mcp/dcc-mcp-renderdoc) | - | graphics-debugging | yes |
-| `shotgrid` | [Autodesk Flow Production Tracking](https://github.com/dcc-mcp/dcc-mcp-fpt) | `Flow Production Tracking`, `ShotGrid` | production-tracking | yes |
-| `substance3d_designer` | [Adobe Substance 3D Designer](https://github.com/dcc-mcp/dcc-mcp-substance3d-designer) | `Substance 3D Designer`, `Substance Designer` | materials | yes |
-| `substance3d_painter` | [Adobe Substance 3D Painter](https://github.com/dcc-mcp/dcc-mcp-substance3d-painter) | `Substance 3D Painter`, `Substance Painter` | materials | yes |
-| `unreal` | [Unreal Engine](https://github.com/dcc-mcp/dcc-mcp-unreal) | `UE4`, `UE5`, `虚幻引擎`, `Unreal`, `UE` | game-engine | yes |
-| `zbrush` | [ZBrush](https://github.com/dcc-mcp/dcc-mcp-zbrush) | - | 3d-content | yes |
+| Canonical DCC type | Product | Bounded aliases | Family | Catalog install | Versioned capability notes |
+| --- | --- | --- | --- | --- | --- |
+| `3dsmax` | [Autodesk 3ds Max](https://github.com/dcc-mcp/dcc-mcp-3dsmax) | `3ds Max`, `3dsmax`, `3ds-max` | 3d-content | yes | - |
+| `aftereffects` | [Adobe After Effects](https://github.com/dcc-mcp/dcc-mcp-aftereffects) | `After Effects`, `AfterEffects` | adobe-content | yes | - |
+| `blender` | [Blender](https://github.com/dcc-mcp/dcc-mcp-blender) | `Blender` | 3d-content | yes | - |
+| `godot` | [Godot Engine](https://github.com/dcc-mcp/dcc-mcp-godot) | `Godot` | game-engine | yes | - |
+| `houdini` | [SideFX Houdini](https://github.com/dcc-mcp/dcc-mcp-houdini) | `Houdini` | 3d-content | yes | - |
+| `katana` | [Foundry Katana](https://github.com/dcc-mcp/dcc-mcp-katana) | `Katana` | 3d-content | yes | - |
+| `maya` | [Autodesk Maya](https://github.com/dcc-mcp/dcc-mcp-maya) | `Maya` | 3d-content | yes | - |
+| `mobu` | [Autodesk MotionBuilder](https://github.com/dcc-mcp/dcc-mcp-mobu) | `MotionBuilder`, `MoBu` | animation | yes | - |
+| `nuke` | [Foundry Nuke](https://github.com/dcc-mcp/dcc-mcp-nuke) | `Nuke` | compositing | yes | - |
+| `openusd` | [OpenUSD](https://github.com/dcc-mcp/dcc-mcp-openusd) | `Universal Scene Description` | interchange | yes | - |
+| `photoshop` | [Adobe Photoshop](https://github.com/dcc-mcp/dcc-mcp-photoshop) | `Photoshop` | adobe-content | yes | - |
+| `premiere` | [Adobe Premiere Pro](https://github.com/dcc-mcp/dcc-mcp-premiere) | `Premiere Pro`, `Adobe Premiere`, `Premiere` | adobe-content | yes | - |
+| `renderdoc` | [RenderDoc](https://github.com/dcc-mcp/dcc-mcp-renderdoc) | - | graphics-debugging | yes | - |
+| `shotgrid` | [Autodesk Flow Production Tracking](https://github.com/dcc-mcp/dcc-mcp-fpt) | `Flow Production Tracking`, `ShotGrid` | production-tracking | yes | - |
+| `substance3d_designer` | [Adobe Substance 3D Designer](https://github.com/dcc-mcp/dcc-mcp-substance3d-designer) | `Substance 3D Designer`, `Substance Designer` | materials | yes | - |
+| `substance3d_painter` | [Adobe Substance 3D Painter](https://github.com/dcc-mcp/dcc-mcp-substance3d-painter) | `Substance 3D Painter`, `Substance Painter` | materials | yes | - |
+| `unreal` | [Unreal Engine](https://github.com/dcc-mcp/dcc-mcp-unreal) | `UE4`, `UE5`, `虚幻引擎`, `Unreal`, `UE` | game-engine | yes | - |
+| `zbrush` | [ZBrush](https://github.com/dcc-mcp/dcc-mcp-zbrush) | - | 3d-content | yes | - |
 
 ## Current Core application route matrix
 
@@ -120,6 +120,8 @@ These routes are sourced from the current Core catalog and may precede a release
 
 | Route | Product | Bounded aliases | Family | Catalog install |
 | --- | --- | --- | --- | --- |
+| `obs` | [OBS Studio](https://github.com/dcc-mcp/dcc-mcp-obs) | `OBS`, `OBS Studio`, `OBS 录屏`, `OBS录屏`, `OBS 录制`, `OBS录制` | broadcast | yes |
+| `liquigen` | [LiquiGen](https://github.com/dcc-mcp/dcc-mcp-liquigen) | `LiquiGen`, `Liquid Gen` | water simulation | yes |
 | `office-suite` | [Microsoft Office](https://github.com/dcc-mcp/dcc-mcp-office) | `Microsoft Office`, `Microsoft Excel`, `Microsoft Word`, `Microsoft Outlook`, `表格`, `电子表格`, `做表`, `spreadsheet`, `Excel`, `Word`, `Outlook` | office | no |
 
 ## Application UI routing contract

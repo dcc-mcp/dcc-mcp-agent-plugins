@@ -676,11 +676,10 @@ def validate_released_install_plan(product: dict, payload: dict) -> None:
     expected_version = product.get("catalog_adapter_version")
     if expected_version is None:
         raise ValueError(f"product has no catalog adapter version: {product.get('id')}")
-    if (
-        not isinstance(payload, dict)
-        or payload.get("dcc_type") != product["id"]
-        or payload.get("version") != expected_version
-    ):
+    if not isinstance(payload, dict) or payload.get("dcc_type") != product["id"]:
+        raise ValueError(f"released install plan version differs: {product['id']}")
+    requested_version = payload.get("version")
+    if requested_version not in (None, expected_version):
         raise ValueError(f"released install plan version differs: {product['id']}")
     adapter = payload.get("adapter")
     if not isinstance(adapter, dict):
@@ -701,11 +700,10 @@ def validate_released_install_plan(product: dict, payload: dict) -> None:
         and isinstance(step.get("action"), dict)
         and step["action"].get("type") == "PipInstall"
     ]
-    if (
-        len(pip_installs) != 1
-        or pip_installs[0].get("package") != product["adapter"]
-        or pip_installs[0].get("version") != expected_version
-    ):
+    if len(pip_installs) != 1 or pip_installs[0].get("package") != product["adapter"]:
+        raise ValueError(f"released install plan package differs: {product['id']}")
+    action_version = pip_installs[0].get("version")
+    if action_version not in (None, expected_version):
         raise ValueError(f"released install plan package differs: {product['id']}")
 
 

@@ -53,7 +53,7 @@ class IndependentReviewRegressionTests(unittest.TestCase):
         self.assertEqual("dccmcp --output json dcc-types", source["command"])
         self.assertEqual(f"v{source['version']}", source["tag"])
         self.assertEqual(
-            "1356421595707d076bc9077c54d7f5703c512af3",
+            "26fd9dc6d34d5bd6ab99e5b7654868a2b8487ecb",
             source["commit"],
         )
         self.assertEqual(

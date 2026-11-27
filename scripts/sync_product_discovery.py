@@ -332,11 +332,11 @@ def main(argv: list[str] | None = None) -> int:
                 install_result = subprocess.run(
                     [
                         args.cli,
+                        "--output",
+                        "json",
                         "install",
                         "--dcc-type",
                         product["id"],
-                        "--output",
-                        "json",
                     ],
                     capture_output=True,
                     text=True,
