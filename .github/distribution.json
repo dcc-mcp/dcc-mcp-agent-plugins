@@ -247,8 +247,8 @@
       "name": "npm",
       "url": "https://www.npmjs.com/package/@dcc-mcp/skills",
       "kind": "registry",
-      "automation": "published",
-      "notes": "Publishes the canonical Skill suite as a package so hosts can vendor it through node_modules. Requires NPM_TOKEN."
+      "automation": "optional",
+      "notes": "Publishes the Skill suite for node_modules consumers when NPM_TOKEN is configured. Public repository installs use the GitHub release flow independently."
     },
     {
       "name": "GitHub Releases",

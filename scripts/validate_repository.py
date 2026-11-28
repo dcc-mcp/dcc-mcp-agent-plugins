@@ -37,7 +37,7 @@ MARKETPLACE_MANIFESTS = (
 # naming and for pointing at the same plugin directory as the vendor manifests.
 AGENTS_MARKETPLACE_MANIFEST = ROOT / ".agents" / "plugins" / "marketplace.json"
 PLUGIN_SOURCE_PATH = "./plugins/dcc-mcp"
-CHANNEL_AUTOMATION = {"published", "verified", "manual", "not-applicable"}
+CHANNEL_AUTOMATION = {"published", "optional", "verified", "manual", "not-applicable"}
 ADAPTER_QUICKSTART_REGISTRY = ROOT / ".github" / "adapter-readme-quickstarts.json"
 ADAPTER_QUICKSTART_TEMPLATE = ROOT / "templates" / "adapter-readme-agent-quickstart.md"
 

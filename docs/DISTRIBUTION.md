@@ -9,7 +9,7 @@ Released version: **0.19.124** &middot; Catalog: `https://dcc-mcp.github.io/dcc-
 | [skills.sh](https://www.skills.sh/) | directory | verified | No publish API. The directory indexes public repositories and ranks them from anonymous skills-CLI install telemetry. Release installs all four Skills from the public repository on Linux, macOS, and Windows and asserts the released version; it never generates telemetry. |
 | [ClawHub](https://clawhub.ai/) | registry | published | Validated Skill changes publish from main through scripts/clawhub_sync.py; tagged releases retry the same idempotent publication. Requires CLAWHUB_TOKEN. |
 | [Smithery](https://smithery.ai/) | registry | published | GitHub-backed Skills registry. Published by scripts/smithery_sync.py. Requires SMITHERY_API_KEY. |
-| [npm](https://www.npmjs.com/package/@dcc-mcp/skills) | registry | published | Publishes the canonical Skill suite as a package so hosts can vendor it through node_modules. Requires NPM_TOKEN. |
+| [npm](https://www.npmjs.com/package/@dcc-mcp/skills) | registry | optional | Publishes the Skill suite for node_modules consumers when NPM_TOKEN is configured. Public repository installs use the GitHub release flow independently. |
 | [GitHub Releases](https://github.com/dcc-mcp/dcc-mcp-agent-plugins/releases) | artifact | published | Portable Agent Plugin archive plus per-Skill ZIPs. |
 | [Claude community marketplace](https://www.claude.com/) | directory | manual | Submit the repository through the Claude plugin submission form after `claude plugin validate ./plugins/dcc-mcp --strict` passes. |
 | [OpenAI plugin directory](https://platform.openai.com/) | directory | manual | Skills-only submission. See SUBMISSION.md for the identity, policy URL, and review-case checklist. |
