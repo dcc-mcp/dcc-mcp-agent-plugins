@@ -63,8 +63,8 @@ SMITHERY_API_KEY=... python scripts/smithery_sync.py --publish
 
 ## npm
 
-`v<version>` publishes the canonical Skill suite as `@dcc-mcp/skills` with npm
-provenance. The package ships instructions only, no runtime code. Configure the
+Tags optionally publish the canonical Skill suite as `@dcc-mcp/skills` with npm
+provenance when a publisher token is configured. The package ships instructions only, no runtime code. Configure the
 `NPM_TOKEN` repository secret with publish rights on the `@dcc-mcp` scope, and
 create the scope on npmjs.com before the first release.
 
@@ -88,7 +88,8 @@ Each release deploys `site/` to GitHub Pages: per-Skill pages with
 `schema.org/SoftwareApplication` JSON-LD, `catalog.json`, `llms.txt`,
 `llms-full.txt`, `sitemap.xml`, and a `robots.txt` that explicitly allows the
 AI crawlers listed in `.github/distribution.json`. Enable **Settings > Pages >
-Source: GitHub Actions** once; the deployment is automated after that.
+Source: GitHub Actions**. The release queues `pages.yml` on `main`; a manual run
+on `main` also rebuilds the latest published tag reachable from that branch.
 
 ## LobeHub and awesome lists
 

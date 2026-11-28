@@ -198,8 +198,8 @@ SMITHERY_API_KEY=... python scripts/smithery_sync.py --publish
 
 ### npm
 
-The same canonical Skills ship as a package for hosts that vendor Skills
-through `node_modules`:
+Teams that vendor Skills through `node_modules` can use the optional npm
+package once it is published:
 
 ```bash
 npm install @dcc-mcp/skills
@@ -207,7 +207,8 @@ npx --yes skills@1.5.22 experimental_sync
 ```
 
 The release workflow publishes `@dcc-mcp/skills` to npm after the GitHub
-Release is created. The package includes `catalog.json` and
+Release is created when the publisher configures `NPM_TOKEN`. Public GitHub
+installs are verified independently on Windows, Linux, and macOS. The package includes `catalog.json` and
 `agent-installers.json` so other tools can discover the same platform install
 paths without scraping the website.
 
@@ -317,7 +318,7 @@ python scripts/sync_product_discovery.py --check --check-core-catalog --check-cl
 
 Merging any validated Skill version change publishes the four Skills to
 ClawHub. Tagging `v<version>` creates the cross-channel GitHub Release,
-Smithery, npm, and Pages release. A coordinated Core runtime change uses a
+Smithery, and Pages releases, with optional npm publication. A coordinated Core runtime change uses a
 separate Core pull request; each repository reviews and validates its own
 contract.
 
@@ -345,7 +346,8 @@ codebuddy plugin validate ./plugins/dcc-mcp
 
 Tagging `v<version>` creates a GitHub Release with the plugin and standalone
 Skill archives, then fans out to every automated channel: ClawHub, SkillHub, Smithery,
-npm, and the GitHub Pages catalog. A final matrix job installs the released
+the GitHub Pages catalog, and npm when configured. Pages builds the latest
+published tag from the protected main branch. A separate matrix job installs the released
 Skills from the public repository on Linux, macOS, and Windows and asserts the
 released version, so a broken public install fails the release.
 

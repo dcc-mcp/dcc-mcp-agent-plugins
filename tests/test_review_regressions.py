@@ -84,6 +84,7 @@ class IndependentReviewRegressionTests(unittest.TestCase):
                 ".github/workflows/clawhub.yml",
                 ".github/workflows/skillhub.yml",
                 ".github/workflows/release.yml",
+                ".github/workflows/pages.yml",
             )
         }
         checker = getattr(product_discovery, "validate_released_core_workflows", None)

@@ -45,8 +45,8 @@ RELEASED_CORE_WORKFLOW_COMMANDS = {
             "--ensure-cli-dir .released-cli"
         ),
         "publish-npm": RELEASED_CORE_CATALOG_SETUP_COMMAND,
-        "publish-pages": RELEASED_CORE_CATALOG_SETUP_COMMAND,
     },
+    ".github/workflows/pages.yml": {"build": RELEASED_CORE_CATALOG_SETUP_COMMAND},
 }
 RELEASED_CORE_WORKFLOW_JOBS = {
     relative: tuple(commands) for relative, commands in RELEASED_CORE_WORKFLOW_COMMANDS.items()
@@ -61,6 +61,7 @@ RELEASED_CORE_WORKFLOW_ENVIRONMENT = {
         "CLAWHUB_CONFIG_PATH": ".clawhub/config.json",
         "CLAWHUB_DISABLE_TELEMETRY": "1",
     },
+    ".github/workflows/pages.yml": None,
     ".github/workflows/release.yml": None,
 }
 RELEASED_CORE_WORKFLOW_REQUIRED_TRIGGERS = {
@@ -126,6 +127,7 @@ RELEASED_CORE_WORKFLOW_REQUIRED_TRIGGERS = {
             }
         },
     },
+    ".github/workflows/pages.yml": {"workflow_dispatch": None},
     ".github/workflows/release.yml": {"push": {"tags": ["v*"]}},
 }
 # These are SHA-256 digests of parsed YAML job mappings, not raw files. Formatting
@@ -145,9 +147,14 @@ RELEASED_CORE_WORKFLOW_JOB_DIGESTS = {
         "publish-clawhub": "c911a32259c3658a50b2f6c47ba2a80240a9e168c4bcfda483cb212640340330",
         "publish-skillhub": "c615caf60b1514b58e53c02ca2758e92c0bc0f836cb2f870e1c3c142152bb2a7",
         "publish-smithery": "2749e01e660ea0ed74c37d4e4f25c23f6848925055806bf91ca4634e67e75530",
-        "publish-npm": "944cbdfc9bdfdcbf38a745c83f6a3c16ef20fbde965b3a9fd939f4a0070814e6",
-        "publish-pages": "0e2635dfcc1358f8f5f02623a837d7e4434f18b5a023fe6f580c1463ae3644bd",
-        "verify-public-install": "5d3eea176016637733db1ae176e91aedd1348bc3b8fb6ec9dabd0784c43c1bd2",
+        "publish-npm": "759bba76578a1932da298a1cd69bf9e6f5a3c4bc401ef50678c60148dd1c1063",
+        "request-pages": "dbd45e5b5be1b6a425c322459d59dd14ced3e8e6c14f9a27db6f4c71ed52c785",
+        "verify-public-install": "b9085914c4bc18c5618ac2e0108edd77f0c42fd5e3783add8668030e02ffc93c",
+    },
+    ".github/workflows/pages.yml": {
+        "resolve": "f285a91c8a4a3b85515d05e7616798bd2df616e67624f2e21c26fe231ddd22f7",
+        "build": "256502ca7f8c52d8f68b0b651ec0fe2d679b54d82ccfba7ed856e53cd11beeb2",
+        "deploy": "8ffb3e864285d8fa6a089d8f4d958192271a1030c76a78c9dd1d3398b4e9e757",
     },
 }
 RELEASED_CORE_JOB_EXECUTION_CONTROLS = {
@@ -180,15 +187,9 @@ RELEASED_CORE_JOB_EXECUTION_CONTROLS = {
             "runs-on": "ubuntu-latest",
             "timeout-minutes": 10,
         },
-        "publish-pages": {
-            "needs": "github-release",
-            "runs-on": "ubuntu-latest",
-            "timeout-minutes": 10,
-            "environment": {
-                "name": "github-pages",
-                "url": "${{ steps.deploy.outputs.page_url }}",
-            },
-        },
+    },
+    ".github/workflows/pages.yml": {
+        "build": {"needs": "resolve", "runs-on": "ubuntu-latest", "timeout-minutes": 10},
     },
 }
 WORKFLOW_EXECUTION_CONTROL_KEYS = {
