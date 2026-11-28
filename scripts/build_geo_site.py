@@ -823,8 +823,9 @@ def _distribution_doc(catalog: dict) -> str:
         "## Released product routing matrix",
         "",
         (
-            f"Authoritative snapshot: `dccmcp --output json dcc-types` from release "
-            f"`{catalog['released_product_source']['version']}`."
+            f"Curated routes from `dccmcp --output json dcc-types --offline` in release "
+            f"`{catalog['released_product_source']['version']}`. The bundled CLI catalog lists "
+            f"{catalog['released_product_source']['reported_total']} identifiers."
         ),
         "",
         "| Canonical DCC type | Product | Bounded aliases | Family | Catalog install | Versioned capability notes |",

@@ -50,10 +50,10 @@ class IndependentReviewRegressionTests(unittest.TestCase):
         core_runtime = self.catalog["sources"]["core_runtime"]
         self.assertEqual("dccmcp", source["name"])
         self.assertEqual("https://github.com/dcc-mcp/dcc-mcp-cli", source["repository"])
-        self.assertEqual("dccmcp --output json dcc-types", source["command"])
+        self.assertEqual("dccmcp --output json dcc-types --offline", source["command"])
         self.assertEqual(f"v{source['version']}", source["tag"])
         self.assertEqual(
-            "26fd9dc6d34d5bd6ab99e5b7654868a2b8487ecb",
+            "005dd8ac76fe8b0e58bd8e0aced8631230f149a2",
             source["commit"],
         )
         self.assertEqual(

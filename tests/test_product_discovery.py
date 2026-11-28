@@ -63,8 +63,9 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
     def test_catalog_matches_the_captured_released_cli_identity_set(self) -> None:
         cli_types = self.catalog["sources"]["released_cli"]["dcc_types"]
         product_types = [product["id"] for product in self.catalog["products"]]
-        self.assertEqual(cli_types, product_types)
-        self.assertEqual(18, len(product_types))
+        extra = self.catalog["sources"]["released_cli"]["additional_types"]
+        self.assertEqual(cli_types, sorted(product_types + [row["dcc_type"] for row in extra]))
+        self.assertEqual(50, len(cli_types))
 
     def test_released_cli_snapshot_rejects_missing_or_misdirected_products(self) -> None:
         payload = {
@@ -83,6 +84,11 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
                 for product in self.catalog["products"]
             ],
         }
+        source = self.catalog["sources"]["released_cli"]
+        payload["dcc_types"].extend(deepcopy(source["additional_types"]))
+        payload["dcc_types"].sort(key=lambda row: row["dcc_type"])
+        payload["total"] = len(payload["dcc_types"])
+        payload["catalog"] = {"source": "bundled", "sha256": source["bundled_catalog_sha256"]}
         version = self.catalog["sources"]["released_cli"]["version"]
         validate_released_cli_snapshot(self.catalog, version, payload)
 
@@ -98,6 +104,18 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             validate_released_cli_snapshot(self.catalog, version, misdirected)
+
+        remote = deepcopy(payload)
+        remote["catalog"]["source"] = "remote"
+        with self.assertRaisesRegex(ValueError, "bundled catalog"):
+            validate_released_cli_snapshot(self.catalog, version, remote)
+
+        changed = deepcopy(payload)
+        extra_id = source["additional_types"][0]["dcc_type"]
+        extra = next(row for row in changed["dcc_types"] if row["dcc_type"] == extra_id)
+        extra["adapters"][0]["url"] = "https://example.invalid/adapter"
+        with self.assertRaisesRegex(ValueError, "adapter inventory"):
+            validate_released_cli_snapshot(self.catalog, version, changed)
 
     def test_every_installable_surface_explicitly_names_every_released_product(self) -> None:
         missing_by_surface: dict[str, list[str]] = {}

@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
+import sys
+import tempfile
 import textwrap
 import urllib.request
 from pathlib import Path
@@ -319,34 +322,46 @@ def main(argv: list[str] | None = None) -> int:
                 check=True,
             )
             cli_version = version_result.stdout.strip().split()[-1]
-            catalog_result = subprocess.run(
-                [args.cli, "--output", "json", "dcc-types"],
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            validate_released_cli_snapshot(catalog, cli_version, json.loads(catalog_result.stdout))
-            for product in catalog["products"]:
-                if "catalog_adapter_version" not in product:
-                    continue
-                install_result = subprocess.run(
-                    [
-                        args.cli,
-                        "--output",
-                        "json",
-                        "install",
-                        "--dcc-type",
-                        product["id"],
-                    ],
+            with tempfile.TemporaryDirectory() as temp:
+                env = dict(
+                    os.environ,
+                    DCC_MCP_INSTALL_CACHE=str(Path(temp) / "catalog.json"),
+                    DCC_MCP_CLI_NO_UPDATE_MAINTENANCE="true",
+                )
+                env.pop("DCC_MCP_CATALOG_PATH", None)
+                catalog_result = subprocess.run(
+                    [args.cli, "--output", "json", "dcc-types", "--offline"],
+                    env=env,
                     capture_output=True,
                     text=True,
                     check=True,
                 )
-                validate_released_install_plan(product, json.loads(install_result.stdout))
+                validate_released_cli_snapshot(catalog, cli_version, json.loads(catalog_result.stdout))
+                for product in catalog["products"]:
+                    if "catalog_adapter_version" not in product:
+                        continue
+                    install_result = subprocess.run(
+                        [
+                            args.cli,
+                            "--output",
+                            "json",
+                            "install",
+                            "--offline",
+                            "--dcc-type",
+                            product["id"],
+                            "--python",
+                            sys.executable,
+                        ],
+                        env=env,
+                        capture_output=True,
+                        text=True,
+                        check=True,
+                    )
+                    validate_released_install_plan(product, json.loads(install_result.stdout))
         except (IndexError, json.JSONDecodeError, OSError, subprocess.CalledProcessError, ValueError) as error:
             print(f"released CLI discovery differs: {error}")
             return 1
-        print(f"Released CLI {cli_version} matches {len(catalog['products'])} product identities")
+        print(f"Released CLI {cli_version} matches {released_source['reported_total']} catalog identifiers")
     drift: list[Path] = []
     for path, expected in rendered_outputs(catalog).items():
         current = path.read_text(encoding="utf-8")
