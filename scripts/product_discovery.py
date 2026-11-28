@@ -629,7 +629,10 @@ def validate_product_catalog(data: dict) -> None:
     all_ids = [p["id"] for p in products] + [row["dcc_type"] for row in additional]
     if sorted(all_ids) != cli_types or len(set(all_ids)) != released_cli["reported_total"]:
         raise ValueError("curated and additional product identities differ from the released CLI")
-    if not re.fullmatch(r"[0-9a-f]{64}", released_cli["bundled_catalog_sha256"]):
+    digests = released_cli.get("bundled_catalog_sha256")
+    if not isinstance(digests, dict) or set(digests) != {"lf", "crlf"} or not all(
+        isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) for value in digests.values()
+    ):
         raise ValueError("the bundled CLI catalog requires a SHA-256 digest")
 
     for product in [*products, *application_routes]:
@@ -655,7 +658,9 @@ def validate_released_cli_snapshot(catalog: dict, cli_version: str, payload: dic
         raise ValueError("released CLI product identities differ from PRODUCTS.json")
 
     provenance = payload.get("catalog", {})
-    if provenance.get("source") != "bundled" or provenance.get("sha256") != expected_source["bundled_catalog_sha256"]:
+    # Version 0.23.0 embeds the YAML bytes from each runner's Git checkout.
+    digests = expected_source["bundled_catalog_sha256"].values()
+    if provenance.get("source") != "bundled" or provenance.get("sha256") not in digests:
         raise ValueError("released CLI must use the pinned bundled catalog")
     products = {product["id"]: product for product in catalog["products"]}
     additional = {row["dcc_type"]: row for row in expected_source["additional_types"]}

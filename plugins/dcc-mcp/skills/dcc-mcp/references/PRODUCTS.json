@@ -62,7 +62,10 @@
         "wwise",
         "zbrush"
       ],
-      "bundled_catalog_sha256": "9405a73961ee38f3bb9522b242b709a351425fe389db06abb445e0141b925a61",
+      "bundled_catalog_sha256": {
+        "lf": "9405a73961ee38f3bb9522b242b709a351425fe389db06abb445e0141b925a61",
+        "crlf": "9af15967045e8b36c121a8bd73f0164385e51ae0332046f6dc697a44f4facbec"
+      },
       "additional_types": [
         {
           "dcc_type": "autocad",

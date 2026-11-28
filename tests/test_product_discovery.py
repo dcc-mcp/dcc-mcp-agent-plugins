@@ -88,9 +88,14 @@ class ReleasedProductDiscoveryTests(unittest.TestCase):
         payload["dcc_types"].extend(deepcopy(source["additional_types"]))
         payload["dcc_types"].sort(key=lambda row: row["dcc_type"])
         payload["total"] = len(payload["dcc_types"])
-        payload["catalog"] = {"source": "bundled", "sha256": source["bundled_catalog_sha256"]}
-        version = self.catalog["sources"]["released_cli"]["version"]
-        validate_released_cli_snapshot(self.catalog, version, payload)
+        version = source["version"]
+        for digest in source["bundled_catalog_sha256"].values():
+            payload["catalog"] = {"source": "bundled", "sha256": digest}
+            validate_released_cli_snapshot(self.catalog, version, payload)
+        wrong_digest = deepcopy(payload)
+        wrong_digest["catalog"]["sha256"] = "0" * 64
+        with self.assertRaisesRegex(ValueError, "pinned bundled catalog"):
+            validate_released_cli_snapshot(self.catalog, version, wrong_digest)
 
         missing = deepcopy(payload)
         missing["dcc_types"].pop()
