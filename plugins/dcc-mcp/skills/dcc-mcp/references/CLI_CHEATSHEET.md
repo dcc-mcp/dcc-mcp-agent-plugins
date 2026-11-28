@@ -30,14 +30,14 @@ Keep an official build current through the release manifest:
 
 ```bash
 dccmcp update check
-dccmcp update apply
+dccmcp update
 dccmcp cua -- manifest
 dccmcp cua -- host-ensure
 ```
 
-`update apply` requires the available entry's 64-hex SHA-256, verifies the
+`dccmcp update` requires the available entry's 64-hex SHA-256, verifies the
 download, and stages the CLI binary bound to the exact installation.
-The next launch re-verifies the bytes before replacement and restarts with the
+The next operational command re-verifies the bytes before replacement and restarts with the
 original arguments. Legacy unsigned staging is quarantined. It does not update
 a running `dcc-mcp-server`; update that server in its own environment. Gateway
 Admin remains check-only for every binary. The CUA commands forward to the
@@ -51,11 +51,21 @@ bootstrap/fallback is:
 vx python scripts/dcc_gateway.py --ensure-cli list
 ```
 
+For an approved installation without a running gateway, use the Skill helper directly:
+
+```bash
+python scripts/dcc_gateway.py --version 0.23.0 --install-dir .released-cli install-cli
+```
+
+The helper verifies the release manifest and SHA-256, installs both executable names,
+and returns the installation result without probing a DCC or gateway.
+
 ## Discovery and health
 
 | Command | Purpose |
 |---------|---------|
-| `dccmcp dcc-types` | List adapter-backed DCC identifiers from the bundled release catalog without starting a gateway |
+| `dccmcp dcc-types` | List adapter-backed DCC identifiers from the resolved catalog without starting a gateway |
+| `dccmcp dcc-types --offline` | Use a valid local catalog cache or the bundled release snapshot |
 | `dccmcp dcc-types --catalog path/to/catalog.yml` | Inspect a studio or test catalog through the same typed contract |
 | `dccmcp list` | Ensure the local loopback gateway, then list local DCC instances from the FileRegistry |
 | `dccmcp doctor` | Report profile, registry, local inventory, direct-control readiness counts, gateway daemon status, and server binary diagnostics without launching services |

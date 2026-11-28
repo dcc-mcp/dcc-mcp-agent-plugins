@@ -245,8 +245,11 @@ def install_cli(
             raise ValueError(f"CLI SHA-256 mismatch: expected {expected_digest}, got {actual_digest}")
         if platform.system().lower() != "windows":
             tmp_path.chmod(0o755)
-        tmp_path.replace(target)
-        shutil.copyfile(target, compatibility_target)
+        with tempfile.TemporaryDirectory(dir=install_dir) as staging:
+            alias = Path(staging) / compatibility_target.name
+            shutil.copy(tmp_path, alias)
+            tmp_path.replace(target)
+            alias.replace(compatibility_target)
     except (urllib.error.URLError, OSError, ValueError) as exc:
         with contextlib.suppress(OSError):
             tmp_path.unlink()
@@ -387,6 +390,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--pretty", action="store_true")
     sub = parser.add_subparsers(dest="command", required=True)
 
+    sub.add_parser("install-cli", help="Install the verified CLI without contacting a gateway")
     sub.add_parser("health")
     sub.add_parser("list")
 
@@ -408,6 +412,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     """CLI entry point."""
     args = build_parser().parse_args()
+    if args.command == "install-cli":
+        ok, message, url = install_cli(install_dir=Path(args.install_dir).expanduser(), version=args.version)
+        print(_json_dumps({"success": ok, "message": message, "download_url": url}, pretty=args.pretty))
+        return 0 if ok else 1
     payload = run_command(args.command, args)
     print(_json_dumps(payload, pretty=args.pretty))
     return 1 if isinstance(payload, dict) and payload.get("success") is False else 0

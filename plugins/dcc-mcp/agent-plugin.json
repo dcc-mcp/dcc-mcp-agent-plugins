@@ -2,11 +2,14 @@
   "schema_version": "1",
   "id": "dcc-mcp",
   "name": "DCCMCP Agent Plugin",
-  "version": "0.19.124",
+  "version": "0.19.125",
   "runtime": {
     "kind": "dccmcp-cli",
-    "minimum_cli": "0.21.3",
-    "transports": ["streamable-http", "rest"]
+    "minimum_cli": "0.23.0",
+    "transports": [
+      "streamable-http",
+      "rest"
+    ]
   },
   "entrypoints": [
     {
@@ -29,12 +32,24 @@
   "commands": [
     {
       "name": "dccmcp",
-      "compatibility_aliases": ["dcc-mcp-cli"]
+      "compatibility_aliases": [
+        "dcc-mcp-cli"
+      ]
     }
   ],
   "permissions": {
-    "network": ["mcp-endpoints", "gateway-rest"],
-    "filesystem": ["dcc-mcp-registry", "skill-packages", "artifact-output"],
-    "process": ["dccmcp", "dcc-mcp-cli"]
+    "network": [
+      "mcp-endpoints",
+      "gateway-rest"
+    ],
+    "filesystem": [
+      "dcc-mcp-registry",
+      "skill-packages",
+      "artifact-output"
+    ],
+    "process": [
+      "dccmcp",
+      "dcc-mcp-cli"
+    ]
   }
 }

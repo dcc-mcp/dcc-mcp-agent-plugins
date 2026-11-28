@@ -407,7 +407,7 @@ def validate_product_catalog(data: dict) -> None:
         raise ValueError("released CLI tag must match its version")
     if CORE_COMMIT_RE.fullmatch(str(released_cli.get("commit", ""))) is None:
         raise ValueError("released CLI must be pinned to a full release commit")
-    if released_cli.get("command") != "dccmcp --output json dcc-types":
+    if released_cli.get("command") != "dccmcp --output json dcc-types --offline":
         raise ValueError("released CLI must use the dccmcp catalog command")
     if core_runtime.get("name") != "dcc-mcp-core":
         raise ValueError("Core runtime must use the dcc-mcp-core product name")
@@ -436,8 +436,6 @@ def validate_product_catalog(data: dict) -> None:
     products = data.get("products")
     if not isinstance(products, list) or not products:
         raise ValueError("product catalog must contain products")
-    if released_cli.get("reported_total") != len(products):
-        raise ValueError("released CLI product total differs from the catalog")
     cli_types = released_cli.get("dcc_types")
     if not isinstance(cli_types, list) or not cli_types:
         raise ValueError("released CLI source snapshot is missing dcc_types")
@@ -627,8 +625,12 @@ def validate_product_catalog(data: dict) -> None:
     ]:
         raise ValueError("DCC-CUA security challenges must require human handoff")
 
-    if cli_types != [product["id"] for product in products]:
-        raise ValueError("enriched product identities differ from the released CLI snapshot")
+    additional = released_cli["additional_types"]
+    all_ids = [p["id"] for p in products] + [row["dcc_type"] for row in additional]
+    if sorted(all_ids) != cli_types or len(set(all_ids)) != released_cli["reported_total"]:
+        raise ValueError("curated and additional product identities differ from the released CLI")
+    if not re.fullmatch(r"[0-9a-f]{64}", released_cli["bundled_catalog_sha256"]):
+        raise ValueError("the bundled CLI catalog requires a SHA-256 digest")
 
     for product in [*products, *application_routes]:
         for language in ("en", "zh"):
@@ -652,8 +654,16 @@ def validate_released_cli_snapshot(catalog: dict, cli_version: str, payload: dic
     if [row.get("dcc_type") for row in rows] != expected_source["dcc_types"]:
         raise ValueError("released CLI product identities differ from PRODUCTS.json")
 
+    provenance = payload.get("catalog", {})
+    if provenance.get("source") != "bundled" or provenance.get("sha256") != expected_source["bundled_catalog_sha256"]:
+        raise ValueError("released CLI must use the pinned bundled catalog")
     products = {product["id"]: product for product in catalog["products"]}
+    additional = {row["dcc_type"]: row for row in expected_source["additional_types"]}
     for row in rows:
+        if row["dcc_type"] in additional:
+            if row != additional[row["dcc_type"]]:
+                raise ValueError(f"released CLI adapter inventory differs: {row['dcc_type']}")
+            continue
         product = products[row["dcc_type"]]
         adapters = row.get("adapters")
         if not isinstance(adapters, list) or not adapters:

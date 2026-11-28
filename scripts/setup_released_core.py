@@ -55,14 +55,11 @@ def ensure_released_cli(directory: Path, version: str) -> None:
         [
             sys.executable,
             str(GATEWAY),
-            "--cli",
-            str(directory / "not-installed"),
-            "--ensure-cli",
             "--install-dir",
             str(directory),
             "--version",
             version,
-            "health",
+            "install-cli",
         ],
         check=True,
     )

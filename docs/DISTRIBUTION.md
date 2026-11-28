@@ -2,7 +2,7 @@
 
 # Distribution channels
 
-Released version: **0.19.124** &middot; Catalog: `https://dcc-mcp.github.io/dcc-mcp-agent-plugins/catalog.json`
+Released version: **0.19.125** &middot; Catalog: `https://dcc-mcp.github.io/dcc-mcp-agent-plugins/catalog.json`
 
 | Channel | Kind | Automation | Notes |
 | --- | --- | --- | --- |
@@ -52,9 +52,9 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp
 
 - **Name**: dcc-mcp
-- **Version**: 0.19.124
+- **Version**: 0.19.125
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.124/plugins/dcc-mcp/skills/dcc-mcp
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.125/plugins/dcc-mcp/skills/dcc-mcp
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp`
 - **Description**: Default DCC-MCP router for 18 released creative products and 3 current application routes. Use for a named supported app or explicit DCC-MCP request. Controls live apps, writes files, contacts gateways, and can install a CLI with setup authorization. Use typed DCC-MCP tools first. For application UI, including browsers and non-DCC apps, DCC-CUA and ui-control name the same project-owned route and explicit DCC-CUA requests never fall back to generic Computer Use providers.
 - **Tags**: dcc, dcc-mcp, typed-tools, dcc-cua, ui-control, 3dsmax, aftereffects, blender, godot, houdini, katana, maya, mobu, nuke, openusd, photoshop, premiere, renderdoc, shotgrid, substance3d_designer, substance3d_painter, unreal, zbrush, obs, liquigen, office-suite
@@ -62,9 +62,9 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-cua
 
 - **Name**: dcc-cua
-- **Version**: 0.19.124
+- **Version**: 0.19.125
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.124/plugins/dcc-mcp/skills/dcc-cua
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.125/plugins/dcc-mcp/skills/dcc-cua
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-cua`
 - **Description**: Control application UI through project-owned DCC-CUA. Use for explicit DCC-CUA requests, including browsers and non-DCC apps, or DCC-MCP UI fallback.
 - **Tags**: dcc-cua, dcc-ui-control, ui-control, browser-dom, exact-window, computer-use, infrastructure
@@ -72,9 +72,9 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp-skills-creator
 
 - **Name**: dcc-mcp-skills-creator
-- **Version**: 0.19.124
+- **Version**: 0.19.125
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.124/plugins/dcc-mcp/skills/dcc-mcp-skills-creator
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.125/plugins/dcc-mcp/skills/dcc-mcp-skills-creator
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp-skills-creator`
 - **Description**: Create, edit or validate DCC-MCP tool skill packages (SKILL.md and tools.yaml). Use dcc-mcp-creator for complete adapter repositories.
 - **Tags**: -
@@ -82,16 +82,16 @@ the released Skill suite so a submission never quotes stale metadata.
 ### dcc-mcp-creator
 
 - **Name**: dcc-mcp-creator
-- **Version**: 0.19.124
+- **Version**: 0.19.125
 - **Repository**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins
-- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.124/plugins/dcc-mcp/skills/dcc-mcp-creator
+- **Skill URL**: https://github.com/dcc-mcp/dcc-mcp-agent-plugins/tree/v0.19.125/plugins/dcc-mcp/skills/dcc-mcp-creator
 - **Install**: `npx --yes skills@1.5.22 add dcc-mcp/dcc-mcp-agent-plugins --skill dcc-mcp-creator`
 - **Description**: Build or modernize DCC-MCP adapters and standalone studio MCP services. For individual tool skill packages, use dcc-mcp-skills-creator.
 - **Tags**: adapter-development, internal-mcp-service, standalone, host-runtime, dispatcher, gateway, nuke, blender, 3dsmax, unreal, zbrush
 
 ## Released product routing matrix
 
-Authoritative snapshot: `dccmcp --output json dcc-types` from release `0.21.3`.
+Curated routes from `dccmcp --output json dcc-types --offline` in release `0.23.0`. The bundled CLI catalog lists 50 identifiers.
 
 | Canonical DCC type | Product | Bounded aliases | Family | Catalog install | Versioned capability notes |
 | --- | --- | --- | --- | --- | --- |
